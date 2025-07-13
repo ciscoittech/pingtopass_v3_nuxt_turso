@@ -1,0 +1,297 @@
+# 🏃 Sprint Plan - 8 Hour Task Breakdown
+
+**Generated:** 2025-01-13  
+**Current Sprint:** Sprint 1 - Admin CRUD Completion
+
+## 🎯 Sprint 1: Complete Admin CRUD (8 hours)
+
+### Hour 1-2: Fix Schema Issues & Complete Exam CRUD API
+- [ ] Fix objectives.ts import issues in schema/index.ts
+- [ ] Create POST /api/exams endpoint
+- [ ] Create PUT /api/exams/[id] endpoint  
+- [ ] Create DELETE /api/exams/[id] endpoint
+- [ ] Test all exam endpoints with curl/Postman
+
+### Hour 3-4: Question CRUD API
+- [ ] Create GET /api/questions endpoint with exam filtering
+- [ ] Create GET /api/questions/[id] endpoint
+- [ ] Create POST /api/questions endpoint
+- [ ] Create PUT /api/questions/[id] endpoint
+- [ ] Create DELETE /api/questions/[id] endpoint
+
+### Hour 5-6: Admin Layout & Vendor UI
+- [ ] Create admin layout with sidebar navigation
+- [ ] Create /admin/vendors page with data table
+- [ ] Add create/edit vendor modal dialogs
+- [ ] Implement delete confirmation dialog
+- [ ] Connect to API endpoints with error handling
+
+### Hour 7-8: Exam Management UI
+- [ ] Create /admin/exams page with vendor filtering
+- [ ] Add create/edit exam forms with validation
+- [ ] Implement exam objectives management
+- [ ] Add bulk actions (activate/deactivate)
+- [ ] Test full CRUD workflow
+
+**Deliverables:** Complete admin panel for vendors and exams
+
+---
+
+## 🎯 Sprint 2: Question Management & Import (8 hours)
+
+### Hour 1-2: Question Management UI
+- [ ] Create /admin/questions page with exam selector
+- [ ] Build question form with answer options
+- [ ] Add rich text editor for explanations
+- [ ] Implement question preview component
+
+### Hour 3-4: Bulk Import Feature
+- [ ] Create import modal with file upload
+- [ ] Build CSV/JSON parser for questions
+- [ ] Add validation and error reporting
+- [ ] Create import preview with mapping
+
+### Hour 5-6: Question Bank Features
+- [ ] Add question search and filtering
+- [ ] Implement question categories/tags
+- [ ] Create question difficulty analyzer
+- [ ] Add duplicate detection
+
+### Hour 7-8: Testing & Polish
+- [ ] Test import with various file formats
+- [ ] Add loading states and progress bars
+- [ ] Implement undo/rollback for imports
+- [ ] Create admin dashboard with stats
+
+**Deliverables:** Complete question management system
+
+---
+
+## 🎯 Sprint 3: Study Mode Core (8 hours)
+
+### Hour 1-2: Study Session API
+- [ ] Create POST /api/study/start endpoint
+- [ ] Create POST /api/study/answer endpoint
+- [ ] Create GET /api/study/progress endpoint
+- [ ] Implement session state management
+
+### Hour 3-4: Study Interface Components
+- [ ] Create /study/[examId] page
+- [ ] Build question display component
+- [ ] Add answer selection UI
+- [ ] Implement navigation controls
+
+### Hour 5-6: Instant Feedback System
+- [ ] Create answer validation logic
+- [ ] Build feedback display component
+- [ ] Add explanation modal/drawer
+- [ ] Implement progress indicators
+
+### Hour 7-8: Study Features
+- [ ] Add bookmark/flag question feature
+- [ ] Create question notes system
+- [ ] Implement study mode settings
+- [ ] Add keyboard shortcuts
+
+**Deliverables:** Functional study mode with feedback
+
+---
+
+## 🎯 Sprint 4: Test Mode Implementation (8 hours)
+
+### Hour 1-2: Test Session API
+- [ ] Create POST /api/test/start endpoint
+- [ ] Create POST /api/test/submit endpoint
+- [ ] Create GET /api/test/[id]/results endpoint
+- [ ] Implement timer management
+
+### Hour 3-4: Test Interface
+- [ ] Create /test/[examId] page
+- [ ] Build test timer component
+- [ ] Add question navigation grid
+- [ ] Implement review marking
+
+### Hour 5-6: Test Submission
+- [ ] Create submission confirmation dialog
+- [ ] Build results calculation engine
+- [ ] Generate detailed score report
+- [ ] Add section-wise breakdown
+
+### Hour 7-8: Results & Review
+- [ ] Create /test/results/[id] page
+- [ ] Build results visualization
+- [ ] Add answer review mode
+- [ ] Implement results sharing
+
+**Deliverables:** Complete test mode with results
+
+---
+
+## 🎯 Sprint 5: Progress Tracking (8 hours)
+
+### Hour 1-2: Progress API
+- [ ] Create progress calculation algorithms
+- [ ] Build API for progress metrics
+- [ ] Implement streak tracking
+- [ ] Add weak area detection
+
+### Hour 3-4: Dashboard Enhancement
+- [ ] Update dashboard with real stats
+- [ ] Add progress charts (ApexCharts)
+- [ ] Create activity timeline
+- [ ] Build achievement notifications
+
+### Hour 5-6: Study Analytics
+- [ ] Create /progress page
+- [ ] Add exam-wise breakdown
+- [ ] Build objective mastery view
+- [ ] Implement time tracking
+
+### Hour 7-8: Recommendations
+- [ ] Create study plan generator
+- [ ] Add weak area focus mode
+- [ ] Build daily goal system
+- [ ] Implement study reminders
+
+**Deliverables:** Complete progress tracking system
+
+---
+
+## 🎯 Sprint 6: Advanced Features (8 hours)
+
+### Hour 1-2: AI Integration Setup
+- [ ] Configure OpenRouter client
+- [ ] Create AI question generation API
+- [ ] Build generation settings UI
+- [ ] Add quality validation
+
+### Hour 3-4: Gamification
+- [ ] Implement badge system
+- [ ] Create achievement triggers
+- [ ] Build leaderboard API
+- [ ] Add XP/points system
+
+### Hour 5-6: Social Features
+- [ ] Add study group creation
+- [ ] Implement progress sharing
+- [ ] Create challenge system
+- [ ] Build activity feed
+
+### Hour 7-8: Mobile Optimization
+- [ ] Optimize touch interactions
+- [ ] Add offline support (PWA)
+- [ ] Implement sync system
+- [ ] Test on various devices
+
+**Deliverables:** Enhanced features for engagement
+
+---
+
+## 🎯 Sprint 7: Testing & Quality (8 hours)
+
+### Hour 1-2: E2E Test Setup
+- [ ] Configure Playwright
+- [ ] Write auth flow tests
+- [ ] Test study mode flow
+- [ ] Test exam completion
+
+### Hour 3-4: Unit Tests
+- [ ] Test API endpoints
+- [ ] Test score calculations
+- [ ] Test progress algorithms
+- [ ] Test data validations
+
+### Hour 5-6: Performance
+- [ ] Add lazy loading
+- [ ] Optimize database queries
+- [ ] Implement caching
+- [ ] Bundle optimization
+
+### Hour 7-8: Security & UX
+- [ ] Security audit
+- [ ] Add rate limiting
+- [ ] Accessibility review
+- [ ] Cross-browser testing
+
+**Deliverables:** Production-ready quality
+
+---
+
+## 🎯 Sprint 8: Deployment (8 hours)
+
+### Hour 1-2: Cloudflare Setup
+- [ ] Configure NuxtHub
+- [ ] Set up environment vars
+- [ ] Configure domains
+- [ ] Test edge deployment
+
+### Hour 3-4: Migration Prep
+- [ ] Create data backup
+- [ ] Write migration scripts
+- [ ] Test rollback procedure
+- [ ] Document process
+
+### Hour 5-6: Go Live
+- [ ] Deploy to production
+- [ ] Run smoke tests
+- [ ] Monitor performance
+- [ ] Check analytics
+
+### Hour 7-8: Post-Deploy
+- [ ] Fix any issues
+- [ ] Update documentation
+- [ ] Client handoff prep
+- [ ] Celebrate! 🎉
+
+**Deliverables:** Live production system
+
+---
+
+## 📊 Progress Tracking
+
+Use this checklist format for each sprint:
+- [ ] Hour 1-2 tasks ⏰
+- [ ] Hour 3-4 tasks ⏰  
+- [ ] Hour 5-6 tasks ⏰
+- [ ] Hour 7-8 tasks ⏰
+- [ ] Sprint deliverables ✅
+
+**Note:** Each sprint is self-contained with clear deliverables. Adjust timing based on actual progress.
+
+---
+
+## 🚀 Phase 2: Twitter Marketing Intelligence (POST-MVP)
+
+**Target:** Marketing intelligence system for competitor analysis and content strategy optimization.
+
+### Sprint 9: Twitter Agents Foundation (8 hours)
+- **Hour 1-2:** Database schema for competitor tracking and analysis storage
+- **Hour 3-4:** Twitter API client setup with rate limiting and error handling  
+- **Hour 5-6:** Competitor ingestion agent - fetch and store competitor tweets
+- **Hour 7-8:** Basic competitor management UI in admin panel
+
+### Sprint 10: AI Analysis Engine (8 hours)  
+- **Hour 1-2:** OpenRouter client integration for AI-powered insights
+- **Hour 3-4:** Competitor analysis agent - engagement patterns and metrics
+- **Hour 5-6:** Topic extraction and viral content identification
+- **Hour 7-8:** Strategic recommendations generation with AI
+
+### Sprint 11: Analytics Dashboard (8 hours)
+- **Hour 1-2:** Twitter engagement dashboard with real-time metrics
+- **Hour 3-4:** Competitor comparison views and trend analysis
+- **Hour 5-6:** Content strategy recommendations display
+- **Hour 7-8:** API cost tracking and budget monitoring
+
+### Sprint 12: Automation & Optimization (8 hours)
+- **Hour 1-2:** Scheduled competitor analysis jobs (daily/weekly)
+- **Hour 3-4:** Alert system for significant competitor activity
+- **Hour 5-6:** Performance optimization and caching strategy
+- **Hour 7-8:** Integration testing and production deployment
+
+**Deliverables:**
+- ✅ Complete competitor tracking and analysis system
+- ✅ AI-powered marketing insights dashboard  
+- ✅ Automated competitor monitoring
+- ✅ Strategic recommendations for content optimization
+
+---
