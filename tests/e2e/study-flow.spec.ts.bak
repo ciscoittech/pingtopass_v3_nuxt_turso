@@ -1,0 +1,248 @@
+import { test, expect } from '@playwright/test'
+
+test.describe('Study Mode Flow', () => {
+  test.beforeEach(async ({ page }) => {
+    // Mock authentication
+    await page.route('**/api/auth/me', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          user: {
+            id: 'usr_test123',
+            email: 'test@example.com',
+            fullName: 'Test User',
+            isAdmin: false,
+            isActive: true
+          }
+        })
+      })
+    })
+
+    // Mock exams API
+    await page.route('**/api/exams/*', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            id: 'exm_test123',
+            examCode: 'AWS-SAA',
+            examName: 'AWS Solutions Architect Associate',
+            description: 'Test exam for AWS certification'
+          }
+        })
+      })
+    })
+  })
+
+  test('should complete study session setup', async ({ page }) => {
+    // Navigate to study page
+    await page.goto('/study/exm_test123')
+
+    // Should show study setup interface
+    await expect(page.getByText('Study Mode')).toBeVisible()
+    await expect(page.getByText('AWS-SAA - AWS Solutions Architect Associate')).toBeVisible()
+
+    // Select study mode
+    await page.getByText('Sequential').click()
+
+    // Set number of questions
+    await page.fill('input[type="number"]', '5')
+
+    // Mock study start API
+    await page.route('**/api/study/start', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            sessionId: 'study_test123',
+            examId: 'exm_test123',
+            totalQuestions: 5,
+            currentQuestionIndex: 0,
+            studyMode: 'sequential',
+            firstQuestion: {
+              id: 'qst_test123',
+              questionText: 'What is the default VPC CIDR block in AWS?',
+              questionType: 'multiple-choice',
+              options: ['10.0.0.0/16', '172.31.0.0/16', '192.168.0.0/16', '10.1.0.0/16']
+            }
+          }
+        })
+      })
+    })
+
+    // Start study session
+    await page.getByText('Start Study Session').click()
+
+    // Should navigate to study interface
+    await expect(page.getByText('Question')).toBeVisible()
+    await expect(page.getByText('What is the default VPC CIDR block in AWS?')).toBeVisible()
+
+    // Should show answer options
+    await expect(page.getByText('A')).toBeVisible()
+    await expect(page.getByText('10.0.0.0/16')).toBeVisible()
+    await expect(page.getByText('172.31.0.0/16')).toBeVisible()
+  })
+
+  test('should handle answer submission and feedback', async ({ page }) => {
+    // Setup initial state with study session active
+    await page.route('**/api/study/progress', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            progress: {
+              sessionId: 'study_test123',
+              current: 0,
+              total: 5,
+              correct: 0,
+              incorrect: 0
+            },
+            currentQuestion: {
+              id: 'qst_test123',
+              questionText: 'What is the default VPC CIDR block in AWS?',
+              questionType: 'multiple-choice',
+              options: ['10.0.0.0/16', '172.31.0.0/16', '192.168.0.0/16', '10.1.0.0/16']
+            }
+          }
+        })
+      })
+    })
+
+    await page.goto('/study/exm_test123')
+
+    // Select an answer
+    await page.getByText('172.31.0.0/16').click()
+
+    // Mock answer submission
+    await page.route('**/api/study/answer', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            isCorrect: true,
+            correctAnswer: [1],
+            explanation: '172.31.0.0/16 is the default CIDR block for AWS VPC',
+            isCompleted: false,
+            progress: {
+              current: 1,
+              total: 5,
+              correct: 1,
+              incorrect: 0,
+              percentage: 100
+            },
+            nextQuestion: {
+              id: 'qst_test456',
+              questionText: 'Which AWS service provides object storage?',
+              questionType: 'multiple-choice',
+              options: ['EC2', 'S3', 'RDS', 'Lambda']
+            }
+          }
+        })
+      })
+    })
+
+    // Submit answer
+    await page.getByText('Submit Answer').click()
+
+    // Should show feedback modal
+    await expect(page.getByText('Correct!')).toBeVisible()
+    await expect(page.getByText('172.31.0.0/16 is the default CIDR block')).toBeVisible()
+
+    // Should show progress
+    await expect(page.getByText('100%')).toBeVisible()
+
+    // Continue to next question
+    await page.getByText('Continue Studying').click()
+
+    // Should show next question
+    await expect(page.getByText('Which AWS service provides object storage?')).toBeVisible()
+  })
+
+  test('should show completion when study session ends', async ({ page }) => {
+    // Mock completed session
+    await page.route('**/api/study/answer', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            isCorrect: true,
+            correctAnswer: [1],
+            explanation: 'Correct answer explanation',
+            isCompleted: true,
+            progress: {
+              current: 5,
+              total: 5,
+              correct: 4,
+              incorrect: 1,
+              percentage: 80
+            }
+          }
+        })
+      })
+    })
+
+    await page.goto('/study/exm_test123')
+    
+    // Simulate completing last question
+    await page.getByText('S3').click()
+    await page.getByText('Submit Answer').click()
+
+    // Should show completion message
+    await expect(page.getByText('Study Session Complete!')).toBeVisible()
+    await expect(page.getByText('View Results')).toBeVisible()
+  })
+
+  test('should handle incorrect answers with proper feedback', async ({ page }) => {
+    await page.route('**/api/study/answer', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            isCorrect: false,
+            correctAnswer: [1],
+            explanation: 'S3 is the correct answer for object storage',
+            isCompleted: false,
+            progress: {
+              current: 1,
+              total: 5,
+              correct: 0,
+              incorrect: 1,
+              percentage: 0
+            },
+            nextQuestion: {
+              id: 'qst_next',
+              questionText: 'Next question',
+              questionType: 'multiple-choice',
+              options: ['A', 'B', 'C', 'D']
+            }
+          }
+        })
+      })
+    })
+
+    await page.goto('/study/exm_test123')
+    
+    // Select wrong answer
+    await page.getByText('EC2').click()
+    await page.getByText('Submit Answer').click()
+
+    // Should show incorrect feedback
+    await expect(page.getByText('Incorrect')).toBeVisible()
+    await expect(page.getByText('Don\'t worry, let\'s learn from this')).toBeVisible()
+    await expect(page.getByText('S3 is the correct answer')).toBeVisible()
+  })
+})
