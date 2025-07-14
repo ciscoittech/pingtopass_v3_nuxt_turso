@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { db } from '~/server/database/db'
 import { testSessions, questions } from '~/server/database/schema'
 import { eq, inArray } from 'drizzle-orm'
+import { updateProgressAfterTest } from '~/server/utils/progressCalculations'
 
 const submitTestSchema = z.object({
   sessionId: z.string().min(1, 'Session ID is required'),
@@ -138,6 +139,22 @@ export default defineEventHandler(async (event) => {
         updatedAt: timestamp
       })
       .where(eq(testSessions.id, sessionId))
+
+    // Update user progress
+    try {
+      await updateProgressAfterTest(userId, {
+        examId: testSession.examId,
+        totalQuestions: maxPossibleScore,
+        correctAnswers,
+        score: scorePercentage,
+        timeSpent,
+        sessionId,
+        isPerfectScore: scorePercentage === 100
+      })
+    } catch (progressError) {
+      console.error('Failed to update progress:', progressError)
+      // Don't fail the test submission if progress update fails
+    }
 
     return {
       success: true,

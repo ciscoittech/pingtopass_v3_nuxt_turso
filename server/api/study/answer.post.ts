@@ -1,6 +1,7 @@
 import { useDB } from '~/server/utils/db'
 import { questions } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
+import { updateProgressAfterStudy } from '~/server/utils/progressCalculations'
 
 interface AnswerRequest {
   sessionId: string
