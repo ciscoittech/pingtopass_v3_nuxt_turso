@@ -20,7 +20,7 @@ definePageMeta({
                                 <div class="mt-xl-0 mt-5 mw-100">
                                     <h2 class="text-h2 font-weight-bold mb-2">Welcome to PingToPass</h2>
                                     <div class="text-h6 mb-6 font-weight-medium mt-3 mb-8">IT Certification Exam Preparation</div>
-                                    <LoginForm />
+                                    <AuthLoginForm />
                                     <p class="text-subtitle-1 text-grey100 text-center mt-6">
                                         Join thousands of IT professionals preparing for certification exams
                                     </p>

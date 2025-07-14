@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { db } from '~/server/database/db'
+import { useDB } from '~/server/utils/db'
 import { testSessions, questions, exams } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
 import { generateId } from '~/server/utils/id'
@@ -139,6 +139,8 @@ export default defineEventHandler(async (event) => {
       createdAt: timestamp,
       updatedAt: timestamp
     }
+
+    const db = useDB()
 
     await db.insert(testSessions).values(newTestSession)
 

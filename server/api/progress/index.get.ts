@@ -21,8 +21,13 @@ export default defineEventHandler(async (event) => {
       data: progressMetrics
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get progress error:', error)
+    
+    // Re-throw authentication errors
+    if (error.statusCode === 401) {
+      throw error
+    }
     
     throw createError({
       statusCode: 500,

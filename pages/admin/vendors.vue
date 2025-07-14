@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import UiParentCard from '@/components/shared/UiParentCard.vue'
+
 definePageMeta({
   layout: 'admin',
-  middleware: 'auth'
+  middleware: 'admin'
 })
 
 // State
@@ -107,34 +109,26 @@ const formatDate = (timestamp: number) => {
 
 <template>
   <div>
-    <!-- Page Header -->
-    <div class="d-flex justify-space-between align-center mb-6">
-      <div>
-        <h1 class="text-h4 font-weight-bold mb-2">
-          Vendor Management
-        </h1>
-        <p class="text-body-1 text-grey-darken-1">
-          Manage certification vendors and companies
-        </p>
-      </div>
-      
-      <v-btn
-        color="primary"
-        @click="openCreateDialog"
-        prepend-icon="mdi-plus"
-      >
-        Add Vendor
-      </v-btn>
-    </div>
-
     <!-- Data Table -->
-    <v-card>
+    <UiParentCard title="All Vendors">
       <v-data-table
+        class="border rounded-md"
         :headers="headers"
         :items="vendors"
         :loading="loading"
         item-key="id"
+        :sort-by="[{ key: 'name', order: 'asc' }]"
       >
+        <template v-slot:top>
+          <v-toolbar flat class="border-bottom">
+            <v-toolbar-title>Vendor Management</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" variant="flat" @click="openCreateDialog">
+              Add New Vendor
+            </v-btn>
+          </v-toolbar>
+        </template>
+
         <template v-slot:item.website="{ item }">
           <a 
             v-if="item.website"
@@ -153,22 +147,24 @@ const formatDate = (timestamp: number) => {
         </template>
 
         <template v-slot:item.actions="{ item }">
-          <v-btn
-            icon="mdi-pencil"
+          <v-icon
+            color="info"
             size="small"
-            variant="text"
+            class="me-2"
             @click="openEditDialog(item)"
-          />
-          <v-btn
-            icon="mdi-delete"
-            size="small"
-            variant="text"
+          >
+            mdi-pencil
+          </v-icon>
+          <v-icon
             color="error"
+            size="small"
             @click="openDeleteDialog(item)"
-          />
+          >
+            mdi-delete
+          </v-icon>
         </template>
       </v-data-table>
-    </v-card>
+    </UiParentCard>
 
     <!-- Create/Edit Dialog -->
     <v-dialog v-model="dialog" max-width="600px">

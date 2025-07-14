@@ -1,6 +1,27 @@
 interface OpenRouterMessage {
-  role: 'system' | 'user' | 'assistant'
+  role: 'system' | 'user' | 'assistant' | 'tool'
   content: string
+  tool_call_id?: string
+  tool_calls?: ToolCall[]
+  cache_control?: { type: 'ephemeral' } // For prompt caching
+}
+
+interface ToolCall {
+  id: string
+  type: 'function'
+  function: {
+    name: string
+    arguments: string
+  }
+}
+
+interface Tool {
+  type: 'function'
+  function: {
+    name: string
+    description: string
+    parameters: Record<string, any>
+  }
 }
 
 interface OpenRouterRequest {
@@ -11,6 +32,8 @@ interface OpenRouterRequest {
   top_p?: number
   frequency_penalty?: number
   presence_penalty?: number
+  tools?: Tool[]
+  tool_choice?: 'auto' | 'none' | { type: 'function'; function: { name: string } }
 }
 
 interface OpenRouterResponse {
@@ -22,7 +45,8 @@ interface OpenRouterResponse {
     index: number
     message: {
       role: string
-      content: string
+      content: string | null
+      tool_calls?: ToolCall[]
     }
     finish_reason: string
   }>
@@ -30,6 +54,9 @@ interface OpenRouterResponse {
     prompt_tokens: number
     completion_tokens: number
     total_tokens: number
+    prompt_tokens_details?: {
+      cached_tokens?: number
+    }
   }
 }
 
@@ -57,7 +84,7 @@ export class OpenRouterClient {
         body: JSON.stringify({
           ...request,
           // Default to fast, reliable model for question generation
-          model: request.model || 'anthropic/claude-3.5-haiku',
+          model: request.model || 'deepseek/deepseek-chat-v3-0324',
           temperature: request.temperature ?? 0.7,
           max_tokens: request.max_tokens ?? 2000
         })
@@ -107,7 +134,7 @@ Format your response as valid JSON with this structure:
     ]
 
     const response = await this.chat({
-      model: model || 'anthropic/claude-3.5-haiku',
+      model: model || 'deepseek/deepseek-chat-v3-0324',
       messages,
       temperature: 0.8,
       max_tokens: 3000
@@ -135,7 +162,7 @@ Please provide an improved version of this question.`
     ]
 
     const response = await this.chat({
-      model: 'anthropic/claude-3.5-haiku',
+      model: 'deepseek/deepseek-chat-v3-0324',
       messages,
       temperature: 0.6
     })
@@ -175,7 +202,7 @@ Difficulty: ${questionData.difficulty}`
     ]
 
     const response = await this.chat({
-      model: 'anthropic/claude-3.5-haiku',
+      model: 'deepseek/deepseek-chat-v3-0324',
       messages,
       temperature: 0.3
     })
@@ -195,19 +222,55 @@ Difficulty: ${questionData.difficulty}`
   calculateCost(usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number }, model: string): number {
     // Pricing per 1M tokens (as of 2024)
     const pricing: Record<string, { input: number; output: number }> = {
+      'deepseek/deepseek-chat-v3-0324': { input: 0.15, output: 0.15 },
       'anthropic/claude-3.5-haiku': { input: 1.00, output: 5.00 },
       'anthropic/claude-3.5-sonnet': { input: 3.00, output: 15.00 },
       'openai/gpt-4o-mini': { input: 0.15, output: 0.60 },
       'openai/gpt-4o': { input: 2.50, output: 10.00 }
     }
 
-    const modelPricing = pricing[model] || pricing['anthropic/claude-3.5-haiku']
+    const modelPricing = pricing[model] || pricing['deepseek/deepseek-chat-v3-0324']
     const inputCost = (usage.prompt_tokens / 1_000_000) * modelPricing.input
     const outputCost = (usage.completion_tokens / 1_000_000) * modelPricing.output
     
     return inputCost + outputCost
   }
+
+  // Helper to add cache control to messages for prompt caching
+  addCacheControl(messages: OpenRouterMessage[], breakpoints: number[]): OpenRouterMessage[] {
+    const result = [...messages]
+    
+    // Add cache control at specified message indices
+    breakpoints.forEach(index => {
+      if (result[index]) {
+        result[index] = {
+          ...result[index],
+          cache_control: { type: 'ephemeral' }
+        }
+      }
+    })
+    
+    return result
+  }
+
+  // Helper to format tool response message
+  formatToolResponse(toolCallId: string, result: any): OpenRouterMessage {
+    return {
+      role: 'tool',
+      tool_call_id: toolCallId,
+      content: typeof result === 'string' ? result : JSON.stringify(result)
+    }
+  }
 }
 
 // Export singleton instance
 export const openRouterClient = new OpenRouterClient()
+
+// Export types for use in other files
+export type { 
+  OpenRouterMessage, 
+  OpenRouterRequest, 
+  OpenRouterResponse, 
+  Tool, 
+  ToolCall 
+}

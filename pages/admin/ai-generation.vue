@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // Require admin authentication
 definePageMeta({
-  middleware: 'auth',
+  middleware: 'admin',
   layout: 'admin'
 })
 

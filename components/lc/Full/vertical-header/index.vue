@@ -4,7 +4,6 @@ import { useCustomizerStore } from "@/stores/customizer";
 import { useEcomStore } from "@/stores/apps/eCommerce";
 // Icon Imports
 import {
-  GridDotsIcon,
   LanguageIcon,
   SearchIcon,
   Menu2Icon,
@@ -140,7 +139,7 @@ function handleScroll() {
           v-bind="props"
           size="small"
         >
-          <DotsIcon stroke-width="2" size="24" class="text-primary" />
+          <Icon icon="mdi:dots-horizontal" width="24" height="24" class="text-primary" />
         </v-btn>
       </template>
       <v-sheet rounded="lg" elevation="10" class="mt-5 dropdown-box px-4 py-6">

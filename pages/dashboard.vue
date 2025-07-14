@@ -1,7 +1,19 @@
 <script setup lang="ts">
+import { ref } from "vue";
+// Theme Components
+import WelcomeCard from "@/components/dashboards/dashboard2/WelcomeCard.vue";
+import StatsCards from "@/components/dashboards/pingtopass/StatsCards.vue";
+import ProfitExpanse from "@/components/dashboards/dashboard2/ProfitExpanse.vue";
+import ProductSales from "@/components/dashboards/dashboard2/ProductSales.vue";
+import TrafficDistribution from "@/components/dashboards/dashboard2/TrafficDistribution.vue";
+import UpcommingSchedule from "@/components/dashboards/dashboard2/UpcommingSchedule.vue";
+import CongratsCard from "@/components/dashboards/dashboard1/CongratulationsCard.vue";
+import LatestReviews from "@/components/dashboards/dashboard1/LatestReviews.vue";
+
 // Require authentication
 definePageMeta({
-  middleware: 'auth'
+  middleware: 'auth',
+  layout: 'default'
 })
 
 // Get user data
@@ -9,332 +21,146 @@ const { data: userData } = await useFetch('/api/auth/me');
 const user = userData.value?.user;
 
 // Get user progress data
-const { data: progressData, pending: progressLoading, refresh: refreshProgress } = await useFetch('/api/progress')
+const { data: progressData, pending: progressLoading, error: progressError } = await useFetch('/api/progress', {
+  server: false // Client-side only to handle auth properly
+})
 const progress = computed(() => progressData.value?.data)
 
 // Get analytics data
-const { data: analyticsData, pending: analyticsLoading } = await useFetch('/api/progress/analytics', {
-  query: { period: 'month' }
+const { data: analyticsData, pending: analyticsLoading, error: analyticsError } = await useFetch('/api/progress/analytics', {
+  query: { period: 'month' },
+  server: false
 })
 const analytics = computed(() => analyticsData.value?.data)
 
-// Format time helper
-const formatTime = (seconds: number) => {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`
-  }
-  return `${minutes}m`
-}
+// Get recent exams
+const { data: examsData } = await useFetch('/api/exams', {
+  query: { limit: 5 }
+})
+const exams = computed(() => examsData.value?.data || [])
 
-// Format number helper
-const formatNumber = (num: number) => {
-  return new Intl.NumberFormat().format(num)
-}
-
-// Get streak message
-const getStreakMessage = () => {
-  const streak = progress.value?.streaks?.currentDaily || 0
-  if (streak === 0) return 'Start your study streak today!'
-  if (streak === 1) return 'Great start! Keep it going.'
-  if (streak < 7) return `${streak} days strong! 🔥`
-  if (streak < 30) return `Amazing ${streak}-day streak! 🚀`
-  return `Incredible ${streak}-day streak! You're unstoppable! ⭐`
-}
-
-// Study plan generator state
-const showStudyPlanDialog = ref(false)
-const selectedExamForPlan = ref(null as any)
-
-const openStudyPlan = (exam: any) => {
-  selectedExamForPlan.value = exam
-  showStudyPlanDialog.value = true
-}
-
-const closeStudyPlan = () => {
-  showStudyPlanDialog.value = false
-  selectedExamForPlan.value = null
-}
+// Stats for cards
+const stats = computed(() => ({
+  studyStreak: progress.value?.streaks?.currentDaily || 0,
+  totalStudyTime: progress.value?.overall?.totalStudyTime || 0,
+  averageAccuracy: progress.value?.overall?.averageAccuracy || 0,
+  questionsAnswered: analytics.value?.overall?.totalAnswered || 0
+}))
 </script>
 
 <template>
-  <div>
-    <v-row>
-      <v-col cols="12">
-        <h1 class="text-h4 font-weight-bold mb-4">
-          Welcome back, {{ user?.fullName || 'Student' }}!
-        </h1>
-      </v-col>
-    </v-row>
+  <v-row>
+    <!-- Welcome Card -->
+    <v-col cols="12" sm="12" lg="8">
+      <CongratsCard />
+    </v-col>
 
-    <!-- Loading State -->
-    <div v-if="progressLoading || analyticsLoading" class="text-center py-8">
-      <v-progress-circular indeterminate color="primary" size="64" />
-      <p class="text-h6 mt-4">Loading your progress...</p>
-    </div>
-
-    <!-- Progress Overview -->
-    <v-row v-else>
-      <!-- Study Streak -->
-      <v-col cols="12">
-        <v-card color="primary" variant="tonal" class="mb-4">
-          <v-card-text class="pa-6">
-            <div class="d-flex align-center">
-              <div class="flex-grow-1">
-                <h2 class="text-h5 mb-2">{{ getStreakMessage() }}</h2>
-                <div class="d-flex align-center">
-                  <v-icon color="primary" class="mr-2">mdi-fire</v-icon>
-                  <span class="text-h6">{{ progress?.streaks?.currentDaily || 0 }} day streak</span>
-                  <v-chip 
-                    v-if="(progress?.streaks?.currentDaily || 0) > 0"
-                    color="warning" 
-                    variant="tonal" 
-                    size="small" 
-                    class="ml-3"
-                  >
-                    Best: {{ progress?.streaks?.longestDaily || 0 }} days
-                  </v-chip>
-                </div>
-              </div>
-              <v-icon size="80" color="primary" class="opacity-20">mdi-trophy</v-icon>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <!-- Quick Stats -->
-      <v-col cols="12" sm="6" md="3">
-        <v-card elevation="2">
-          <v-card-text class="pa-5">
-            <div class="d-flex align-center">
-              <div>
-                <h3 class="text-h3 font-weight-bold">{{ formatNumber(progress?.overall?.totalSessions || 0) }}</h3>
-                <p class="text-subtitle-1 text-grey-darken-1 mb-0">Study Sessions</p>
-              </div>
-              <v-spacer />
-              <v-icon size="40" color="primary">mdi-book-open-variant</v-icon>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" sm="6" md="3">
-        <v-card elevation="2">
-          <v-card-text class="pa-5">
-            <div class="d-flex align-center">
-              <div>
-                <h3 class="text-h3 font-weight-bold">{{ formatNumber(analytics?.periodTotals?.totalQuestions || 0) }}</h3>
-                <p class="text-subtitle-1 text-grey-darken-1 mb-0">Questions This Month</p>
-              </div>
-              <v-spacer />
-              <v-icon size="40" color="success">mdi-help-circle-outline</v-icon>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" sm="6" md="3">
-        <v-card elevation="2">
-          <v-card-text class="pa-5">
-            <div class="d-flex align-center">
-              <div>
-                <h3 class="text-h3 font-weight-bold">{{ Math.round(analytics?.periodTotals?.averageAccuracy || 0) }}%</h3>
-                <p class="text-subtitle-1 text-grey-darken-1 mb-0">Accuracy This Month</p>
-              </div>
-              <v-spacer />
-              <v-icon size="40" color="warning">mdi-chart-line</v-icon>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" sm="6" md="3">
-        <v-card elevation="2">
-          <v-card-text class="pa-5">
-            <div class="d-flex align-center">
-              <div>
-                <h3 class="text-h3 font-weight-bold">{{ formatTime(progress?.overall?.totalStudyTime || 0) }}</h3>
-                <p class="text-subtitle-1 text-grey-darken-1 mb-0">Total Study Time</p>
-              </div>
-              <v-spacer />
-              <v-icon size="40" color="info">mdi-clock-outline</v-icon>
-            </div>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <v-row class="mt-4">
-      <!-- Weekly Goals -->
-      <v-col cols="12" md="6">
-        <v-card elevation="2">
-          <v-card-title class="d-flex align-center">
-            <v-icon class="mr-2">mdi-target</v-icon>
-            Weekly Goal
-          </v-card-title>
-          <v-card-text>
-            <div class="mb-4">
-              <div class="d-flex justify-space-between mb-2">
-                <span>{{ formatTime((progress?.weeklyProgress?.current || 0) * 60) }}</span>
-                <span>{{ formatTime((progress?.weeklyProgress?.goal || 0) * 60) }}</span>
-              </div>
-              <v-progress-linear
-                :model-value="progress?.weeklyProgress?.percentage || 0"
-                color="primary"
-                height="12"
-                rounded
-              />
-              <p class="text-caption text-center mt-2">
-                {{ Math.round(progress?.weeklyProgress?.percentage || 0) }}% complete
-              </p>
-            </div>
-            
-            <v-btn 
-              color="primary" 
-              variant="outlined" 
-              size="small"
-              @click="$router.push('/progress')"
+    <!-- Quick Actions -->
+    <v-col cols="12" sm="12" lg="4">
+      <v-card elevation="10" class="h-100">
+        <v-card-text>
+          <h5 class="text-h5 mb-4">Quick Actions</h5>
+          <v-list>
+            <v-list-item 
+              v-for="exam in exams.slice(0, 3)" 
+              :key="exam.id"
+              :to="`/study/${exam.id}`"
+              class="px-0 mb-2"
             >
-              <v-icon start>mdi-chart-timeline-variant</v-icon>
-              View Progress
-            </v-btn>
-          </v-card-text>
-        </v-card>
-      </v-col>
+              <template v-slot:prepend>
+                <v-avatar color="primary" variant="tonal">
+                  <v-icon icon="mdi-book-open-variant" />
+                </v-avatar>
+              </template>
+              <v-list-item-title>{{ exam.name }}</v-list-item-title>
+              <v-list-item-subtitle>{{ exam.code }}</v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
+          <v-btn color="primary" variant="flat" block class="mt-4" to="/exams">
+            Browse All Exams
+          </v-btn>
+        </v-card-text>
+      </v-card>
+    </v-col>
 
-      <!-- Quick Actions -->
-      <v-col cols="12" md="6">
-        <v-card elevation="2">
-          <v-card-title class="d-flex align-center">
-            <v-icon class="mr-2">mdi-lightning-bolt</v-icon>
-            Quick Actions
-          </v-card-title>
-          <v-card-text>
-            <v-row>
-              <v-col cols="12" sm="6">
-                <v-btn
-                  to="/exams"
-                  color="primary"
-                  variant="elevated"
-                  size="large"
-                  block
-                >
-                  <v-icon start>mdi-school</v-icon>
-                  Browse Exams
-                </v-btn>
-              </v-col>
-              <v-col cols="12" sm="6">
-                <v-btn
-                  to="/study"
-                  color="success"
-                  variant="elevated"
-                  size="large"
-                  block
-                >
-                  <v-icon start>mdi-book-open-page-variant</v-icon>
-                  Study Now
-                </v-btn>
-              </v-col>
-              <v-col cols="12" sm="6">
-                <v-btn
-                  @click="openStudyPlan(null)"
-                  color="purple"
-                  variant="elevated"
-                  size="large"
-                  block
-                >
-                  <v-icon start>mdi-brain</v-icon>
-                  AI Study Plan
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
+    <!-- Stats Cards -->
+    <v-col cols="12">
+      <div v-if="progressLoading || analyticsLoading" class="d-flex justify-center py-10">
+        <v-progress-circular indeterminate color="primary" />
+      </div>
+      <StatsCards v-else :stats="stats" />
+    </v-col>
+
+    <!-- Study Progress Chart -->
+    <v-col cols="12" sm="12" lg="8">
+      <v-card elevation="10">
+        <v-card-text>
+          <div class="d-flex align-center justify-space-between mb-4">
+            <div>
+              <h5 class="text-h5 font-weight-semibold">Study Progress</h5>
+              <p class="text-subtitle-1 text-grey100">Your learning journey</p>
+            </div>
+            <v-chip color="success" variant="tonal">
+              {{ progress?.weeklyProgress?.percentage || 0 }}% of weekly goal
+            </v-chip>
+          </div>
+          
+          <!-- Placeholder for chart - can add apexcharts later -->
+          <div class="py-10 text-center">
+            <v-icon icon="mdi-chart-line" size="48" color="primary" />
+            <p class="text-subtitle-1 text-grey100 mt-2">Progress chart coming soon</p>
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-col>
 
     <!-- Recent Activity -->
-    <v-row class="mt-4">
-      <v-col cols="12">
-        <v-card elevation="2">
-          <v-card-title class="d-flex align-center justify-space-between">
-            <div class="d-flex align-center">
-              <v-icon class="mr-2">mdi-history</v-icon>
-              Recent Activity
-            </div>
-            <v-btn
-              variant="text"
-              size="small"
-              @click="$router.push('/progress')"
-            >
-              View All
-            </v-btn>
-          </v-card-title>
-          <v-card-text>
-            <div v-if="progress?.recentActivity?.length > 0">
-              <v-timeline side="end" density="compact">
-                <v-timeline-item
-                  v-for="(activity, index) in progress.recentActivity.slice(0, 5)"
-                  :key="index"
-                  :dot-color="activity.activityType === 'test_completed' ? 'success' : 'primary'"
-                  size="small"
-                >
-                  <template #icon>
-                    <v-icon size="14">
-                      {{ activity.activityType === 'test_completed' ? 'mdi-clipboard-check' : 'mdi-book-open-variant' }}
-                    </v-icon>
-                  </template>
-                  
-                  <div class="d-flex align-center justify-space-between">
-                    <div>
-                      <p class="mb-1 font-weight-medium">
-                        {{ activity.activityType === 'test_completed' ? 'Completed Test' : 'Study Session' }}
-                      </p>
-                      <p class="text-caption text-grey-darken-1 mb-1">
-                        {{ activity.questionsAnswered }} questions • 
-                        {{ Math.round((activity.correctAnswers / activity.questionsAnswered) * 100) }}% accuracy
-                      </p>
-                    </div>
-                    <div class="text-right">
-                      <p class="text-caption text-grey-darken-1">
-                        {{ new Date(activity.timestamp * 1000).toLocaleDateString() }}
-                      </p>
-                    </div>
-                  </div>
-                </v-timeline-item>
-              </v-timeline>
-            </div>
-            
-            <v-alert v-else type="info" variant="tonal" class="mb-0">
-              <div class="d-flex align-center">
-                <v-icon class="mr-2">mdi-information</v-icon>
+    <v-col cols="12" sm="12" lg="4">
+      <UpcommingSchedule />
+    </v-col>
+
+    <!-- Study Tips -->
+    <v-col cols="12">
+      <v-card elevation="10">
+        <v-card-text>
+          <h5 class="text-h5 mb-4">Study Tips</h5>
+          <v-row>
+            <v-col cols="12" md="4">
+              <div class="d-flex align-start">
+                <v-avatar color="primary" variant="tonal" class="mr-3">
+                  <v-icon icon="mdi-lightbulb-outline" />
+                </v-avatar>
                 <div>
-                  <div class="font-weight-bold">No recent activity</div>
-                  <div class="text-body-2">Start studying to track your progress and build your learning streak!</div>
+                  <h6 class="text-h6 mb-1">Stay Consistent</h6>
+                  <p class="text-body-2 text-grey100">Study a little bit every day to maintain your streak and improve retention.</p>
                 </div>
               </div>
-            </v-alert>
-          </v-card-text>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <!-- Study Plan Generator Dialog -->
-    <v-dialog v-model="showStudyPlanDialog" max-width="1000px" scrollable>
-      <StudyPlanGenerator
-        v-if="selectedExamForPlan"
-        :exam-id="selectedExamForPlan.id"
-        :exam-name="selectedExamForPlan.name"
-        @close="closeStudyPlan"
-        @plan-generated="refreshProgress"
-      />
-      <div v-else class="pa-6 text-center">
-        <h3 class="text-h5 mb-4">Select an Exam for AI Study Plan</h3>
-        <p class="text-body-1 mb-4">Choose an exam to generate a personalized study plan.</p>
-        <v-btn to="/exams" color="primary">Browse Exams</v-btn>
-      </div>
-    </v-dialog>
-  </div>
+            </v-col>
+            <v-col cols="12" md="4">
+              <div class="d-flex align-start">
+                <v-avatar color="success" variant="tonal" class="mr-3">
+                  <v-icon icon="mdi-target" />
+                </v-avatar>
+                <div>
+                  <h6 class="text-h6 mb-1">Focus on Weak Areas</h6>
+                  <p class="text-body-2 text-grey100">Review questions you got wrong to strengthen your understanding.</p>
+                </div>
+              </div>
+            </v-col>
+            <v-col cols="12" md="4">
+              <div class="d-flex align-start">
+                <v-avatar color="info" variant="tonal" class="mr-3">
+                  <v-icon icon="mdi-clock-outline" />
+                </v-avatar>
+                <div>
+                  <h6 class="text-h6 mb-1">Take Practice Tests</h6>
+                  <p class="text-body-2 text-grey100">Simulate real exam conditions to build confidence and time management.</p>
+                </div>
+              </div>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-col>
+  </v-row>
 </template>

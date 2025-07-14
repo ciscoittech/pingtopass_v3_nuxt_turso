@@ -44,7 +44,7 @@ import { Icon } from '@iconify/vue';
                 </div>
                 <v-divider></v-divider>
             </div>
-            <perfect-scrollbar style="height: calc(100vh - 240px); max-height: 240px">
+            <div style="height: calc(100vh - 240px); max-height: 240px; overflow-y: auto;">
                 <v-list class="py-0 theme-list" lines="two">
                     <v-list-item v-for="item in profileDD" :key="item.title" class="py-4 px-8 custom-text-primary"
                         :to="item.href">
@@ -60,7 +60,7 @@ import { Icon } from '@iconify/vue';
                         <p class="text-subtitle-1 font-weight-regular text-grey100">{{ item.subtitle }}</p>
                     </v-list-item>
                 </v-list>
-            </perfect-scrollbar>
+            </div>
             <div class=" pb-6 px-8 text-center">
                 <v-btn color="primary" size="large" rounded="pill" block >Logout</v-btn>
             </div>

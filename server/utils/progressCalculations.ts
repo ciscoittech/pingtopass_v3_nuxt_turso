@@ -1,10 +1,11 @@
-import { db } from '~/server/database/db'
+import { useDB } from '~/server/utils/db'
 import { 
   userProgress, 
   userStreaks, 
   studyActivity, 
   testSessions, 
-  sessions as studySessions 
+  studySessions,
+  exams 
 } from '~/server/database/schema'
 import { eq, desc, gte, lte, and, sum, avg, count } from 'drizzle-orm'
 
@@ -37,9 +38,11 @@ export interface ProgressMetrics {
 
 export class ProgressCalculator {
   private userId: string
+  private db: ReturnType<typeof useDB>
 
   constructor(userId: string) {
     this.userId = userId
+    this.db = useDB()
   }
 
   async calculateOverallProgress(): Promise<ProgressMetrics> {
@@ -153,7 +156,7 @@ export class ProgressCalculator {
   }
 
   private async getOrCreateUserProgress() {
-    let progress = await db
+    let progress = await this.db
       .select()
       .from(userProgress)
       .where(eq(userProgress.userId, this.userId))
@@ -162,16 +165,24 @@ export class ProgressCalculator {
     if (!progress) {
       // Create initial progress record
       const timestamp = Math.floor(Date.now() / 1000)
+      
+      // First, get any exam ID to use as default (or create without exam_id)
+      const firstExam = await this.db
+        .select({ id: exams.id })
+        .from(exams)
+        .limit(1)
+        .get()
+      
       const progressData = {
-        id: `prog_${this.userId}`,
+        id: `prog_${this.userId}_overall`,
         userId: this.userId,
-        examId: 'overall', // overall progress across all exams
+        examId: firstExam?.id || 'exam_default', // Use first exam or default
         firstStudyDate: timestamp,
         lastUpdated: timestamp,
         createdAt: timestamp
       }
       
-      await db.insert(userProgress).values(progressData)
+      await this.db.insert(userProgress).values(progressData)
       progress = progressData
     }
 
@@ -179,7 +190,7 @@ export class ProgressCalculator {
   }
 
   private async getOrCreateUserStreaks() {
-    let streaks = await db
+    let streaks = await this.db
       .select()
       .from(userStreaks)
       .where(eq(userStreaks.userId, this.userId))
@@ -194,7 +205,7 @@ export class ProgressCalculator {
         updatedAt: timestamp
       }
       
-      await db.insert(userStreaks).values(streakData)
+      await this.db.insert(userStreaks).values(streakData)
       streaks = streakData
     }
 
@@ -235,7 +246,7 @@ export class ProgressCalculator {
       newValues.bestTestScore = Math.max(current.bestTestScore || 0, updates.lastTestScore)
     }
     
-    await db
+    await this.db
       .update(userProgress)
       .set(newValues)
       .where(eq(userProgress.userId, this.userId))
@@ -296,7 +307,7 @@ export class ProgressCalculator {
       updates.perfectScoreStreak = 0
     }
     
-    await db
+    await this.db
       .update(userStreaks)
       .set(updates)
       .where(eq(userStreaks.userId, this.userId))
@@ -314,7 +325,7 @@ export class ProgressCalculator {
     const timestamp = Math.floor(Date.now() / 1000)
     const date = Math.floor(timestamp / 86400) * 86400 // start of day
     
-    await db.insert(studyActivity).values({
+    await this.db.insert(studyActivity).values({
       id: `activity_${timestamp}_${this.userId}`,
       userId: this.userId,
       examId: activity.examId,
@@ -340,7 +351,7 @@ export class ProgressCalculator {
   private async getRecentActivity(days: number) {
     const startDate = Math.floor(Date.now() / 1000) - (days * 86400)
     
-    return await db
+    return await this.db
       .select()
       .from(studyActivity)
       .where(

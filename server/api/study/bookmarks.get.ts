@@ -1,4 +1,4 @@
-import { db } from '~/server/database/db'
+import { useDB } from '~/server/utils/db'
 import { bookmarks, questions, exams } from '~/server/database/schema'
 import { eq, desc } from 'drizzle-orm'
 

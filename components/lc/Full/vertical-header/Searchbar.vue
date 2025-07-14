@@ -27,7 +27,7 @@ import { Icon } from '@iconify/vue';
         </template>
         <v-sheet width="360" elevation="10" rounded="md">
             <h5 class="text-h5 mt-4 px-5 pb-4">Quick Page Links</h5>
-            <perfect-scrollbar style="height: 380px">
+            <div style="height: 380px; overflow-y: auto;">
                 <v-list class="pt-0 pb-5" lines="two">
                     <v-list-item :value="item" v-for="(item, index) in searchSugg" :key="index" :to="item.href"
                         color="primary" class="px-5 py-2">
@@ -35,7 +35,7 @@ import { Icon } from '@iconify/vue';
                         <p class="text-subtitle-2 text-medium-emphasis">{{ item.href }}</p>
                     </v-list-item>
                 </v-list>
-            </perfect-scrollbar>
+            </div>
         </v-sheet>
     </v-menu>
 </template>

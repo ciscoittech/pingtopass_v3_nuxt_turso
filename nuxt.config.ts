@@ -52,7 +52,7 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "nuxt-auth-utils",
     "@vite-pwa/nuxt",
-    // "@nuxthub/core", // Disabled for now since we're using Turso
+    "@nuxthub/core", // Enable for Cloudflare deployment
   ],
 
   // PWA Configuration
@@ -161,21 +161,24 @@ export default defineNuxtConfig({
     }
   },
 
-  // NuxtHub configuration for Cloudflare (disabled for now)
-  // hub: {
-  //   database: true,
-  //   kv: true,
-  //   blob: true,
-  //   cache: true,
-  // },
+  // NuxtHub configuration for Cloudflare
+  hub: {
+    // We're using Turso for database, so disable Cloudflare D1
+    database: false,
+    // Enable KV for session storage
+    kv: true,
+    // Enable blob storage for file uploads
+    blob: true,
+    // Enable cache for performance
+    cache: true,
+    // Enable analytics
+    analytics: true
+  },
 
 
   // Nitro configuration
   nitro: {
-    serveStatic: true,
-    devProxy: {
-      '/.well-known': { target: 'http://localhost:3000', changeOrigin: true }
-    }
+    preset: 'cloudflare-pages'
   },
 
   // Dev server configuration

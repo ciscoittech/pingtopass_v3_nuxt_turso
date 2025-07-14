@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { db } from '~/server/database/db'
+import { useDB } from '~/server/utils/db'
 import { studyActivity, userProgress, userStreaks } from '~/server/database/schema'
 import { eq, gte, lte, and, desc } from 'drizzle-orm'
 
@@ -43,6 +43,8 @@ export default defineEventHandler(async (event) => {
       default: // month
         startDate = endDate - (30 * 24 * 60 * 60)
     }
+
+    const db = useDB()
 
     // Build activity query
     let activityQuery = db

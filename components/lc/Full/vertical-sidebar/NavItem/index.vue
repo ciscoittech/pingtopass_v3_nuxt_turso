@@ -9,7 +9,7 @@ const props = defineProps({ item: Object, level: Number });
     <div class="mb-1">
         <v-list-item  :to="item.type === 'external' ? '' : item.to" :href="item.type === 'external' ? item.to : ''" rounded
             :class="'  bg-hover-' + item.BgColor" :color="item.BgColor" :ripple="false" :disabled="item.disabled"
-            :target="item.type === 'external' ? '_blank' : ''" v-scroll-to="{ el: '#top' }">
+            :target="item.type === 'external' ? '_blank' : ''">
             <!---If icon-->
             <template v-slot:prepend>
                 <div :class="'navbox  bg-hover-' + item.BgColor" :color="item.BgColor" >
@@ -18,7 +18,7 @@ const props = defineProps({ item: Object, level: Number });
                     </span>
                 </div>
             </template>
-            <v-list-item-title class="text-subtitle-1 font-weight-medium" :color="item.BgColor">{{ $t(item.title) }}</v-list-item-title>
+            <v-list-item-title class="text-subtitle-1 font-weight-medium" :color="item.BgColor">{{ item.title }}</v-list-item-title>
             <!---If Caption-->
             <v-list-item-subtitle v-if="item.subCaption" class="text-caption mt-n1 hide-menu">
                 {{ item.subCaption }}

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { db } from '~/server/database/db'
+import { useDB } from '~/server/utils/db'
 import { bookmarks, users } from '~/server/database/schema'
 import { eq, and } from 'drizzle-orm'
 import { generateId } from '~/server/utils/id'

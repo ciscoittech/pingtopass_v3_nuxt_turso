@@ -56,7 +56,7 @@ const DarkthemeColors = ref([
             <h5 class="text-h5">Settings</h5>
         </div>
         <v-divider></v-divider>
-        <perfect-scrollbar style="height: calc(100vh - 90px)">
+        <div style="height: calc(100vh - 90px); overflow-y: auto;">
             <div class="pa-6">
                 <h6 class="text-h6 mb-2">Sidebar Layout</h6>
                 <v-btn-toggle v-model="customizer.setHorizontalLayout" color="primary" class="my-2 btn-group-custom gap-3" rounded="0" group>
@@ -155,7 +155,7 @@ const DarkthemeColors = ref([
                     </v-btn>
                 </v-btn-toggle>
             </div>
-        </perfect-scrollbar>
+        </div>
    
 </template>
 

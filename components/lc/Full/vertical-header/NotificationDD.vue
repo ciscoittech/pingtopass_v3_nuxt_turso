@@ -25,7 +25,7 @@ import { Icon } from '@iconify/vue';
                         New</v-chip>
                 </div>
             </div>
-            <perfect-scrollbar style="height:300px">
+            <div style="height:300px; overflow-y: auto;">
                 <v-list class="py-0 theme-list" lines="two">
                     <v-list-item v-for="item in notifications" :key="item.title" :value="item" color="primary"
                         class="py-4 px-8">
@@ -41,7 +41,7 @@ import { Icon } from '@iconify/vue';
                     </v-list-item>
                     <v-divider></v-divider>
                 </v-list>
-            </perfect-scrollbar>
+            </div>
             <div class="py-4 px-6 text-center">
                 <v-btn color="primary" size="large" rounded="pill" block>See all Notifications</v-btn>
             </div>

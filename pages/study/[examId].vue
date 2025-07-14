@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import UiParentCard from '@/components/shared/UiParentCard.vue'
+import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue'
+import { Icon } from '@iconify/vue'
+
 definePageMeta({
   middleware: 'auth'
 })
@@ -18,11 +22,31 @@ const sessionProgress = ref(null)
 
 // Study mode options
 const studyModeOptions = [
-  { title: 'Sequential', value: 'sequential', icon: 'mdi-arrow-right' },
-  { title: 'Random', value: 'random', icon: 'mdi-shuffle' },
-  { title: 'Flagged Only', value: 'flagged', icon: 'mdi-flag' },
-  { title: 'Incorrect Only', value: 'incorrect', icon: 'mdi-close-circle' }
+  { title: 'Sequential', value: 'sequential', icon: 'solar:arrow-right-linear' },
+  { title: 'Random', value: 'random', icon: 'solar:shuffle-linear' },
+  { title: 'Flagged Only', value: 'flagged', icon: 'solar:flag-linear' },
+  { title: 'Incorrect Only', value: 'incorrect', icon: 'solar:close-circle-linear' }
 ]
+
+// Breadcrumb
+const page = ref({ title: 'Study Mode' })
+const breadcrumbs = ref([
+  {
+    text: 'Dashboard',
+    disabled: false,
+    to: '/dashboard'
+  },
+  {
+    text: 'Exams',
+    disabled: false,
+    to: '/exams'
+  },
+  {
+    text: 'Study Mode',
+    disabled: true,
+    to: ''
+  }
+])
 
 const selectedStudyMode = ref('sequential')
 const maxQuestions = ref(25)
@@ -163,114 +187,131 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="study-page">
+  <div>
+    <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
+    
     <!-- Study Session Setup -->
-    <div v-if="!sessionStarted" class="setup-container">
-      <v-container>
-        <v-row justify="center">
-          <v-col cols="12" md="8" lg="6">
-            <v-card class="pa-6">
-              <v-card-title class="text-h4 text-center mb-4">
-                <v-icon class="mr-3" color="primary">mdi-book-open-page-variant</v-icon>
-                Study Mode
-              </v-card-title>
-              
-              <v-card-subtitle class="text-center mb-6" v-if="exam">
+    <div v-if="!sessionStarted">
+      <v-row justify="center">
+        <v-col cols="12" md="8" lg="6">
+          <UiParentCard>
+            <div class="text-center mb-6">
+              <v-avatar color="primary" variant="tonal" size="80" class="mb-4">
+                <Icon icon="solar:book-2-bold-duotone" size="40" />
+              </v-avatar>
+              <h2 class="text-h4 mb-2">Study Mode</h2>
+              <p class="text-subtitle-1 text-grey100" v-if="exam">
                 {{ exam.examCode }} - {{ exam.examName }}
-              </v-card-subtitle>
+              </p>
+            </div>
 
-              <!-- Study Mode Selection -->
-              <div class="mb-6">
-                <h3 class="text-h6 mb-3">Study Mode</h3>
-                <v-btn-toggle
-                  v-model="selectedStudyMode"
-                  mandatory
-                  class="d-flex flex-wrap gap-2"
-                >
-                  <v-btn
-                    v-for="mode in studyModeOptions"
-                    :key="mode.value"
-                    :value="mode.value"
-                    class="flex-fill"
-                    variant="outlined"
-                  >
-                    <v-icon start>{{ mode.icon }}</v-icon>
-                    {{ mode.title }}
-                  </v-btn>
-                </v-btn-toggle>
-              </div>
-
-              <!-- Max Questions -->
-              <div class="mb-6">
-                <h3 class="text-h6 mb-3">Number of Questions</h3>
-                <v-text-field
-                  v-model.number="maxQuestions"
-                  type="number"
-                  label="Max questions (0 = all)"
-                  variant="outlined"
-                  min="0"
-                  max="200"
-                  hint="Set to 0 to study all available questions"
-                />
-              </div>
-
-              <!-- Start Button -->
-              <v-btn
+            <!-- Study Mode Selection -->
+            <div class="mb-6">
+              <h3 class="text-h6 mb-3">Choose Study Mode</h3>
+              <v-btn-toggle
+                v-model="selectedStudyMode"
+                mandatory
                 color="primary"
-                size="large"
-                block
-                @click="startStudySession"
-                :loading="loading"
+                class="d-flex flex-wrap gap-2"
+                rounded="0"
+                group
               >
-                <v-icon start>mdi-play</v-icon>
-                Start Study Session
-              </v-btn>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-container>
+                <v-btn
+                  v-for="mode in studyModeOptions"
+                  :key="mode.value"
+                  :value="mode.value"
+                  class="flex-fill"
+                  variant="text"
+                  elevation="10"
+                >
+                  <Icon :icon="mode.icon" class="mr-2" />
+                  {{ mode.title }}
+                </v-btn>
+              </v-btn-toggle>
+            </div>
+
+            <!-- Max Questions -->
+            <div class="mb-6">
+              <h3 class="text-h6 mb-3">Number of Questions</h3>
+              <v-text-field
+                v-model.number="maxQuestions"
+                type="number"
+                label="Max questions (0 = all)"
+                variant="outlined"
+                min="0"
+                max="200"
+                hint="Set to 0 to study all available questions"
+                color="primary"
+              />
+            </div>
+
+            <!-- Start Button -->
+            <v-btn
+              color="primary"
+              size="large"
+              block
+              variant="flat"
+              @click="startStudySession"
+              :loading="loading"
+            >
+              <Icon icon="solar:play-bold" class="mr-2" />
+              Start Study Session
+            </v-btn>
+          </UiParentCard>
+        </v-col>
+      </v-row>
     </div>
 
     <!-- Study Interface -->
-    <div v-else-if="currentQuestion && !showFeedback" class="study-interface">
-      <!-- Progress Header -->
-      <v-app-bar color="primary" density="compact">
-        <v-toolbar-title>
-          <v-icon class="mr-2">mdi-book-open-page-variant</v-icon>
-          Study Mode
-        </v-toolbar-title>
-        
-        <v-spacer />
-        
-        <!-- Progress Info -->
-        <div v-if="sessionProgress" class="d-flex align-center mr-4">
-          <v-chip color="white" text-color="primary" class="mr-2">
-            {{ sessionProgress.current + 1 }} / {{ sessionProgress.total }}
-          </v-chip>
-          <v-chip color="success" text-color="white" class="mr-2">
-            {{ sessionProgress.correct }} correct
-          </v-chip>
-          <v-chip color="error" text-color="white">
-            {{ sessionProgress.incorrect }} incorrect
-          </v-chip>
+    <div v-else-if="currentQuestion && !showFeedback">
+      <!-- Progress Bar -->
+      <UiParentCard class="mb-4">
+        <div class="d-flex align-center justify-space-between flex-wrap">
+          <div class="d-flex align-center">
+            <Icon icon="solar:book-2-line-duotone" size="24" class="mr-2 text-primary" />
+            <h5 class="text-h5">Study Progress</h5>
+          </div>
+          
+          <!-- Progress Info -->
+          <div v-if="sessionProgress" class="d-flex align-center gap-2">
+            <v-chip color="primary" variant="tonal">
+              {{ sessionProgress.current + 1 }} / {{ sessionProgress.total }}
+            </v-chip>
+            <v-chip color="success" variant="tonal">
+              <Icon icon="solar:check-circle-linear" size="16" class="mr-1" />
+              {{ sessionProgress.correct }}
+            </v-chip>
+            <v-chip color="error" variant="tonal">
+              <Icon icon="solar:close-circle-linear" size="16" class="mr-1" />
+              {{ sessionProgress.incorrect }}
+            </v-chip>
+          </div>
         </div>
-      </v-app-bar>
+        
+        <!-- Progress Bar -->
+        <v-progress-linear
+          v-if="sessionProgress"
+          :model-value="(sessionProgress.current / sessionProgress.total) * 100"
+          color="primary"
+          height="8"
+          rounded
+          class="mt-4"
+        />
+      </UiParentCard>
 
-      <v-container class="pt-6">
-        <v-row justify="center">
-          <v-col cols="12" lg="10" xl="8">
-            <!-- Question Card -->
-            <StudyQuestionDisplay
-              :question="currentQuestion"
-              :selected-answers="selectedAnswers"
-              :can-submit="canSubmit"
-              :loading="loading"
-              @answer-selected="toggleAnswer"
-              @submit="submitAnswer"
-            />
-          </v-col>
-        </v-row>
-      </v-container>
+      <v-row justify="center">
+        <v-col cols="12" lg="10" xl="8">
+          <!-- Question Card -->
+          <StudyQuestionDisplay
+            :question="currentQuestion"
+            :selected-answers="selectedAnswers"
+            :can-submit="canSubmit"
+            :loading="loading"
+            @answer-selected="toggleAnswer"
+            @submit="submitAnswer"
+          />
+        </v-col>
+      </v-row>
     </div>
 
     <!-- Feedback Modal -->
@@ -282,18 +323,3 @@ onMounted(async () => {
     />
   </div>
 </template>
-
-<style scoped>
-.study-page {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
-
-.setup-container {
-  padding: 60px 0;
-}
-
-.study-interface {
-  min-height: 100vh;
-}
-</style>

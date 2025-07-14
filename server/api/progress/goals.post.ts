@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { db } from '~/server/database/db'
+import { useDB } from '~/server/utils/db'
 import { userProgress } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
 import { generateId } from '~/server/utils/id'
@@ -48,6 +48,8 @@ export default defineEventHandler(async (event) => {
         createdAt: timestamp
       }
       
+    const db = useDB()
+
       await db.insert(userProgress).values(newProgress)
       progressRecord = newProgress
     } else {

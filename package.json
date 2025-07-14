@@ -18,7 +18,14 @@
     "lint": "eslint .",
     "test": "vitest",
     "test:e2e": "playwright test",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "test:unit": "vitest run",
+    "deploy": "nuxt build && npx wrangler pages deploy .output/public --project-name=pingtopass-nuxt",
+    "deploy:preview": "nuxt build && npx wrangler pages deploy .output/public --project-name=pingtopass-nuxt --branch=preview",
+    "hub:link": "npx nuxthub link",
+    "hub:deploy": "npx nuxthub deploy",
+    "cf:login": "npx wrangler login",
+    "cf:tail": "npx wrangler pages tail pingtopass-nuxt"
   },
   "devDependencies": {
     "@nuxt/eslint": "^0.7.2",
@@ -26,6 +33,7 @@
     "@playwright/test": "^1.49.1",
     "@types/chance": "^1.1.6",
     "@types/lodash": "^4.17.9",
+    "@vite-pwa/nuxt": "^1.0.4",
     "@vitest/coverage-v8": "^2.1.8",
     "dotenv": "^17.2.0",
     "drizzle-kit": "^0.27.2",
@@ -33,7 +41,8 @@
     "nuxt": "^3.13.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "wrangler": "^4.24.3"
   },
   "dependencies": {
     "@fullcalendar/core": "6.1.10",
@@ -45,6 +54,7 @@
     "@libsql/client": "^0.14.0",
     "@mdi/font": "7.4.47",
     "@nuxt/vite-builder": "^3.13.1",
+    "@nuxthub/core": "^0.5.18",
     "@pinia/nuxt": "0.10.1",
     "@tiptap/extension-text-style": "^2.8.0",
     "@tiptap/pm": "2.7.4",
@@ -56,6 +66,7 @@
     "axios": "1.7.6",
     "axios-mock-adapter": "2.0.0",
     "chance": "1.1.12",
+    "chart.js": "^4.5.0",
     "date-fns": "3.6.0",
     "drizzle-orm": "^0.38.2",
     "lodash": "^4.17.21",

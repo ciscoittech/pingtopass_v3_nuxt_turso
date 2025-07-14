@@ -5,6 +5,8 @@ import flag1 from '/images/flag/icon-flag-en.svg';
 import flag2 from '/images/flag/icon-flag-ro.svg';
 import flag3 from '/images/flag/icon-flag-zh.svg';
 import flag4 from '/images/flag/icon-flag-fr.svg';
+
+const currentLocale = ref('en');
 </script>
 <template>
     <!-- ---------------------------------------------- -->
@@ -14,10 +16,10 @@ import flag4 from '/images/flag/icon-flag-fr.svg';
         <template v-slot:activator="{ props }">
             <v-btn icon class="custom-hover-primary" size="small" v-bind="props">
                 <v-avatar size="22">
-                    <img v-if="$i18n.locale === 'en'" :src="flag1" :alt="$i18n.locale" width="24" height="24" class="obj-cover" />
-                    <img v-if="$i18n.locale === 'fr'" :src="flag4" :alt="$i18n.locale" width="24" height="24" class="obj-cover" />
-                    <img v-if="$i18n.locale === 'ro'" :src="flag2" :alt="$i18n.locale" width="24" height="24" class="obj-cover" />
-                    <img v-if="$i18n.locale === 'zh'" :src="flag3" :alt="$i18n.locale" width="24" height="24" class="obj-cover" />
+                    <img v-if="currentLocale === 'en'" :src="flag1" :alt="currentLocale" width="24" height="24" class="obj-cover" />
+                    <img v-if="currentLocale === 'fr'" :src="flag4" :alt="currentLocale" width="24" height="24" class="obj-cover" />
+                    <img v-if="currentLocale === 'ro'" :src="flag2" :alt="currentLocale" width="24" height="24" class="obj-cover" />
+                    <img v-if="currentLocale === 'zh'" :src="flag3" :alt="currentLocale" width="24" height="24" class="obj-cover" />
                 </v-avatar>
             </v-btn>
         </template>
@@ -27,9 +29,9 @@ import flag4 from '/images/flag/icon-flag-fr.svg';
                     v-for="(item, index) in languageDD"
                     :key="index"
                     color="primary"
-                    :active="$i18n.locale == item.value"
+                    :active="currentLocale == item.value"
                     class="d-flex align-center"
-                    @click="() => ($i18n.locale = item.value)"
+                    @click="() => (currentLocale = item.value)"
                 >
                     <template v-slot:prepend>
                         <v-avatar size="22">

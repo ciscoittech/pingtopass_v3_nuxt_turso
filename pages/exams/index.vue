@@ -1,8 +1,27 @@
 <script setup lang="ts">
+import UiParentCard from '@/components/shared/UiParentCard.vue'
+import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue'
+import { Icon } from '@iconify/vue'
+
 // Require authentication
 definePageMeta({
   middleware: 'auth'
 })
+
+// Breadcrumb
+const page = ref({ title: 'Certification Exams' })
+const breadcrumbs = ref([
+  {
+    text: 'Dashboard',
+    disabled: false,
+    to: '/dashboard'
+  },
+  {
+    text: 'Exam Catalog',
+    disabled: true,
+    to: ''
+  }
+])
 
 // Fetch vendors and exams
 const { data: vendorsData } = await useFetch('/api/vendors')
@@ -54,46 +73,36 @@ const goToExam = (examId: string) => {
 
 <template>
   <div>
-    <!-- Page Header -->
-    <v-card flat class="mb-6">
-      <v-card-title class="text-h4 font-weight-bold">
-        Certification Exams
-      </v-card-title>
-      <v-card-subtitle>
-        Choose an exam to start practicing
-      </v-card-subtitle>
-    </v-card>
+    <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
 
     <!-- Filters -->
-    <v-card flat class="mb-6">
-      <v-card-text>
-        <v-row>
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="searchQuery"
-              prepend-inner-icon="mdi-magnify"
-              label="Search exams..."
-              variant="outlined"
-              clearable
-              hide-details
-            />
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-select
-              v-model="selectedVendor"
-              :items="vendors"
-              item-title="name"
-              item-value="id"
-              label="Filter by vendor"
-              variant="outlined"
-              clearable
-              hide-details
-              @update:model-value="refreshExams"
-            />
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
+    <UiParentCard title="Browse Certification Exams" class="mb-6">
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="searchQuery"
+            prepend-inner-icon="mdi-magnify"
+            label="Search exams..."
+            variant="outlined"
+            clearable
+            hide-details
+          />
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-select
+            v-model="selectedVendor"
+            :items="vendors"
+            item-title="name"
+            item-value="id"
+            label="Filter by vendor"
+            variant="outlined"
+            clearable
+            hide-details
+            @update:model-value="refreshExams"
+          />
+        </v-col>
+      </v-row>
+    </UiParentCard>
 
     <!-- Exams List -->
     <div v-if="Object.keys(examsByVendor).length > 0">
@@ -109,45 +118,66 @@ const goToExam = (examId: string) => {
             lg="3"
           >
             <v-card 
-              @click="goToExam(exam.id)"
-              :elevation="2"
-              class="h-100 cursor-pointer"
+              variant="outlined"
+              class="h-100 cursor-pointer border"
               hover
+              @click="goToExam(exam.id)"
             >
-              <v-card-text>
-                <div class="text-h6 font-weight-bold text-primary mb-1">
+              <v-card-item>
+                <template v-slot:prepend>
+                  <v-avatar color="primary" variant="tonal">
+                    <Icon icon="solar:document-text-line-duotone" />
+                  </v-avatar>
+                </template>
+                
+                <v-card-title class="text-h6">
                   {{ exam.examCode }}
-                </div>
-                <div class="text-body-2 mb-3">
+                </v-card-title>
+                
+                <v-card-subtitle class="text-body-2">
                   {{ exam.examName }}
-                </div>
-                
-                <v-divider class="my-3"></v-divider>
-                
-                <div class="d-flex flex-column gap-1 text-body-2">
-                  <div>
-                    <v-icon size="small" class="mr-1">mdi-help-circle</v-icon>
-                    {{ exam.numberOfQuestions }} questions
-                  </div>
-                  <div>
-                    <v-icon size="small" class="mr-1">mdi-clock-outline</v-icon>
-                    {{ exam.examDuration }} minutes
-                  </div>
-                  <div>
-                    <v-icon size="small" class="mr-1">mdi-percent</v-icon>
-                    Pass: {{ exam.passingScore }}%
-                  </div>
-                </div>
+                </v-card-subtitle>
+              </v-card-item>
+              
+              <v-card-text>
+                <v-list density="compact" class="pa-0">
+                  <v-list-item class="px-0">
+                    <template v-slot:prepend>
+                      <Icon icon="solar:question-circle-linear" class="mr-2" size="16" />
+                    </template>
+                    <v-list-item-title class="text-body-2">
+                      {{ exam.numberOfQuestions }} questions
+                    </v-list-item-title>
+                  </v-list-item>
+                  
+                  <v-list-item class="px-0">
+                    <template v-slot:prepend>
+                      <Icon icon="solar:clock-circle-linear" class="mr-2" size="16" />
+                    </template>
+                    <v-list-item-title class="text-body-2">
+                      {{ exam.examDuration }} minutes
+                    </v-list-item-title>
+                  </v-list-item>
+                  
+                  <v-list-item class="px-0">
+                    <template v-slot:prepend>
+                      <Icon icon="solar:verified-check-linear" class="mr-2" size="16" />
+                    </template>
+                    <v-list-item-title class="text-body-2">
+                      Pass: {{ exam.passingScore }}%
+                    </v-list-item-title>
+                  </v-list-item>
+                </v-list>
               </v-card-text>
               
-              <v-card-actions>
+              <v-card-actions class="pt-0">
                 <v-btn
                   color="primary"
-                  variant="text"
+                  variant="tonal"
                   block
                 >
                   Start Practicing
-                  <v-icon end>mdi-arrow-right</v-icon>
+                  <Icon icon="solar:arrow-right-linear" class="ml-1" />
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -157,17 +187,15 @@ const goToExam = (examId: string) => {
     </div>
 
     <!-- Empty State -->
-    <v-card v-else flat class="text-center py-12">
-      <v-icon size="64" color="grey-lighten-1" class="mb-4">
-        mdi-file-document-outline
-      </v-icon>
-      <v-card-title class="text-h5">
-        No exams found
-      </v-card-title>
-      <v-card-subtitle>
-        Try adjusting your search or filter criteria
-      </v-card-subtitle>
-    </v-card>
+    <UiParentCard v-else>
+      <div class="text-center py-12">
+        <Icon icon="solar:document-text-broken" size="64" class="mb-4 text-grey-lighten-1" />
+        <h5 class="text-h5 mb-2">No exams found</h5>
+        <p class="text-body-1 text-grey100">
+          Try adjusting your search or filter criteria
+        </p>
+      </div>
+    </UiParentCard>
   </div>
 </template>
 

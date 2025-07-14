@@ -1,4 +1,4 @@
-import { db } from '~/server/database/db'
+import { useDB } from '~/server/utils/db'
 import { questions, exams, objectives } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
 import { openRouterClient } from '~/server/utils/openrouter'
@@ -115,6 +115,8 @@ export default defineEventHandler(async (event) => {
         try {
           const questionId = `q_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
           
+    const db = useDB()
+
           await db.insert(questions).values({
             id: questionId,
             examId: examId,

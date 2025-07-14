@@ -1,0 +1,47 @@
+name = "pingtopass-workers"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# Account and zone settings
+# account_id = "YOUR_ACCOUNT_ID" # Set via environment variable CLOUDFLARE_ACCOUNT_ID
+
+# KV Namespaces for caching
+[[kv_namespaces]]
+binding = "RESEARCH_CACHE"
+id = "research_cache_id" # Replace with actual KV namespace ID
+
+[[kv_namespaces]]
+binding = "QUESTION_CACHE"
+id = "question_cache_id" # Replace with actual KV namespace ID
+
+# Durable Objects
+[[durable_objects.bindings]]
+name = "PROGRESS"
+class_name = "ProgressTracker"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["ProgressTracker"]
+
+# Queues
+[[queues.producers]]
+binding = "QUESTION_QUEUE"
+queue = "question-generation"
+
+[[queues.consumers]]
+queue = "question-generation"
+max_batch_size = 10
+max_batch_timeout = 30
+
+# Environment variables (secrets)
+[vars]
+TURSO_URL = "https://your-database.turso.io"
+OPENROUTER_API_KEY = "" # Set via wrangler secret
+
+# Development settings
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+# Production settings
+[env.production]
+vars = { ENVIRONMENT = "production" }

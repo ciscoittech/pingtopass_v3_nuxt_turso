@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, shallowRef } from 'vue';
 import { useCustomizerStore } from '@/stores/customizer';
-import sidebarItems from './sidebarItem';
+import { sidebarItem } from './pingtopassSidebarItems';
 const customizer = useCustomizerStore();
-const sidebarMenu = shallowRef(sidebarItems);
+const sidebarMenu = shallowRef(sidebarItem);
 </script>
 
 <template>
@@ -15,7 +15,7 @@ const sidebarMenu = shallowRef(sidebarItems);
         <!-- ---------------------------------------------- -->
         <!---Navigation -->
         <!-- ---------------------------------------------- -->
-        <perfect-scrollbar class="scrollnavbar bg-containerBg overflow-y-hidden">
+        <div class="scrollnavbar bg-containerBg overflow-y-auto" style="height: calc(100vh - 100px);">
             <v-list class="py-4 px-4 bg-containerBg">
                 <!---Menu Loop -->
                 <template v-for="(item, i) in sidebarMenu">
@@ -32,6 +32,6 @@ const sidebarMenu = shallowRef(sidebarItems);
             <div class="pa-6 px-4 userbottom mt-10">
                 <LcFullVerticalSidebarExtrabox/>
             </div>
-        </perfect-scrollbar>
+        </div>
     </v-navigation-drawer>
 </template>

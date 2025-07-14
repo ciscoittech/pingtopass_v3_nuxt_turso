@@ -1,4 +1,4 @@
-import { db } from '~/server/database/db'
+import { useDB } from '~/server/utils/db'
 import { testSessions, questions, exams } from '~/server/database/schema'
 import { eq, inArray } from 'drizzle-orm'
 

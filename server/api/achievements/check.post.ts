@@ -1,4 +1,4 @@
-import { db } from '~/server/database/db'
+import { useDB } from '~/server/utils/db'
 import { userProgress, studyActivity } from '~/server/database/schema'
 import { eq, desc, and, gte } from 'drizzle-orm'
 import { checkAchievements, type Achievement } from '~/server/utils/achievementSystem'
