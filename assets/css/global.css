@@ -1,0 +1,317 @@
+/* Global CSS for mobile optimization and PWA */
+
+/* Root variables for consistent theming */
+:root {
+  --primary-color: #1976d2;
+  --secondary-color: #424242;
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --error-color: #f44336;
+  --info-color: #2196f3;
+  
+  /* Mobile-friendly spacing */
+  --mobile-padding: 16px;
+  --desktop-padding: 24px;
+  
+  /* Touch target sizes */
+  --touch-target-min: 44px;
+  --button-height: 48px;
+}
+
+/* Base mobile optimizations */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Touch-friendly buttons and links */
+button, .v-btn, a[role="button"] {
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+}
+
+/* Improve tap targets on mobile */
+.v-btn {
+  padding: 8px 16px !important;
+  border-radius: 8px !important;
+}
+
+.v-btn--size-small {
+  min-height: 36px !important;
+  padding: 6px 12px !important;
+}
+
+.v-btn--size-large {
+  min-height: 52px !important;
+  padding: 12px 24px !important;
+}
+
+/* Mobile navigation optimizations */
+.v-navigation-drawer {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Card and container spacing */
+.v-card {
+  border-radius: 12px !important;
+}
+
+.v-container {
+  padding: var(--mobile-padding) !important;
+}
+
+/* Form field optimizations for mobile */
+.v-field {
+  border-radius: 8px !important;
+}
+
+.v-field--variant-outlined .v-field__outline {
+  border-radius: 8px !important;
+}
+
+.v-text-field input, 
+.v-textarea textarea {
+  font-size: 16px !important; /* Prevent zoom on iOS */
+}
+
+/* List item touch targets */
+.v-list-item {
+  min-height: var(--touch-target-min) !important;
+  padding: 8px 16px !important;
+}
+
+/* Improve scrolling performance */
+.v-list, .v-data-table, .scrollable {
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+}
+
+/* Mobile-specific utilities */
+.mobile-only {
+  display: block;
+}
+
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --mobile-padding: var(--desktop-padding);
+  }
+  
+  .mobile-only {
+    display: none;
+  }
+  
+  .desktop-only {
+    display: block;
+  }
+}
+
+/* PWA-specific styles */
+.pwa-install-banner {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 1000;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Improve focus indicators for accessibility */
+.v-btn:focus-visible,
+.v-text-field:focus-within,
+.v-select:focus-within {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Study mode specific optimizations */
+.study-question-card {
+  margin-bottom: 16px;
+  padding: 20px;
+}
+
+.study-options .v-btn {
+  width: 100%;
+  margin-bottom: 8px;
+  text-align: left;
+  justify-content: flex-start;
+  white-space: normal;
+  height: auto;
+  min-height: 56px;
+  padding: 12px 16px;
+}
+
+/* Test mode optimizations */
+.test-timer {
+  position: sticky;
+  top: 16px;
+  z-index: 100;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+/* Progress visualization improvements */
+.progress-chart {
+  height: 250px !important;
+}
+
+@media (min-width: 768px) {
+  .progress-chart {
+    height: 350px !important;
+  }
+}
+
+/* Leaderboard mobile optimizations */
+.leaderboard-entry {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.podium-card {
+  margin-bottom: 16px;
+}
+
+/* Achievement notification positioning */
+.achievement-notification {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  z-index: 9999;
+}
+
+@media (min-width: 768px) {
+  .achievement-notification {
+    top: 24px;
+    right: 24px;
+    left: auto;
+    max-width: 400px;
+  }
+}
+
+/* Floating action button for mobile */
+.fab-mobile {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+}
+
+/* Safe area handling for notched devices */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-color: #121212;
+    --on-surface-color: #ffffff;
+  }
+}
+
+/* Loading spinner optimizations */
+.v-progress-circular {
+  margin: 16px auto;
+  display: block;
+}
+
+/* Improve text readability */
+.v-card-title {
+  line-height: 1.4 !important;
+  word-wrap: break-word;
+}
+
+.v-card-text {
+  line-height: 1.6 !important;
+}
+
+/* Question text improvements */
+.question-text {
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Explanation text styling */
+.explanation-text {
+  background: rgba(var(--v-theme-surface), 0.5);
+  border-left: 4px solid var(--primary-color);
+  padding: 16px;
+  border-radius: 0 8px 8px 0;
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Navigation improvements */
+.v-bottom-navigation {
+  height: 64px !important;
+}
+
+.v-bottom-navigation .v-btn {
+  height: 100% !important;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Swipe gestures support */
+.swipeable {
+  touch-action: pan-y;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .v-app-bar,
+  .v-navigation-drawer,
+  .v-bottom-navigation {
+    display: none !important;
+  }
+}

@@ -19,7 +19,10 @@ export default defineNuxtConfig({
     shim: false,
   },
 
-  css: ['vuetify/styles'],
+  css: [
+    'vuetify/styles',
+    '~/assets/css/global.css'
+  ],
 
   // Vuetify build configuration
   build: {
@@ -48,8 +51,69 @@ export default defineNuxtConfig({
   modules: [
     "@pinia/nuxt",
     "nuxt-auth-utils",
+    "@vite-pwa/nuxt",
     // "@nuxthub/core", // Disabled for now since we're using Turso
   ],
+
+  // PWA Configuration
+  pwa: {
+    registerType: 'autoUpdate',
+    workbox: {
+      navigateFallback: '/',
+      globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+      cleanupOutdatedCaches: true,
+      skipWaiting: true,
+      clientsClaim: true
+    },
+    client: {
+      installPrompt: true,
+      periodicSyncForUpdates: 20,
+    },
+    manifest: {
+      name: 'PingToPass - IT Certification Prep',
+      short_name: 'PingToPass',
+      description: 'Master IT certifications with AI-powered study tools',
+      theme_color: '#1976d2',
+      background_color: '#ffffff',
+      display: 'standalone',
+      orientation: 'portrait',
+      scope: '/',
+      start_url: '/',
+      icons: [
+        {
+          src: '/icon-192x192.png',
+          sizes: '192x192',
+          type: 'image/png'
+        },
+        {
+          src: '/icon-512x512.png',
+          sizes: '512x512',
+          type: 'image/png'
+        }
+      ],
+      categories: ['education', 'productivity'],
+      shortcuts: [
+        {
+          name: 'Study Mode',
+          short_name: 'Study',
+          description: 'Start studying immediately',
+          url: '/study',
+          icons: [{ src: '/icon-192x192.png', sizes: '192x192' }]
+        },
+        {
+          name: 'Practice Test',
+          short_name: 'Test',
+          description: 'Take a practice test',
+          url: '/test',
+          icons: [{ src: '/icon-192x192.png', sizes: '192x192' }]
+        }
+      ]
+    },
+    devOptions: {
+      enabled: false,
+      type: 'module'
+    }
+  },
 
   // Application metadata
   app: {
@@ -57,9 +121,17 @@ export default defineNuxtConfig({
       title: "PingToPass - IT Certification Exam Preparation Platform",
       meta: [
         { charset: 'utf-8' },
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Prepare for IT certification exams with comprehensive study tools and practice tests' }
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
+        { name: 'description', content: 'Prepare for IT certification exams with comprehensive study tools and practice tests' },
+        { name: 'format-detection', content: 'telephone=no' },
+        { name: 'msapplication-tap-highlight', content: 'no' },
+        { name: 'apple-mobile-web-app-capable', content: 'yes' },
+        { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
+        { name: 'apple-mobile-web-app-title', content: 'PingToPass' }
       ],
+      link: [
+        { rel: 'apple-touch-icon', href: '/icon-192x192.png' }
+      ]
     },
   },
 
