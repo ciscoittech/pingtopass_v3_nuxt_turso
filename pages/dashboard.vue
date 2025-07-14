@@ -43,6 +43,20 @@ const getStreakMessage = () => {
   if (streak < 30) return `Amazing ${streak}-day streak! 🚀`
   return `Incredible ${streak}-day streak! You're unstoppable! ⭐`
 }
+
+// Study plan generator state
+const showStudyPlanDialog = ref(false)
+const selectedExamForPlan = ref(null as any)
+
+const openStudyPlan = (exam: any) => {
+  selectedExamForPlan.value = exam
+  showStudyPlanDialog.value = true
+}
+
+const closeStudyPlan = () => {
+  showStudyPlanDialog.value = false
+  selectedExamForPlan.value = null
+}
 </script>
 
 <template>
@@ -223,6 +237,18 @@ const getStreakMessage = () => {
                   Study Now
                 </v-btn>
               </v-col>
+              <v-col cols="12" sm="6">
+                <v-btn
+                  @click="openStudyPlan(null)"
+                  color="purple"
+                  variant="elevated"
+                  size="large"
+                  block
+                >
+                  <v-icon start>mdi-brain</v-icon>
+                  AI Study Plan
+                </v-btn>
+              </v-col>
             </v-row>
           </v-card-text>
         </v-card>
@@ -294,5 +320,21 @@ const getStreakMessage = () => {
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- Study Plan Generator Dialog -->
+    <v-dialog v-model="showStudyPlanDialog" max-width="1000px" scrollable>
+      <StudyPlanGenerator
+        v-if="selectedExamForPlan"
+        :exam-id="selectedExamForPlan.id"
+        :exam-name="selectedExamForPlan.name"
+        @close="closeStudyPlan"
+        @plan-generated="refreshProgress"
+      />
+      <div v-else class="pa-6 text-center">
+        <h3 class="text-h5 mb-4">Select an Exam for AI Study Plan</h3>
+        <p class="text-body-1 mb-4">Choose an exam to generate a personalized study plan.</p>
+        <v-btn to="/exams" color="primary">Browse Exams</v-btn>
+      </div>
+    </v-dialog>
   </div>
 </template>

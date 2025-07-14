@@ -70,6 +70,11 @@ export const userStreaks = sqliteTable('user_streaks', {
   perfectScoreStreak: integer('perfect_score_streak').default(0),
   longestPerfectStreak: integer('longest_perfect_streak').default(0),
   
+  // Achievements and Gamification
+  achievements: text('achievements'), // JSON array of achievement IDs
+  totalPoints: integer('total_points').default(0),
+  level: integer('level').default(1),
+  
   // Metadata
   createdAt: integer('created_at').notNull(),
   updatedAt: integer('updated_at').notNull(),
