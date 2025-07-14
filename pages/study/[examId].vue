@@ -53,12 +53,24 @@ const maxQuestions = ref(25)
 const sessionStarted = ref(false)
 
 // Get exam info
-const { data: examData } = await useFetch(`/api/exams/${examId}`)
+const { data: examData, error: examError } = await useFetch(`/api/exams/${examId}`)
 const exam = computed(() => examData.value?.data || null)
+
+// Handle exam not found
+if (examError.value || !exam.value) {
+  throw createError({
+    statusCode: 404,
+    statusMessage: 'Exam not found'
+  })
+}
+
+// Error message state
+const errorMessage = ref('')
 
 // Start study session
 const startStudySession = async () => {
   loading.value = true
+  errorMessage.value = ''
   try {
     const response = await $fetch('/api/study/start', {
       method: 'POST',
@@ -75,8 +87,9 @@ const startStudySession = async () => {
       sessionStarted.value = true
       await fetchProgress()
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error starting study session:', error)
+    errorMessage.value = error.data?.statusMessage || error.message || 'Failed to start study session'
   }
   loading.value = false
 }
@@ -244,6 +257,18 @@ onMounted(async () => {
                 color="primary"
               />
             </div>
+
+            <!-- Error Alert -->
+            <v-alert
+              v-if="errorMessage"
+              type="error"
+              variant="tonal"
+              class="mb-4"
+              closable
+              @click:close="errorMessage = ''"
+            >
+              {{ errorMessage }}
+            </v-alert>
 
             <!-- Start Button -->
             <v-btn

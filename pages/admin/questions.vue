@@ -10,6 +10,7 @@ const editMode = ref(false)
 const loading = ref(false)
 const deleteDialog = ref(false)
 const importDialog = ref(false)
+const generateDialog = ref(false)
 const selectedExamId = ref('')
 const searchQuery = ref('')
 const selectedQuestionType = ref('')
@@ -190,6 +191,11 @@ const onQuestionsImported = (count: number) => {
   refreshQuestions()
   importDialog.value = false
 }
+
+const onQuestionsGenerated = (count: number) => {
+  refreshQuestions()
+  generateDialog.value = false
+}
 </script>
 
 <template>
@@ -206,6 +212,14 @@ const onQuestionsImported = (count: number) => {
       </div>
       
       <div class="d-flex gap-2">
+        <v-btn
+          variant="outlined"
+          @click="generateDialog = true"
+          prepend-icon="mdi-robot"
+          color="secondary"
+        >
+          Generate with AI
+        </v-btn>
         <v-btn
           variant="outlined"
           @click="importDialog = true"
@@ -532,6 +546,14 @@ const onQuestionsImported = (count: number) => {
       :exam-id="selectedExamId"
       @close="importDialog = false"
       @imported="onQuestionsImported"
+    />
+
+    <!-- Generate Questions Dialog -->
+    <AdminQuestionGenerator
+      :open="generateDialog"
+      :exam-id="selectedExamId"
+      @close="generateDialog = false"
+      @generated="onQuestionsGenerated"
     />
   </div>
 </template>

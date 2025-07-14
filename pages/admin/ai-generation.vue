@@ -16,14 +16,17 @@ const formData = ref({
   objectiveId: '',
   count: 5,
   difficulty: 'medium',
-  model: 'anthropic/claude-3.5-haiku',
   customPrompt: '',
-  autoValidate: true
+  autoSave: true
 })
 
 // Data fetching
 const { data: examsData } = await useFetch('/api/exams')
-const exams = computed(() => examsData.value?.data || [])
+const exams = computed(() => {
+  const data = examsData.value?.data || []
+  console.log('Exams data:', data)
+  return data
+})
 
 const { data: objectivesData, refresh: refreshObjectives } = await useFetch('/api/objectives', {
   query: computed(() => ({ examId: formData.value.examId })),
@@ -37,17 +40,17 @@ watch(() => formData.value.examId, () => {
   refreshObjectives()
 })
 
-// Available models with pricing info
+// Available models with pricing info (using new LangChain integration)
 const availableModels = [
   {
-    value: 'anthropic/claude-3.5-haiku',
-    title: 'Claude 3.5 Haiku (Fast & Economical)',
-    description: 'Best for bulk generation - $1/$5 per 1M tokens',
+    value: 'google/gemini-2.5-flash-preview-05-20',
+    title: 'Gemini 2.5 Flash (LangChain Default)',
+    description: 'Fast & economical - $0.075/$0.30 per 1M tokens',
     icon: 'mdi-lightning-bolt'
   },
   {
-    value: 'anthropic/claude-3.5-sonnet',
-    title: 'Claude 3.5 Sonnet (Balanced)',
+    value: 'google/gemini-2.5-flash-lite-preview-06-17',
+    title: 'Gemini 2.5 Flash Lite (Ultra Fast)',
     description: 'Better reasoning - $3/$15 per 1M tokens',
     icon: 'mdi-brain'
   },
@@ -65,15 +68,22 @@ const availableModels = [
   }
 ]
 
-// Generate questions
+// Generate questions using new LangChain endpoint
 const generateQuestions = async () => {
   try {
     generating.value = true
     generationResults.value = null
 
-    const response = await $fetch('/api/admin/generate-questions', {
+    const response = await $fetch('/api/admin/questions/generate-v2', {
       method: 'POST',
-      body: formData.value
+      body: {
+        examId: formData.value.examId,
+        objectiveId: formData.value.objectiveId || null,
+        count: formData.value.count,
+        difficulty: formData.value.difficulty,
+        customPrompt: formData.value.customPrompt || null,
+        autoSave: formData.value.autoSave
+      }
     })
 
     if (response.success) {
@@ -89,9 +99,6 @@ const generateQuestions = async () => {
 }
 
 // Helper functions
-const getModelIcon = (modelValue: string) => {
-  return availableModels.find(m => m.value === modelValue)?.icon || 'mdi-robot'
-}
 
 const getValidationColor = (isValid: boolean) => {
   return isValid ? 'success' : 'error'
@@ -128,10 +135,10 @@ const estimateCost = () => {
       <div class="page-header mb-6">
         <h1 class="text-h4 font-weight-bold mb-2">
           <v-icon class="mr-2" color="primary">mdi-robot</v-icon>
-          AI Question Generation
+          AI Question Generation (LangChain)
         </h1>
         <p class="text-body-1 text-grey-darken-1">
-          Generate high-quality exam questions using advanced AI models
+          Generate high-quality exam questions using LangChain with LangSmith observability
         </p>
       </div>
 
@@ -215,38 +222,12 @@ const estimateCost = () => {
                   </template>
                 </v-select>
 
-                <!-- AI Model Selection -->
-                <v-select
-                  v-model="formData.model"
-                  label="AI Model"
-                  :items="availableModels"
-                  item-title="title"
-                  item-value="value"
-                  variant="outlined"
-                  class="mb-4"
-                >
-                  <template #prepend-inner>
-                    <v-icon>{{ getModelIcon(formData.model) }}</v-icon>
-                  </template>
-                  
-                  <template #item="{ props, item }">
-                    <v-list-item v-bind="props">
-                      <template #prepend>
-                        <v-icon :icon="item.raw.icon" />
-                      </template>
-                      <v-list-item-title>{{ item.raw.title }}</v-list-item-title>
-                      <v-list-item-subtitle>{{ item.raw.description }}</v-list-item-subtitle>
-                    </v-list-item>
-                  </template>
-                </v-select>
+                <!-- Model Info -->
+                <v-alert type="info" variant="tonal" density="compact" class="mb-4">
+                  <v-icon size="small">mdi-information</v-icon>
+                  Using Gemini 2.5 Flash via LangChain (fastest & most economical)
+                </v-alert>
 
-                <!-- Auto Validation -->
-                <v-checkbox
-                  v-model="formData.autoValidate"
-                  label="Auto-validate generated questions"
-                  hide-details
-                  class="mb-4"
-                />
 
                 <!-- Custom Prompt (Advanced) -->
                 <v-textarea
@@ -257,6 +238,18 @@ const estimateCost = () => {
                   rows="3"
                   class="mb-4"
                 />
+
+                <!-- Auto-save Toggle -->
+                <v-switch
+                  v-model="formData.autoSave"
+                  label="Auto-save questions to database"
+                  color="primary"
+                  class="mb-4"
+                >
+                  <template #details>
+                    <span class="text-caption">Generated questions will be automatically saved to the database</span>
+                  </template>
+                </v-switch>
 
                 <!-- Cost Estimation -->
                 <v-card color="info" variant="tonal" class="mb-4">
@@ -318,10 +311,57 @@ const estimateCost = () => {
                   <v-card-text class="pa-4">
                     <div class="d-flex align-center justify-space-between">
                       <div>
-                        <div class="text-h6">{{ generationResults.generated }} Generated</div>
-                        <div class="text-body-2">{{ generationResults.saved }} Saved to Database</div>
+                        <div class="text-h6">{{ generationResults.generated }} Questions Generated</div>
+                        <div class="text-body-2" v-if="formData.autoSave">
+                          <v-icon size="small" color="success" class="mr-1">mdi-check</v-icon>
+                          {{ generationResults.saved }} Saved to Database
+                        </div>
+                        <div class="text-body-2" v-else>
+                          <v-icon size="small" color="warning" class="mr-1">mdi-alert</v-icon>
+                          Not saved (auto-save disabled)
+                        </div>
                       </div>
                       <v-icon size="32">mdi-check-circle</v-icon>
+                    </div>
+                  </v-card-text>
+                </v-card>
+
+                <!-- LangChain Metadata -->
+                <v-card v-if="generationResults.metadata" variant="outlined" class="mb-4">
+                  <v-card-title class="text-subtitle-1">
+                    <v-icon size="small" class="mr-2">mdi-information</v-icon>
+                    Generation Details
+                  </v-card-title>
+                  <v-card-text>
+                    <v-row dense>
+                      <v-col cols="6" sm="3">
+                        <div class="text-caption text-medium-emphasis">Model</div>
+                        <div class="text-body-2">Gemini 2.5 Flash</div>
+                      </v-col>
+                      <v-col cols="6" sm="3">
+                        <div class="text-caption text-medium-emphasis">Tokens Used</div>
+                        <div class="text-body-2">{{ generationResults.metadata?.totalTokens?.toLocaleString() || 'N/A' }}</div>
+                      </v-col>
+                      <v-col cols="6" sm="3">
+                        <div class="text-caption text-medium-emphasis">Cost</div>
+                        <div class="text-body-2">${{ generationResults.metadata?.cost?.toFixed(4) || '0.00' }}</div>
+                      </v-col>
+                      <v-col cols="6" sm="3">
+                        <div class="text-caption text-medium-emphasis">Workflow Steps</div>
+                        <div class="text-body-2">{{ generationResults.metadata?.workflowSteps?.join(' → ') || '3 steps' }}</div>
+                      </v-col>
+                    </v-row>
+                    <div v-if="$config.public.langsmithEnabled" class="mt-3">
+                      <v-btn
+                        variant="tonal"
+                        size="small"
+                        color="primary"
+                        href="https://smith.langchain.com"
+                        target="_blank"
+                      >
+                        <v-icon start size="small">mdi-open-in-new</v-icon>
+                        View in LangSmith
+                      </v-btn>
                     </div>
                   </v-card-text>
                 </v-card>

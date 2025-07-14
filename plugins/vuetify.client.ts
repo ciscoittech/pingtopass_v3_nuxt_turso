@@ -3,6 +3,7 @@ import "@mdi/font/css/materialdesignicons.css";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { BLUE_THEME } from "@/theme/LightTheme";
+import { DARK_BLUE_THEME } from "@/theme/DarkTheme";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const vuetify = createVuetify({
@@ -12,6 +13,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       defaultTheme: "BLUE_THEME",
       themes: {
         BLUE_THEME,
+        DARK_BLUE_THEME,
       },
     },
     defaults: {

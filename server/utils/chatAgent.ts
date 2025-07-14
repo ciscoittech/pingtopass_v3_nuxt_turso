@@ -9,7 +9,7 @@ export interface Message {
   tool_calls?: ToolCall[]
 }
 
-export interface Tool {
+export interface ChatTool {
   name: string
   description: string
   parameters: Record<string, any>
@@ -38,7 +38,7 @@ export class ChatAgent {
     this.temperature = options.temperature || 0.7
   }
 
-  async chat(messages: Message[], tools?: Tool[]): Promise<{ content: string | null; usage?: any; toolCalls?: ToolCall[] }> {
+  async chat(messages: Message[], tools?: ChatTool[]): Promise<{ content: string | null; usage?: any; toolCalls?: ToolCall[] }> {
     // Validate model supports tool calling if tools are provided
     if (tools && tools.length > 0) {
       const modelInfo = getModelById(this.modelId)
@@ -86,7 +86,7 @@ export class ChatAgent {
   // Execute tool calls and get final response
   async chatWithTools(
     messages: Message[], 
-    tools: Tool[], 
+    tools: ChatTool[], 
     toolExecutor: (name: string, args: any) => Promise<any>
   ): Promise<{ content: string; usage?: any; totalUsage?: any }> {
     let totalUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 }

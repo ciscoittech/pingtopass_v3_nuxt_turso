@@ -1,24 +1,12 @@
 import { useDB } from '~/server/utils/db'
 import { modelSettings } from '~/server/database/schema'
 import { MODEL_REGISTRY, getModelsByFeature } from '~/server/utils/modelRegistry'
+import { ensureAdmin } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    // Check authentication and admin role
-    const session = await getUserSession(event)
-    if (!session.user) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Authentication required'
-      })
-    }
-
-    if (!session.user.role || session.user.role !== 'admin') {
-      throw createError({
-        statusCode: 403,
-        statusMessage: 'Admin access required'
-      })
-    }
+    // Check authentication and admin role using our auth utilities
+    const user = await ensureAdmin(event)
 
     const query = getQuery(event)
     const feature = query.feature as string

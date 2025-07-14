@@ -8,7 +8,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     }
     
     // Check if user is admin
-    if (response.user.role !== 'admin') {
+    if (!response.user.isAdmin) {
       throw createError({
         statusCode: 403,
         statusMessage: 'Access denied. Admin privileges required.'

@@ -9,6 +9,10 @@
   --error-color: #f44336;
   --info-color: #2196f3;
   
+  /* Background colors */
+  --background-color: #f0f5f9;
+  --surface-color: #ffffff;
+  
   /* Mobile-friendly spacing */
   --mobile-padding: 16px;
   --desktop-padding: 24px;
@@ -36,6 +40,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  background-color: var(--background-color);
 }
 
 /* Touch-friendly buttons and links */
@@ -242,7 +247,8 @@ button, .v-btn, a[role="button"] {
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   :root {
-    --surface-color: #121212;
+    --background-color: #16293e;
+    --surface-color: #111C2D;
     --on-surface-color: #ffffff;
   }
 }

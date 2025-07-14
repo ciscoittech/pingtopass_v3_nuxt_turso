@@ -1,6 +1,6 @@
 import mock from './mockAdapter';
 
-import './apps/chat';
+// import './apps/chat'; // Disabled - using real chat API
 import './apps/ecommerce';
 import './apps/userprofile/posts';
 import './apps/userprofile/followers';

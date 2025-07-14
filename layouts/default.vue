@@ -1,19 +1,58 @@
 <script setup lang="ts">
-import { useDisplay } from 'vuetify'
-const { lgAndUp } = useDisplay()
+import { useDisplay, useTheme } from 'vuetify'
+import { useCustomizerStore } from '@/stores/customizer'
 
-const customizer = ref(false)
-const mini = ref(false)
-const drawerWidth = ref(270)
-const sDrawer = ref(true)
+const { lgAndUp } = useDisplay()
+const theme = useTheme()
+const customizer = useCustomizerStore()
+
+// Initialize sidebar state and theme on mount
+onMounted(() => {
+  // Set theme from store after ensuring Vuetify is ready
+  if (theme.global?.name) {
+    theme.global.name.value = customizer.actTheme
+  }
+  
+  if (customizer.Sidebar_drawer === null) {
+    customizer.SET_SIDEBAR_DRAWER()
+  }
+})
+
+// Reactive properties
+const sDrawer = computed({
+  get() {
+    return customizer.Sidebar_drawer
+  },
+  set(val: boolean) {
+    customizer.SET_SIDEBAR_DRAWER()
+  }
+})
+
+const showCustomizer = computed({
+  get() {
+    return customizer.Customizer_drawer
+  },
+  set(val: boolean) {
+    customizer.SET_CUSTOMIZER_DRAWER(val)
+  }
+})
+
+const mini = computed(() => customizer.mini_sidebar)
 
 function miniSidebar() {
-  mini.value = !mini.value
+  customizer.SET_MINI_SIDEBAR(!customizer.mini_sidebar)
 }
+
+// Watch for theme changes
+watch(() => customizer.actTheme, (val) => {
+  if (theme.global?.name) {
+    theme.global.name.value = val
+  }
+})
 </script>
 
 <template>
-  <v-layout>
+  <v-app>
     <!-- VerticalSidebar -->
     <LcFullVerticalSidebar 
       v-model="sDrawer" 
@@ -38,22 +77,28 @@ function miniSidebar() {
     
     <!-- Customizer -->
     <v-navigation-drawer 
-      v-model="customizer" 
+      v-model="showCustomizer" 
       location="right" 
       temporary 
       width="350" 
       app
     >
-      <LcFullCustomizerCustomizer />
+      <LcFullCustomizer />
     </v-navigation-drawer>
-  </v-layout>
+    
+    <!-- Chat Widget -->
+    <ChatWidget />
+  </v-app>
 </template>
 
 <style lang="scss">
+.v-app {
+  background: rgb(var(--v-theme-background)) !important;
+}
+
 .page-wrapper {
   padding: 24px;
   min-height: calc(100vh - 64px);
-  background: rgb(var(--v-theme-surface));
 }
 
 .maxWidth {

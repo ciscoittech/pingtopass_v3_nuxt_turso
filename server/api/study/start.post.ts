@@ -75,6 +75,13 @@ export default defineEventHandler(async (event) => {
       }
     })
 
+    if (parsedQuestions.length === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'No questions found for this exam'
+      })
+    }
+
     // Apply study mode logic
     let selectedQuestions = [...parsedQuestions]
     
@@ -119,11 +126,12 @@ export default defineEventHandler(async (event) => {
         totalQuestions: selectedQuestions.length,
         currentQuestionIndex: 0,
         studyMode: body.studyMode || 'sequential',
-        firstQuestion: {
+        firstQuestion: selectedQuestions[0] ? {
           ...selectedQuestions[0],
+          options: selectedQuestions[0].options ? JSON.parse(selectedQuestions[0].options) : [],
           // Don't send correct answer to client
           correctAnswer: undefined
-        }
+        } : null
       }
     }
 

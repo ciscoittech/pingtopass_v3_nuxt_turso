@@ -78,12 +78,6 @@ const sidebarItem: menu[] = [
     BgColor: "info",
     to: "/study-plans",
   },
-  {
-    title: "AI Assistant",
-    icon: "messages-3-linear",
-    BgColor: "primary",
-    to: "/chat",
-  },
   { header: "Admin" },
   {
     title: "Admin Panel",
@@ -116,7 +110,7 @@ const sidebarItem: menu[] = [
         to: "/admin/analytics",
       },
       {
-        title: "AI Chat",
+        title: "AI Chat (Advanced)",
         to: "/admin/chat",
       },
       {

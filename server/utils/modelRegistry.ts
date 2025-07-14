@@ -113,28 +113,48 @@ export const MODEL_REGISTRY: Record<string, ModelInfo> = {
     name: 'DeepSeek Chat',
     capabilities: { toolCalling: false, streaming: true, reasoning: true },
     cost: { input: 0.14, output: 0.28 },
-    speed: 'fast',
+    speed: 'slow', // Updated to reflect actual speed
     quality: 'good',
     contextWindow: 64000,
-    description: 'Very affordable Chinese model'
+    description: 'Affordable but slower model'
   },
-  'deepseek/deepseek-reasoner': {
+  'deepseek/deepseek-r1-0528': {
     provider: 'deepseek',
-    name: 'DeepSeek Reasoner',
+    name: 'DeepSeek R1 (0528)',
     capabilities: { toolCalling: false, streaming: true, reasoning: true },
     cost: { input: 0.55, output: 2.19 },
     speed: 'medium',
-    quality: 'good',
+    quality: 'excellent',
     contextWindow: 64000,
-    description: 'Reasoning-focused DeepSeek model'
+    description: 'Latest R1 reasoning model'
   },
 
   // Google Models
+  'google/gemini-2.5-flash-preview-05-20': {
+    provider: 'google',
+    name: 'Gemini 2.5 Flash Preview',
+    capabilities: { toolCalling: true, streaming: true, vision: true },
+    cost: { input: 0.075, output: 0.30 },
+    speed: 'fast',
+    quality: 'excellent',
+    contextWindow: 1000000,
+    description: 'Latest Gemini 2.5 - fastest and most capable'
+  },
+  'google/gemini-2.5-flash-lite-preview-06-17': {
+    provider: 'google',
+    name: 'Gemini 2.5 Flash Lite',
+    capabilities: { toolCalling: true, streaming: true, vision: true },
+    cost: { input: 0.04, output: 0.15 },
+    speed: 'fast',
+    quality: 'good',
+    contextWindow: 1000000,
+    description: 'Ultra-fast lite version, very affordable'
+  },
   'google/gemini-pro-1.5': {
     provider: 'google',
     name: 'Gemini Pro 1.5',
     capabilities: { toolCalling: true, streaming: true, vision: true },
-    cost: { input: 2.50, output: 10.00 },
+    cost: { input: 1.25, output: 5.00 },
     speed: 'medium',
     quality: 'excellent',
     contextWindow: 2000000,
@@ -149,6 +169,16 @@ export const MODEL_REGISTRY: Record<string, ModelInfo> = {
     quality: 'good',
     contextWindow: 1000000,
     description: 'Fast and affordable with large context'
+  },
+  'google/gemma-3-27b': {
+    provider: 'google',
+    name: 'Gemma 3 27B',
+    capabilities: { toolCalling: false, streaming: true, vision: false },
+    cost: { input: 0.10, output: 0.10 },
+    speed: 'fast',
+    quality: 'good',
+    contextWindow: 8192,
+    description: 'Open source Gemma model, very fast'
   },
 
   // Meta Models
@@ -224,33 +254,37 @@ export const MODEL_REGISTRY: Record<string, ModelInfo> = {
 export function getModelsByFeature(feature: 'chat_user' | 'chat_admin' | 'question_generation' | 'twitter_analysis') {
   const models = Object.entries(MODEL_REGISTRY)
   
+  // For now, only show DeepSeek and Google models
+  const allowedProviders = ['deepseek', 'google']
+  const filteredModels = models.filter(([_, info]) => 
+    allowedProviders.includes(info.provider.toLowerCase())
+  )
+  
   switch (feature) {
     case 'chat_user':
-      // Simple chat doesn't need tool calling, prefer fast and affordable
-      return models.filter(([_, info]) => 
-        info.speed === 'fast' && info.cost.input < 5.0
+      // For user chat, show fast models (including Gemma if we add it)
+      return filteredModels.filter(([_, info]) => 
+        info.speed === 'fast' || info.speed === 'medium'
       )
     
     case 'chat_admin':
-      // Admin chat needs tool calling
-      return models.filter(([_, info]) => 
+      // Admin chat needs tool calling - only Google models support this
+      return filteredModels.filter(([_, info]) => 
         info.capabilities.toolCalling === true
       )
     
     case 'question_generation':
-      // Question generation benefits from creativity and quality
-      return models.filter(([_, info]) => 
-        info.quality === 'excellent' || info.quality === 'good'
-      )
+      // Question generation - show all available models
+      return filteredModels
     
     case 'twitter_analysis':
       // Twitter analysis needs good reasoning, affordability for bulk processing
-      return models.filter(([_, info]) => 
-        info.capabilities.reasoning === true && info.cost.input < 5.0
+      return filteredModels.filter(([_, info]) => 
+        info.cost.input < 5.0
       )
     
     default:
-      return models
+      return filteredModels
   }
 }
 

@@ -2,24 +2,12 @@ import { useDB } from '~/server/utils/db'
 import { modelSettings } from '~/server/database/schema'
 import { eq } from 'drizzle-orm'
 import { getModelById } from '~/server/utils/modelRegistry'
+import { ensureAdmin } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    // Check authentication and admin role
-    const session = await getUserSession(event)
-    if (!session.user) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Authentication required'
-      })
-    }
-
-    if (!session.user.role || session.user.role !== 'admin') {
-      throw createError({
-        statusCode: 403,
-        statusMessage: 'Admin access required'
-      })
-    }
+    // Check authentication and admin role using our auth utilities
+    const user = await ensureAdmin(event)
 
     const body = await readBody(event)
     const { feature, modelId } = body
@@ -78,7 +66,7 @@ export default defineEventHandler(async (event) => {
           provider: modelInfo.provider,
           capabilities: JSON.stringify(modelInfo.capabilities),
           costPerMillion: avgCost,
-          updatedBy: session.user.id,
+          updatedBy: user.id,
           updatedAt: Math.floor(Date.now() / 1000)
         })
         .where(eq(modelSettings.id, settingId))
@@ -98,7 +86,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Log the change
-    console.log(`Model setting updated: ${feature} -> ${modelId} by ${session.user.email}`)
+    console.log(`Model setting updated: ${feature} -> ${modelId} by ${user.email}`)
 
     return {
       success: true,

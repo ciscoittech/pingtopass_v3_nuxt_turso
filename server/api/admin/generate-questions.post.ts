@@ -41,6 +41,8 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    const db = useDB()
+
     // Get exam details
     const exam = await db
       .select()
@@ -115,30 +117,21 @@ export default defineEventHandler(async (event) => {
         try {
           const questionId = `q_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
           
-    const db = useDB()
+          // Convert correct answer to array format
+          const correctAnswerArray = Array.isArray(question.correctAnswer) 
+            ? question.correctAnswer 
+            : [question.correctAnswer?.toUpperCase() || 'A']
 
           await db.insert(questions).values({
             id: questionId,
             examId: examId,
             objectiveId: objectiveId || null,
             questionText: question.question,
-            optionA: question.options[0]?.replace(/^A\)\s*/, '') || '',
-            optionB: question.options[1]?.replace(/^B\)\s*/, '') || '',
-            optionC: question.options[2]?.replace(/^C\)\s*/, '') || '',
-            optionD: question.options[3]?.replace(/^D\)\s*/, '') || '',
-            correctAnswer: question.correctAnswer?.toUpperCase() || 'A',
+            questionType: question.questionType || 'multiple-choice',
+            options: JSON.stringify(question.options || []),
+            correctAnswer: JSON.stringify(correctAnswerArray),
             explanation: question.explanation || '',
-            difficulty: question.difficulty || difficulty,
-            isActive: true,
-            metadata: JSON.stringify({
-              generatedByAI: true,
-              model: model,
-              generatedAt: new Date().toISOString(),
-              objective: question.objective || objective?.title,
-              validated: autoValidate
-            }),
-            createdAt: Math.floor(Date.now() / 1000),
-            updatedAt: Math.floor(Date.now() / 1000)
+            isActive: true
           })
 
           savedQuestions.push({

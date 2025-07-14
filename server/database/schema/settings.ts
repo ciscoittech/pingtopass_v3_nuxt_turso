@@ -22,37 +22,37 @@ export const defaultModelSettings = [
   {
     id: 'ms_chat_user',
     feature: 'chat_user',
-    modelId: 'deepseek/deepseek-chat',
-    modelName: 'DeepSeek Chat',
-    provider: 'deepseek',
-    capabilities: JSON.stringify({ toolCalling: false, streaming: true, reasoning: true }),
-    costPerMillion: 0.21, // Average of input (0.14) and output (0.28)
+    modelId: 'google/gemini-2.5-flash-preview-05-20',
+    modelName: 'Gemini 2.5 Flash Preview',
+    provider: 'google',
+    capabilities: JSON.stringify({ toolCalling: true, streaming: true, vision: true }),
+    costPerMillion: 0.19, // Average of input (0.075) and output (0.30)
   },
   {
     id: 'ms_chat_admin',
     feature: 'chat_admin',
-    modelId: 'openai/gpt-4o',
-    modelName: 'GPT-4 Optimized',
-    provider: 'openai',
-    capabilities: JSON.stringify({ toolCalling: true, streaming: true, reasoning: true }),
-    costPerMillion: 6.25, // Average of input (2.50) and output (10.00)
+    modelId: 'google/gemini-2.5-flash-preview-05-20',
+    modelName: 'Gemini 2.5 Flash Preview',
+    provider: 'google',
+    capabilities: JSON.stringify({ toolCalling: true, streaming: true, vision: true }),
+    costPerMillion: 0.19, // Same model for consistency
   },
   {
     id: 'ms_question_generation',
     feature: 'question_generation',
-    modelId: 'anthropic/claude-3.5-haiku',
-    modelName: 'Claude 3.5 Haiku',
-    provider: 'anthropic',
-    capabilities: JSON.stringify({ toolCalling: false, streaming: true, reasoning: true }),
-    costPerMillion: 3.0, // Average of input (1.00) and output (5.00)
+    modelId: 'google/gemini-2.5-flash-lite-preview-06-17',
+    modelName: 'Gemini 2.5 Flash Lite',
+    provider: 'google',
+    capabilities: JSON.stringify({ toolCalling: true, streaming: true, vision: true }),
+    costPerMillion: 0.095, // Average of input (0.04) and output (0.15)
   },
   {
     id: 'ms_twitter_analysis',
     feature: 'twitter_analysis',
-    modelId: 'deepseek/deepseek-chat',
-    modelName: 'DeepSeek Chat',
+    modelId: 'deepseek/deepseek-r1-0528',
+    modelName: 'DeepSeek R1 (0528)',
     provider: 'deepseek',
     capabilities: JSON.stringify({ toolCalling: false, streaming: true, reasoning: true }),
-    costPerMillion: 0.21,
+    costPerMillion: 1.37, // Average of input (0.55) and output (2.19)
   },
 ]

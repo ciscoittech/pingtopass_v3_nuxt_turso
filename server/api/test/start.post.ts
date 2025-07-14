@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { useDB } from '~/server/utils/db'
 import { testSessions, questions, exams } from '~/server/database/schema'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import { generateId } from '~/server/utils/id'
 
 const startTestSchema = z.object({
@@ -96,7 +96,7 @@ export default defineEventHandler(async (event) => {
     // Apply filters if provided
     if (questionTypes && questionTypes.length > 0) {
       questionQuery = questionQuery.where(
-        questions.questionType.in(questionTypes)
+        inArray(questions.questionType, questionTypes)
       )
     }
 

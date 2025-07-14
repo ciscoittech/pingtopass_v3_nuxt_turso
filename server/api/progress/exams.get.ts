@@ -1,6 +1,6 @@
 import { useDB } from '~/server/utils/db'
 import { studyActivity, testSessions, exams, userProgress } from '~/server/database/schema'
-import { eq, desc, and, gte } from 'drizzle-orm'
+import { eq, desc, and, gte, inArray } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -35,6 +35,8 @@ export default defineEventHandler(async (event) => {
       dateFilter = now - (daysBack * 24 * 60 * 60)
     }
 
+    const db = useDB()
+    
     // Get all exams user has interacted with
     let activityQuery = db
       .select({
@@ -57,10 +59,12 @@ export default defineEventHandler(async (event) => {
 
     // Get exam details
     const examIds = [...new Set(activities.map(a => a.examId).filter(Boolean))]
-    const examDetails = await db
-      .select()
-      .from(exams)
-      .where(exams.id.in(examIds))
+    const examDetails = examIds.length > 0 
+      ? await db
+          .select()
+          .from(exams)
+          .where(inArray(exams.id, examIds))
+      : []
 
     // Process exam statistics
     const examStats = new Map()

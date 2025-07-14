@@ -19,6 +19,8 @@ export default defineEventHandler(async (event) => {
     const limit = query.limit ? parseInt(query.limit as string) : 50
     const offset = query.offset ? parseInt(query.offset as string) : 0
 
+    const db = useDB()
+    
     // Base query to get bookmarked questions
     let dbQuery = db
       .select({

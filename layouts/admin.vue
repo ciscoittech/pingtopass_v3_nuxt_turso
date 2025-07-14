@@ -1,7 +1,8 @@
 <script setup lang="ts">
-// Admin layout for management pages
-import { ref } from 'vue'
+import { useDisplay, useTheme } from 'vuetify'
+import { useCustomizerStore } from '@/stores/customizer'
 
+// Admin layout - uses the same theme as default layout
 // Check if user is admin
 const { data: userData } = await useFetch('/api/auth/me')
 if (!userData.value?.user?.isAdmin) {
@@ -11,153 +12,109 @@ if (!userData.value?.user?.isAdmin) {
   })
 }
 
-const user = userData.value.user
-const drawer = ref(true)
+const { lgAndUp } = useDisplay()
+const theme = useTheme()
+const customizer = useCustomizerStore()
 
-// Navigation items
-const adminNavItems = [
-  {
-    title: 'Dashboard',
-    icon: 'mdi-view-dashboard',
-    to: '/admin'
-  },
-  {
-    title: 'Vendors',
-    icon: 'mdi-domain',
-    to: '/admin/vendors'
-  },
-  {
-    title: 'Exams',
-    icon: 'mdi-school',
-    to: '/admin/exams'
-  },
-  {
-    title: 'Questions',
-    icon: 'mdi-help-circle',
-    to: '/admin/questions'
-  },
-  {
-    title: 'Users',
-    icon: 'mdi-account-group',
-    to: '/admin/users'
-  },
-  {
-    title: 'Analytics',
-    icon: 'mdi-chart-line',
-    to: '/admin/analytics'
+// Set theme from store after mount
+onMounted(() => {
+  if (theme.global?.name) {
+    theme.global.name.value = customizer.actTheme
   }
-]
+})
 
-// Logout function
-const logout = async () => {
-  await $fetch('/api/auth/logout', { method: 'POST' })
-  await navigateTo('/')
+// Reactive properties
+const sDrawer = computed({
+  get() {
+    return customizer.Sidebar_drawer
+  },
+  set(val: boolean) {
+    customizer.SET_SIDEBAR_DRAWER()
+  }
+})
+
+const showCustomizer = computed({
+  get() {
+    return customizer.Customizer_drawer
+  },
+  set(val: boolean) {
+    customizer.SET_CUSTOMIZER_DRAWER(val)
+  }
+})
+
+const mini = computed(() => customizer.mini_sidebar)
+
+function miniSidebar() {
+  customizer.SET_MINI_SIDEBAR(!customizer.mini_sidebar)
 }
+
+// Watch for theme changes
+watch(() => customizer.actTheme, (val) => {
+  if (theme.global?.name) {
+    theme.global.name.value = val
+  }
+})
 </script>
 
 <template>
   <v-app>
-    <!-- Navigation Drawer -->
-    <v-navigation-drawer
-      v-model="drawer"
-      app
-      color="primary"
-      dark
-      width="280"
-    >
-      <!-- App Logo/Title -->
-      <div class="pa-4">
-        <h2 class="text-h5 font-weight-bold">
-          PingToPass Admin
-        </h2>
-      </div>
-
-      <v-divider></v-divider>
-
-      <!-- Navigation Menu -->
-      <v-list nav>
-        <v-list-item
-          v-for="item in adminNavItems"
-          :key="item.to"
-          :to="item.to"
-          :prepend-icon="item.icon"
-          :title="item.title"
-          rounded="xl"
-          class="ma-2"
-        />
-      </v-list>
-
-      <template v-slot:append>
-        <v-divider></v-divider>
-        
-        <!-- User Info -->
-        <v-list>
-          <v-list-item class="pa-4">
-            <template v-slot:prepend>
-              <v-avatar color="secondary">
-                <span class="text-h6">{{ user.fullName?.charAt(0) || 'A' }}</span>
-              </v-avatar>
-            </template>
-            <v-list-item-title class="font-weight-medium">
-              {{ user.fullName || 'Admin' }}
-            </v-list-item-title>
-            <v-list-item-subtitle>
-              {{ user.email }}
-            </v-list-item-subtitle>
-          </v-list-item>
-          
-          <v-list-item
-            @click="logout"
-            prepend-icon="mdi-logout"
-            title="Logout"
-            class="mx-2"
-            rounded="xl"
-          />
-        </v-list>
-      </template>
-    </v-navigation-drawer>
-
-    <!-- App Bar -->
-    <v-app-bar
-      app
-      color="white"
-      flat
-      border
-    >
-      <v-app-bar-nav-icon @click="drawer = !drawer" />
-      
-      <v-toolbar-title class="font-weight-bold">
-        Admin Panel
-      </v-toolbar-title>
-
-      <v-spacer />
-
-      <!-- Quick Actions -->
-      <v-btn
-        icon="mdi-home"
-        variant="text"
-        to="/dashboard"
-        title="Back to App"
-      />
-      
-      <v-btn
-        icon="mdi-help-circle"
-        variant="text"
-        title="Help"
-      />
-    </v-app-bar>
-
+    <!-- VerticalSidebar -->
+    <LcFullVerticalSidebar 
+      v-model="sDrawer" 
+      :mini-variant="mini" 
+      :expand-on-hover="mini"
+    />
+    
+    <!-- Header -->
+    <LcFullVerticalHeader 
+      @sDrawerToggle="sDrawer = !sDrawer" 
+      @miniSidebar="miniSidebar" 
+    />
+    
     <!-- Main Content -->
     <v-main>
-      <v-container fluid class="pa-6">
-        <NuxtPage />
+      <v-container fluid class="page-wrapper">
+        <div class="maxWidth">
+          <slot />
+        </div>
       </v-container>
     </v-main>
+    
+    <!-- Customizer -->
+    <v-navigation-drawer 
+      v-model="showCustomizer" 
+      location="right" 
+      temporary 
+      width="350" 
+      app
+    >
+      <LcFullCustomizer />
+    </v-navigation-drawer>
+    
+    <!-- Chat Widget (Admin version) -->
+    <ChatWidget />
   </v-app>
 </template>
 
-<style scoped>
-.v-navigation-drawer {
-  border-right: none !important;
+<style lang="scss">
+.v-app {
+  background: rgb(var(--v-theme-background)) !important;
+}
+
+.page-wrapper {
+  padding: 24px;
+  min-height: calc(100vh - 64px);
+}
+
+.maxWidth {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+// Responsive adjustments
+@media (max-width: 960px) {
+  .page-wrapper {
+    padding: 16px;
+  }
 }
 </style>

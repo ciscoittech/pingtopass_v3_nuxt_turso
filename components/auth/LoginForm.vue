@@ -7,11 +7,7 @@ import google from '/images/svgs/google-icon.svg';
 const isLoading = ref(false);
 const error = ref('');
 
-// Check if user is already logged in
-const { data: userData } = await useFetch('/api/auth/me');
-if (userData.value?.user) {
-  await navigateTo('/dashboard');
-}
+// Removed auth check to prevent redirect loops
 
 async function signInWithGoogle() {
   isLoading.value = true;

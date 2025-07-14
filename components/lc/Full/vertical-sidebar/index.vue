@@ -10,7 +10,7 @@ const sidebarMenu = shallowRef(sidebarItem);
     <v-navigation-drawer left v-model="customizer.Sidebar_drawer" elevation="10" rail-width="70" 
         app class="leftSidebar ms-lg-5 mt-sm-5 bg-containerBg" :rail="customizer.mini_sidebar" expand-on-hover width="270">
         <div class="pa-5 pl-4 ">
-            <LcFullLogo/>
+            <LcFullLogoPingToPassLogo/>
         </div>
         <!-- ---------------------------------------------- -->
         <!---Navigation -->

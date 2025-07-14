@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({
-    layout: "blank",
+    layout: "blank-simple",
+    middleware: []  // Disable middleware temporarily
 });
 </script>
 

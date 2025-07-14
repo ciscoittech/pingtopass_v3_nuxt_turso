@@ -1,13 +1,9 @@
 <script setup lang="ts">
-// Check if user is logged in and redirect to dashboard
-const { data: userData } = await useFetch('/api/auth/me');
-if (userData.value?.user) {
-  await navigateTo('/dashboard');
-}
-
 definePageMeta({
   layout: "blank",
 });
+
+// Auth check handled by middleware
 </script>
 
 <template>
