@@ -1,4 +1,8 @@
 import { vi } from 'vitest'
+import { config } from 'dotenv'
+
+// Load test environment variables
+config({ path: '.env.test' })
 
 // Mock getUserSession globally for tests
 global.getUserSession = vi.fn()
@@ -19,4 +23,18 @@ export const setupTestDb = () => {
     get: vi.fn(),
     all: vi.fn()
   }
+}
+
+// Set up test environment variables if not already set
+if (!process.env.OPENROUTER_API_KEY) {
+  process.env.OPENROUTER_API_KEY = 'test-openrouter-key'
+}
+if (!process.env.LANGCHAIN_API_KEY) {
+  process.env.LANGCHAIN_API_KEY = 'test-langchain-key'
+}
+if (!process.env.TURSO_DB_URL) {
+  process.env.TURSO_DB_URL = 'test-db-url'
+}
+if (!process.env.TURSO_DB_TOKEN) {
+  process.env.TURSO_DB_TOKEN = 'test-db-token'
 }
