@@ -1,110 +1,14 @@
-# Wrangler configuration for Cloudflare deployment
+# Wrangler configuration for NuxtHub deployment
 name = "pingtopass-nuxt"
 compatibility_date = "2024-09-06"
+compatibility_flags = ["nodejs_compat"]
 
-# Build configuration
-[build]
-command = "pnpm run build"
-
-# Environment variables (non-sensitive only - secrets set via dashboard)
-[vars]
-APP_NAME = "PingToPass"
-BASE_URL = "https://pingtopass.com"
-NODE_ENV = "production"
-RATE_LIMIT_ENABLED = "true"
-MONITORING_ENABLED = "true"
-CACHE_TTL = "3600"
-
-# Cloudflare services configuration
-[[kv_namespaces]]
-binding = "KV"
-id = "pingtopass_kv"
-preview_id = "pingtopass_kv_preview"
-
-[[r2_buckets]]
-binding = "BLOB"
-bucket_name = "pingtopass-files"
-preview_bucket_name = "pingtopass-files-preview"
-
-[[analytics_engine_datasets]]
-binding = "ANALYTICS"
-dataset = "pingtopass_analytics"
-
-# Durable Objects for state management
-[[durable_objects.bindings]]
-name = "MONITORING_STATE"
-class_name = "MonitoringState"
-script_name = "pingtopass-monitoring"
-
-[[durable_objects.bindings]]
-name = "TWITTER_CACHE"
-class_name = "TwitterCache"
-script_name = "pingtopass-twitter"
-
-# Queues for background processing
-[[queues.producers]]
-binding = "TWITTER_QUEUE"
-queue = "twitter-analysis"
-
-[[queues.producers]]
-binding = "QUESTION_QUEUE"
-queue = "question-generation"
-
-[[queues.consumers]]
-queue = "twitter-analysis"
-max_batch_size = 10
-max_batch_timeout = 30
-
-[[queues.consumers]]
-queue = "question-generation"
-max_batch_size = 5
-max_batch_timeout = 60
-
-# Pages configuration
-[pages]
-build_output_dir = ".output/public"
-functions_dir = "server/api"
-
-# Production routes (custom domain)
-[[routes]]
-pattern = "pingtopass.com/*"
-zone_name = "pingtopass.com"
-
-[[routes]]
-pattern = "www.pingtopass.com/*"
-zone_name = "pingtopass.com"
-
-# Compatibility settings
-compatibility_flags = ["nodejs_compat", "experimental"]
-
-# Worker limits and performance
-[limits]
-cpu_ms = 50000
-memory_mb = 128
-
-# Environment-specific overrides
-[env.preview]
-vars = { NODE_ENV = "staging", BASE_URL = "https://preview.pingtopass.com" }
-kv_namespaces = [
-  { binding = "KV", id = "pingtopass_kv_preview" }
-]
-
-[env.staging]
-vars = { NODE_ENV = "staging", BASE_URL = "https://staging.pingtopass.com" }
-
-# Security headers configuration
-[env.production.vars]
-SECURITY_HEADERS_ENABLED = "true"
-CSP_ENABLED = "true"
-HSTS_ENABLED = "true"
-
-# Secrets (these must be set via CLI or dashboard):
+# Secrets to be set via CLI or dashboard:
 # GOOGLE_CLIENT_ID
 # GOOGLE_CLIENT_SECRET 
 # NUXT_SESSION_PASSWORD
 # TURSO_DATABASE_URL
 # TURSO_AUTH_TOKEN
 # OPENROUTER_API_KEY
-# TWITTER_API_KEY
-# WEBHOOK_SECRET
-# MONITORING_SECRET
+# LANGCHAIN_API_KEY
+# LANGSMITH_API_KEY
