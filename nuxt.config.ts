@@ -8,6 +8,11 @@ export default defineNuxtConfig({
   // Disable server-side rendering
   ssr: false,
   
+  // Cloudflare Pages deployment
+  nitro: {
+    preset: 'cloudflare-pages'
+  },
+  
   // Disable experimental features
   experimental: {
     componentIslands: false,
