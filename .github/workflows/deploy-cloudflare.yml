@@ -83,14 +83,6 @@ jobs:
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           wranglerVersion: '3'
 
-      - name: Deploy to NuxtHub (Alternative)
-        if: ${{ secrets.NUXT_HUB_PROJECT_KEY }}
-        run: |
-          npx nuxthub deploy
-        env:
-          NUXT_HUB_PROJECT_KEY: ${{ secrets.NUXT_HUB_PROJECT_KEY }}
-          NUXT_HUB_USER_TOKEN: ${{ secrets.NUXT_HUB_USER_TOKEN }}
-
       - name: Purge Cloudflare Cache
         if: success()
         run: |
