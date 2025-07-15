@@ -1,6 +1,7 @@
-# Minimal wrangler.toml for Cloudflare deployment
+# Wrangler configuration for Cloudflare deployment
 name = "pingtopass-nuxt"
 compatibility_date = "2024-09-06"
 
-# Since the build is generating Pages output, we'll let Cloudflare handle it
-# The deployment will use the dist folder automatically
+# Specify the assets directory
+[assets]
+directory = "./dist"
