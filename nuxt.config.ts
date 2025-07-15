@@ -8,9 +8,15 @@ export default defineNuxtConfig({
   // Disable server-side rendering
   ssr: false,
   
-  // Cloudflare Workers deployment
+  // Force Cloudflare Workers deployment (not Pages)
   nitro: {
-    preset: 'cloudflare'
+    preset: 'cloudflare',
+    // Ensure we're using Workers format
+    rollupConfig: {
+      output: {
+        entryFileNames: '_worker.js'
+      }
+    }
   },
   
   // Disable experimental features

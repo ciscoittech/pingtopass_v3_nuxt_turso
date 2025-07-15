@@ -1,43 +1,6 @@
-# Wrangler configuration for Cloudflare Workers
+# Minimal wrangler.toml for Cloudflare deployment
 name = "pingtopass-nuxt"
-main = ".output/server/index.mjs"
 compatibility_date = "2024-09-06"
-compatibility_flags = ["nodejs_compat"]
 
-# Account ID (optional, can be set via environment)
-# account_id = "your_account_id"
-
-# Workers Sites configuration
-[site]
-bucket = ".output/public"
-
-# Build configuration
-[build]
-command = "pnpm run build"
-
-# Bindings for Cloudflare services (if using NuxtHub features)
-# [[kv_namespaces]]
-# binding = "KV"
-# id = "your_kv_namespace_id"
-
-# [[r2_buckets]]
-# binding = "BLOB"
-# bucket_name = "your_bucket_name"
-
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "your_database_name"
-# database_id = "your_database_id"
-
-# Environment variables (non-sensitive)
-[vars]
-NODE_ENV = "production"
-
-# Secrets to be set via CLI or dashboard:
-# wrangler secret put NUXT_OAUTH_GOOGLE_CLIENT_ID
-# wrangler secret put NUXT_OAUTH_GOOGLE_CLIENT_SECRET
-# wrangler secret put NUXT_SESSION_PASSWORD
-# wrangler secret put TURSO_DB_URL
-# wrangler secret put TURSO_DB_TOKEN
-# wrangler secret put OPENROUTER_API_KEY
-# wrangler secret put LANGCHAIN_API_KEY
+# Since the build is generating Pages output, we'll let Cloudflare handle it
+# The deployment will use the dist folder automatically
