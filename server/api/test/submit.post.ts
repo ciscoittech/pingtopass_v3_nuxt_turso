@@ -23,6 +23,8 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    const db = useDB()
+
     // Validate request body
     const body = await readBody(event)
     const validatedData = submitTestSchema.parse(body)

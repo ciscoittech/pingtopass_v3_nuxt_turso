@@ -7,7 +7,9 @@ export const objectives = sqliteTable('objectives', {
   examId: text('exam_id').references(() => exams.id).notNull(),
   title: text('title').notNull(),
   description: text('description'),
-  weight: real('weight'), // Percentage weight of this objective in the exam
+  weight: real('weight').notNull().default(10), // Percentage weight of this objective in the exam
+  order: integer('order').notNull().default(1), // Display order for drag-and-drop
+  isActive: integer('is_active').notNull().default(1), // 1 = active, 0 = inactive
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 })

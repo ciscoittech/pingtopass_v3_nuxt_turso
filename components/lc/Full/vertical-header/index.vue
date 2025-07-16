@@ -45,6 +45,7 @@ function handleScroll() {
 
 <template>
   <v-app-bar
+    app
     elevation="0"
     :priority="priority"
     height="75"

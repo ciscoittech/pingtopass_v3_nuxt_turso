@@ -13,6 +13,8 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    const db = useDB()
+
     // Get session ID from route params
     const sessionId = getRouterParam(event, 'id')
     if (!sessionId) {

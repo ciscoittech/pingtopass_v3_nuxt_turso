@@ -4,7 +4,7 @@ import { users } from './users'
 import { exams } from './exams'
 import { questions, answers } from './questions'
 
-export const studySessions = sqliteTable('study_sessions', {
+export const oldStudySessions = sqliteTable('old_study_sessions', {
   id: text('id').primaryKey(),
   userId: text('user_id').references(() => users.id),
   examId: text('exam_id').references(() => exams.id),
@@ -16,10 +16,10 @@ export const studySessions = sqliteTable('study_sessions', {
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
 })
 
-export type StudySession = typeof studySessions.$inferSelect
-export type NewStudySession = typeof studySessions.$inferInsert
+export type OldStudySession = typeof oldStudySessions.$inferSelect
+export type NewOldStudySession = typeof oldStudySessions.$inferInsert
 
-export const testSessions = sqliteTable('test_sessions', {
+export const oldTestSessions = sqliteTable('old_test_sessions', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id),
   examId: text('exam_id').notNull().references(() => exams.id),
@@ -42,12 +42,12 @@ export const testSessions = sqliteTable('test_sessions', {
   passingScore: real('passing_score').default(70),
 })
 
-export type TestSession = typeof testSessions.$inferSelect
-export type NewTestSession = typeof testSessions.$inferInsert
+export type OldTestSession = typeof oldTestSessions.$inferSelect
+export type NewOldTestSession = typeof oldTestSessions.$inferInsert
 
 export const testResponses = sqliteTable('test_responses', {
   id: text('id').primaryKey(),
-  sessionId: text('session_id').notNull().references(() => testSessions.id),
+  sessionId: text('session_id').notNull().references(() => oldTestSessions.id),
   questionId: text('question_id').notNull().references(() => questions.id),
   selectedAnswerId: text('selected_answer_id').references(() => answers.id),
   isCorrect: integer('is_correct', { mode: 'boolean' }).default(false),
@@ -60,7 +60,7 @@ export type NewTestResponse = typeof testResponses.$inferInsert
 
 export const testSessionQuestions = sqliteTable('test_session_questions', {
   id: text('id').primaryKey().default(sql`lower(hex(randomblob(16)))`),
-  sessionId: text('session_id').notNull().references(() => testSessions.id, { onDelete: 'cascade' }),
+  sessionId: text('session_id').notNull().references(() => oldTestSessions.id, { onDelete: 'cascade' }),
   questionId: text('question_id').notNull().references(() => questions.id, { onDelete: 'cascade' }),
   questionOrder: integer('question_order').notNull(),
   createdAt: text('created_at').default(sql`CURRENT_TIMESTAMP`),

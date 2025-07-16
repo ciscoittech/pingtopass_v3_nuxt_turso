@@ -1,0 +1,384 @@
+{
+  "examCode": "SY0-701",
+  "examName": "CompTIA Security+",
+  "vendorName": "CompTIA",
+  "objectives": [
+    {
+      "title": "General Security Concepts",
+      "description": "Compare and contrast various types of security controls and fundamental security concepts",
+      "weight": 12
+    },
+    {
+      "title": "Threats, Vulnerabilities, and Mitigations",
+      "description": "Explain common threat actors and threat intelligence sources, common attack types, and application attacks",
+      "weight": 22
+    },
+    {
+      "title": "Security Architecture",
+      "description": "Compare and contrast security implications of different architecture models",
+      "weight": 18
+    },
+    {
+      "title": "Security Operations",
+      "description": "Apply common security techniques to computing resources and explain the importance of security concepts",
+      "weight": 28
+    },
+    {
+      "title": "Security Program Management and Oversight",
+      "description": "Summarize governance and compliance concepts and explain risk management processes",
+      "weight": 20
+    }
+  ],
+  "questions": [
+    {
+      "questionText": "Which type of security control is a firewall considered to be?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Administrative",
+        "Technical",
+        "Physical",
+        "Compensating"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A firewall is a technical (also called logical) security control because it uses technology to enforce security policies and protect systems from network-based threats.",
+      "difficulty": 2,
+      "objectiveTitle": "General Security Concepts"
+    },
+    {
+      "questionText": "What is the principle of least privilege?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Users should have the minimum access rights needed to perform their job",
+        "All users should have the same level of access",
+        "Administrators should have limited privileges",
+        "Privileges should be rotated among users"
+      ],
+      "correctAnswer": [0],
+      "explanation": "The principle of least privilege states that users should be given the minimum levels of access – or permissions – needed to perform their job functions. This reduces the potential damage from accidents or malicious actions.",
+      "difficulty": 1,
+      "objectiveTitle": "General Security Concepts"
+    },
+    {
+      "questionText": "Which type of malware encrypts files and demands payment for the decryption key?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Trojan",
+        "Worm",
+        "Ransomware",
+        "Spyware"
+      ],
+      "correctAnswer": [2],
+      "explanation": "Ransomware is a type of malware that encrypts a victim's files or entire system and demands payment (ransom) in exchange for the decryption key to restore access.",
+      "difficulty": 1,
+      "objectiveTitle": "Threats, Vulnerabilities, and Mitigations"
+    },
+    {
+      "questionText": "What type of attack involves an attacker intercepting communication between two parties?",
+      "questionType": "multiple-choice",
+      "options": [
+        "DDoS attack",
+        "Man-in-the-middle attack",
+        "Buffer overflow",
+        "SQL injection"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A man-in-the-middle (MITM) attack occurs when an attacker intercepts communication between two parties, potentially allowing them to eavesdrop on or modify the communication.",
+      "difficulty": 2,
+      "objectiveTitle": "Threats, Vulnerabilities, and Mitigations"
+    },
+    {
+      "questionText": "Which of the following is a characteristic of a zero-day vulnerability?",
+      "questionType": "multiple-choice",
+      "options": [
+        "It has been patched by the vendor",
+        "It is unknown to the vendor",
+        "It only affects legacy systems",
+        "It requires physical access to exploit"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A zero-day vulnerability is a software vulnerability that is unknown to the vendor and therefore has no available patch. Attackers can exploit these vulnerabilities before they are discovered and fixed.",
+      "difficulty": 2,
+      "objectiveTitle": "Threats, Vulnerabilities, and Mitigations"
+    },
+    {
+      "questionText": "What is the primary purpose of network segmentation?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To increase network speed",
+        "To reduce the attack surface",
+        "To simplify network management",
+        "To reduce hardware costs"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Network segmentation primarily serves to reduce the attack surface by dividing a network into smaller segments, limiting an attacker's ability to move laterally through the network if one segment is compromised.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Architecture"
+    },
+    {
+      "questionText": "Which cloud service model provides the most control to the customer?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Software as a Service (SaaS)",
+        "Platform as a Service (PaaS)",
+        "Infrastructure as a Service (IaaS)",
+        "Function as a Service (FaaS)"
+      ],
+      "correctAnswer": [2],
+      "explanation": "Infrastructure as a Service (IaaS) provides the most control to the customer, as they manage the operating systems, applications, and data while the cloud provider manages the underlying infrastructure.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Architecture"
+    },
+    {
+      "questionText": "What is the purpose of a honeypot?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To encrypt sensitive data",
+        "To attract and detect attackers",
+        "To provide backup services",
+        "To filter network traffic"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A honeypot is a security mechanism designed to attract and detect attackers by appearing to be a legitimate target. It helps identify attack patterns and diverts attackers from real systems.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Architecture"
+    },
+    {
+      "questionText": "Which of the following is the BEST method for securely disposing of data on a solid-state drive (SSD)?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Overwriting",
+        "Degaussing",
+        "Cryptographic erasure",
+        "Physical destruction"
+      ],
+      "correctAnswer": [3],
+      "explanation": "Physical destruction is the most secure method for disposing of data on SSDs because wear-leveling and garbage collection make traditional overwriting unreliable, and degaussing is ineffective on flash memory.",
+      "difficulty": 3,
+      "objectiveTitle": "Security Operations"
+    },
+    {
+      "questionText": "What type of log would contain information about user authentication attempts?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Application logs",
+        "Security logs",
+        "System logs",
+        "Performance logs"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Security logs (also called audit logs) contain information about security events, including user authentication attempts, access control changes, and other security-related activities.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Operations"
+    },
+    {
+      "questionText": "Which authentication factor is based on something you are?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Password",
+        "Smart card",
+        "Fingerprint",
+        "PIN"
+      ],
+      "correctAnswer": [2],
+      "explanation": "Biometric authentication factors like fingerprints are based on 'something you are' - physical characteristics unique to an individual. This is one of the three main authentication factor categories.",
+      "difficulty": 1,
+      "objectiveTitle": "Security Operations"
+    },
+    {
+      "questionText": "What is the primary purpose of a vulnerability scan?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To exploit vulnerabilities",
+        "To identify potential security weaknesses",
+        "To install security patches",
+        "To monitor user activity"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A vulnerability scan is designed to identify potential security weaknesses in systems, networks, and applications. It helps organizations discover vulnerabilities before attackers can exploit them.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Operations"
+    },
+    {
+      "questionText": "Which framework is commonly used for managing and reducing cybersecurity risk?",
+      "questionType": "multiple-choice",
+      "options": [
+        "ITIL",
+        "NIST Cybersecurity Framework",
+        "Agile",
+        "Six Sigma"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The NIST Cybersecurity Framework provides a policy framework of computer security guidance for organizations to assess and improve their ability to prevent, detect, and respond to cyber attacks.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Program Management and Oversight"
+    },
+    {
+      "questionText": "What does GDPR stand for?",
+      "questionType": "multiple-choice",
+      "options": [
+        "General Data Protection Regulation",
+        "Global Data Privacy Requirement",
+        "Government Data Protection Rule",
+        "General Digital Privacy Regulation"
+      ],
+      "correctAnswer": [0],
+      "explanation": "GDPR stands for General Data Protection Regulation, a comprehensive data protection law that applies to organizations handling EU citizens' personal data, regardless of the organization's location.",
+      "difficulty": 1,
+      "objectiveTitle": "Security Program Management and Oversight"
+    },
+    {
+      "questionText": "Which type of risk response involves accepting the potential cost of a risk?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Risk avoidance",
+        "Risk transference",
+        "Risk mitigation",
+        "Risk acceptance"
+      ],
+      "correctAnswer": [3],
+      "explanation": "Risk acceptance involves acknowledging a risk and accepting the potential cost or impact if it occurs, typically when the cost of mitigation exceeds the potential loss or the risk is within acceptable limits.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Program Management and Oversight"
+    },
+    {
+      "questionText": "What is the purpose of separation of duties?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To increase efficiency",
+        "To prevent fraud and errors",
+        "To reduce training costs",
+        "To simplify processes"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Separation of duties is a security principle that divides critical tasks among multiple people to prevent fraud and errors. No single person should have complete control over a critical process.",
+      "difficulty": 2,
+      "objectiveTitle": "General Security Concepts"
+    },
+    {
+      "questionText": "Which attack exploits the trust relationship between a user and a website?",
+      "questionType": "multiple-choice",
+      "options": [
+        "SQL injection",
+        "Cross-site scripting (XSS)",
+        "Cross-site request forgery (CSRF)",
+        "Buffer overflow"
+      ],
+      "correctAnswer": [2],
+      "explanation": "Cross-site request forgery (CSRF) exploits the trust that a website has in a user's browser by tricking the browser into sending unauthorized commands to a website where the user is authenticated.",
+      "difficulty": 3,
+      "objectiveTitle": "Threats, Vulnerabilities, and Mitigations"
+    },
+    {
+      "questionText": "What is defense in depth?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Using multiple firewalls",
+        "Implementing layered security controls",
+        "Focusing on perimeter security",
+        "Regular security training"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Defense in depth is a security strategy that implements multiple layers of security controls throughout an IT system. If one layer fails, other layers continue to provide protection.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Architecture"
+    },
+    {
+      "questionText": "Which of the following is an example of a preventive control?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Security camera",
+        "Intrusion detection system",
+        "Access control list",
+        "Audit log"
+      ],
+      "correctAnswer": [2],
+      "explanation": "An access control list (ACL) is a preventive control because it prevents unauthorized access before it occurs. Cameras and IDS are detective controls, while audit logs are typically used for detective or corrective purposes.",
+      "difficulty": 2,
+      "objectiveTitle": "General Security Concepts"
+    },
+    {
+      "questionText": "What type of encryption uses the same key for both encryption and decryption?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Asymmetric encryption",
+        "Symmetric encryption",
+        "Hashing",
+        "Digital signatures"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Symmetric encryption uses the same key for both encrypting and decrypting data. This is faster than asymmetric encryption but requires secure key distribution.",
+      "difficulty": 2,
+      "objectiveTitle": "General Security Concepts"
+    },
+    {
+      "questionText": "Which protocol provides secure remote access to network devices?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Telnet",
+        "SSH",
+        "HTTP",
+        "FTP"
+      ],
+      "correctAnswer": [1],
+      "explanation": "SSH (Secure Shell) provides encrypted remote access to network devices, replacing insecure protocols like Telnet that transmit data, including passwords, in clear text.",
+      "difficulty": 1,
+      "objectiveTitle": "Security Operations"
+    },
+    {
+      "questionText": "What is the primary purpose of a Security Information and Event Management (SIEM) system?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To encrypt data at rest",
+        "To aggregate and analyze security logs",
+        "To perform vulnerability scans",
+        "To manage user passwords"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A SIEM system aggregates and analyzes security logs from multiple sources in real-time, providing centralized monitoring, threat detection, and incident response capabilities.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Operations"
+    },
+    {
+      "questionText": "Which of the following best describes a supply chain attack?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Attacking a company's inventory system",
+        "Compromising a trusted third-party to reach the actual target",
+        "Disrupting product delivery",
+        "Stealing shipping information"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A supply chain attack involves compromising a trusted third-party vendor or supplier to gain access to the actual target organization, exploiting the trust relationship between organizations.",
+      "difficulty": 2,
+      "objectiveTitle": "Threats, Vulnerabilities, and Mitigations"
+    },
+    {
+      "questionText": "What is the purpose of a chain of custody?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To encrypt evidence",
+        "To maintain the integrity of evidence",
+        "To destroy evidence securely",
+        "To share evidence with law enforcement"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Chain of custody documents the handling of evidence from collection through presentation in court, maintaining its integrity and ensuring it hasn't been tampered with or altered.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Program Management and Oversight"
+    },
+    {
+      "questionText": "Which type of backup includes all data regardless of when it was last backed up?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Incremental backup",
+        "Differential backup",
+        "Full backup",
+        "Snapshot backup"
+      ],
+      "correctAnswer": [2],
+      "explanation": "A full backup includes all selected data regardless of when it was last backed up. While it requires the most storage space and time, it provides the simplest restoration process.",
+      "difficulty": 1,
+      "objectiveTitle": "Security Operations"
+    }
+  ]
+}

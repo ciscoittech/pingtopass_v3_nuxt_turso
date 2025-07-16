@@ -1,0 +1,449 @@
+{
+  "examCode": "SAA-C03",
+  "examName": "AWS Certified Solutions Architect - Associate",
+  "vendorName": "Amazon Web Services",
+  "objectives": [
+    {
+      "title": "Design Secure Architectures",
+      "description": "Design secure access to AWS resources, secure application tiers, and select appropriate data security options",
+      "weight": 30
+    },
+    {
+      "title": "Design Resilient Architectures",
+      "description": "Design scalable and loosely coupled architectures, highly available and fault-tolerant architectures",
+      "weight": 26
+    },
+    {
+      "title": "Design High-Performing Architectures",
+      "description": "Identify elastic and scalable compute solutions, high-performing storage and database solutions",
+      "weight": 24
+    },
+    {
+      "title": "Design Cost-Optimized Architectures",
+      "description": "Identify cost-effective storage, compute, database, and network architecture solutions",
+      "weight": 20
+    }
+  ],
+  "questions": [
+    {
+      "questionText": "Which AWS service provides a managed NoSQL database with single-digit millisecond performance?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Amazon RDS",
+        "Amazon DynamoDB",
+        "Amazon Redshift",
+        "Amazon Neptune"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Amazon DynamoDB is a fully managed NoSQL database service that provides fast and predictable performance with seamless scalability, offering single-digit millisecond latency at any scale.",
+      "difficulty": 1,
+      "objectiveTitle": "Design High-Performing Architectures"
+    },
+    {
+      "questionText": "What is the maximum size of an object that can be stored in Amazon S3?",
+      "questionType": "multiple-choice",
+      "options": [
+        "5 GB",
+        "5 TB",
+        "100 GB",
+        "Unlimited"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The maximum size for a single object stored in Amazon S3 is 5 TB. Objects larger than 5 GB must be uploaded using multipart upload.",
+      "difficulty": 2,
+      "objectiveTitle": "Design High-Performing Architectures"
+    },
+    {
+      "questionText": "Which AWS service should you use to distribute content with low latency to users worldwide?",
+      "questionType": "multiple-choice",
+      "options": [
+        "AWS Direct Connect",
+        "Amazon CloudFront",
+        "AWS Global Accelerator",
+        "Amazon Route 53"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Amazon CloudFront is a content delivery network (CDN) service that delivers data, videos, applications, and APIs globally with low latency and high transfer speeds.",
+      "difficulty": 1,
+      "objectiveTitle": "Design High-Performing Architectures"
+    },
+    {
+      "questionText": "Which feature of Amazon VPC allows instances in a private subnet to connect to the internet?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Internet Gateway",
+        "NAT Gateway",
+        "Virtual Private Gateway",
+        "VPC Endpoint"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A NAT Gateway enables instances in a private subnet to connect to the internet or other AWS services while preventing the internet from initiating connections to those instances.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Secure Architectures"
+    },
+    {
+      "questionText": "What is the AWS Well-Architected Framework pillar that focuses on protecting information and systems?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Operational Excellence",
+        "Security",
+        "Reliability",
+        "Performance Efficiency"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The Security pillar of the AWS Well-Architected Framework focuses on protecting information and systems, including data confidentiality, integrity, privilege management, and threat detection.",
+      "difficulty": 1,
+      "objectiveTitle": "Design Secure Architectures"
+    },
+    {
+      "questionText": "Which storage class should you use for infrequently accessed data that requires rapid access when needed?",
+      "questionType": "multiple-choice",
+      "options": [
+        "S3 Standard",
+        "S3 Standard-IA",
+        "S3 Glacier",
+        "S3 Glacier Deep Archive"
+      ],
+      "correctAnswer": [1],
+      "explanation": "S3 Standard-IA (Infrequent Access) is designed for data that is accessed less frequently but requires rapid access when needed. It offers lower storage costs than S3 Standard.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Cost-Optimized Architectures"
+    },
+    {
+      "questionText": "Which AWS service provides serverless compute capacity?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Amazon EC2",
+        "AWS Lambda",
+        "Amazon ECS",
+        "AWS Batch"
+      ],
+      "correctAnswer": [1],
+      "explanation": "AWS Lambda is a serverless compute service that runs code in response to events and automatically manages the underlying compute resources, eliminating the need to provision or manage servers.",
+      "difficulty": 1,
+      "objectiveTitle": "Design Cost-Optimized Architectures"
+    },
+    {
+      "questionText": "What is the minimum number of Availability Zones recommended for high availability?",
+      "questionType": "multiple-choice",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "correctAnswer": [1],
+      "explanation": "AWS recommends using at least 2 Availability Zones for high availability. This ensures your application can continue operating if one AZ experiences an outage.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Resilient Architectures"
+    },
+    {
+      "questionText": "Which database service automatically scales storage capacity as your database grows?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Amazon RDS",
+        "Amazon Aurora",
+        "Amazon DynamoDB",
+        "Both B and C"
+      ],
+      "correctAnswer": [3],
+      "explanation": "Both Amazon Aurora and DynamoDB automatically scale storage. Aurora can scale up to 128 TB, while DynamoDB has virtually unlimited storage with automatic scaling.",
+      "difficulty": 2,
+      "objectiveTitle": "Design High-Performing Architectures"
+    },
+    {
+      "questionText": "What is the purpose of AWS IAM?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To monitor AWS resources",
+        "To manage access to AWS services and resources",
+        "To encrypt data at rest",
+        "To provide DDoS protection"
+      ],
+      "correctAnswer": [1],
+      "explanation": "AWS Identity and Access Management (IAM) enables you to manage access to AWS services and resources securely. You can create and manage users, groups, and permissions.",
+      "difficulty": 1,
+      "objectiveTitle": "Design Secure Architectures"
+    },
+    {
+      "questionText": "Which service would you use to decouple components of a distributed application?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Amazon SNS",
+        "Amazon SQS",
+        "AWS Step Functions",
+        "All of the above"
+      ],
+      "correctAnswer": [3],
+      "explanation": "All these services can decouple components: SQS provides message queuing, SNS enables pub/sub messaging, and Step Functions orchestrates distributed applications and microservices.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Resilient Architectures"
+    },
+    {
+      "questionText": "What is the maximum retention period for Amazon SQS messages?",
+      "questionType": "multiple-choice",
+      "options": [
+        "1 day",
+        "7 days",
+        "14 days",
+        "30 days"
+      ],
+      "correctAnswer": [2],
+      "explanation": "Amazon SQS can retain messages for a maximum of 14 days. The default retention period is 4 days, but it can be configured from 1 minute to 14 days.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Resilient Architectures"
+    },
+    {
+      "questionText": "Which AWS service provides a fully managed container orchestration service?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Amazon ECS",
+        "Amazon EKS",
+        "AWS Fargate",
+        "All of the above"
+      ],
+      "correctAnswer": [3],
+      "explanation": "All are container services: ECS is AWS's native container orchestration service, EKS provides managed Kubernetes, and Fargate is a serverless compute engine for containers.",
+      "difficulty": 2,
+      "objectiveTitle": "Design High-Performing Architectures"
+    },
+    {
+      "questionText": "What type of EBS volume provides the highest performance for I/O intensive workloads?",
+      "questionType": "multiple-choice",
+      "options": [
+        "General Purpose SSD (gp3)",
+        "Provisioned IOPS SSD (io2)",
+        "Throughput Optimized HDD (st1)",
+        "Cold HDD (sc1)"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Provisioned IOPS SSD (io2) volumes provide the highest performance EBS storage option, designed for I/O intensive workloads requiring sustained IOPS performance.",
+      "difficulty": 2,
+      "objectiveTitle": "Design High-Performing Architectures"
+    },
+    {
+      "questionText": "Which pricing model offers the largest discount for EC2 instances?",
+      "questionType": "multiple-choice",
+      "options": [
+        "On-Demand",
+        "Reserved Instances",
+        "Spot Instances",
+        "Savings Plans"
+      ],
+      "correctAnswer": [2],
+      "explanation": "Spot Instances can provide up to 90% discount compared to On-Demand prices. However, they can be interrupted when EC2 needs the capacity back.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Cost-Optimized Architectures"
+    },
+    {
+      "questionText": "What is the purpose of AWS CloudFormation?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To monitor application performance",
+        "To provision and manage infrastructure as code",
+        "To analyze security vulnerabilities",
+        "To optimize costs"
+      ],
+      "correctAnswer": [1],
+      "explanation": "AWS CloudFormation provides a way to model and provision AWS and third-party resources using infrastructure as code, allowing you to treat infrastructure as code.",
+      "difficulty": 1,
+      "objectiveTitle": "Design Resilient Architectures"
+    },
+    {
+      "questionText": "Which service provides a petabyte-scale data warehouse solution?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Amazon RDS",
+        "Amazon DynamoDB",
+        "Amazon Redshift",
+        "Amazon ElastiCache"
+      ],
+      "correctAnswer": [2],
+      "explanation": "Amazon Redshift is a fully managed, petabyte-scale data warehouse service designed for analyzing data using standard SQL and existing business intelligence tools.",
+      "difficulty": 1,
+      "objectiveTitle": "Design High-Performing Architectures"
+    },
+    {
+      "questionText": "What is the minimum duration for purchasing a Standard Reserved Instance?",
+      "questionType": "multiple-choice",
+      "options": [
+        "1 month",
+        "6 months",
+        "1 year",
+        "3 years"
+      ],
+      "correctAnswer": [2],
+      "explanation": "Standard Reserved Instances have a minimum purchase duration of 1 year. You can choose between 1-year and 3-year terms, with 3-year terms offering larger discounts.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Cost-Optimized Architectures"
+    },
+    {
+      "questionText": "Which AWS service can automatically scale EC2 instances based on demand?",
+      "questionType": "multiple-choice",
+      "options": [
+        "AWS Auto Scaling",
+        "Elastic Load Balancing",
+        "Amazon CloudWatch",
+        "AWS Systems Manager"
+      ],
+      "correctAnswer": [0],
+      "explanation": "AWS Auto Scaling monitors applications and automatically adjusts capacity to maintain steady, predictable performance at the lowest possible cost.",
+      "difficulty": 1,
+      "objectiveTitle": "Design Resilient Architectures"
+    },
+    {
+      "questionText": "What is the durability of S3 Standard storage class?",
+      "questionType": "multiple-choice",
+      "options": [
+        "99.9%",
+        "99.99%",
+        "99.999999999%",
+        "100%"
+      ],
+      "correctAnswer": [2],
+      "explanation": "S3 Standard storage class is designed for 99.999999999% (11 9's) durability of objects over a given year, protecting against site-level failures.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Resilient Architectures"
+    },
+    {
+      "questionText": "Which service would you use to create a hybrid cloud storage solution?",
+      "questionType": "multiple-choice",
+      "options": [
+        "AWS Direct Connect",
+        "AWS Storage Gateway",
+        "AWS DataSync",
+        "AWS Snowball"
+      ],
+      "correctAnswer": [1],
+      "explanation": "AWS Storage Gateway is a hybrid cloud storage service that gives you on-premises access to virtually unlimited cloud storage, enabling hybrid cloud architectures.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Resilient Architectures"
+    },
+    {
+      "questionText": "What is the maximum number of security groups that can be attached to an EC2 instance?",
+      "questionType": "multiple-choice",
+      "options": [
+        "1",
+        "5",
+        "10",
+        "Unlimited"
+      ],
+      "correctAnswer": [1],
+      "explanation": "By default, you can assign up to 5 security groups to an EC2 instance. This limit can be increased by contacting AWS support.",
+      "difficulty": 3,
+      "objectiveTitle": "Design Secure Architectures"
+    },
+    {
+      "questionText": "Which feature allows you to control traffic between subnets in a VPC?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Security Groups",
+        "Network ACLs",
+        "Route Tables",
+        "Internet Gateway"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Network ACLs (Access Control Lists) act as a firewall for controlling traffic in and out of subnets. They provide an additional layer of security at the subnet level.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Secure Architectures"
+    },
+    {
+      "questionText": "What service provides a managed Kubernetes service on AWS?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Amazon ECS",
+        "Amazon EKS",
+        "AWS Fargate",
+        "AWS Batch"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Amazon Elastic Kubernetes Service (EKS) is a fully managed Kubernetes service that makes it easy to deploy, manage, and scale containerized applications using Kubernetes.",
+      "difficulty": 1,
+      "objectiveTitle": "Design High-Performing Architectures"
+    },
+    {
+      "questionText": "Which AWS service helps you optimize costs by providing recommendations?",
+      "questionType": "multiple-choice",
+      "options": [
+        "AWS Cost Explorer",
+        "AWS Trusted Advisor",
+        "AWS Compute Optimizer",
+        "All of the above"
+      ],
+      "correctAnswer": [3],
+      "explanation": "All these services help optimize costs: Cost Explorer analyzes spending, Trusted Advisor provides best practice recommendations, and Compute Optimizer recommends optimal AWS resources.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Cost-Optimized Architectures"
+    },
+    {
+      "questionText": "What is the default limit for the number of VPCs per region?",
+      "questionType": "multiple-choice",
+      "options": [
+        "1",
+        "5",
+        "10",
+        "100"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The default limit is 5 VPCs per region per AWS account. This is a soft limit that can be increased by requesting a limit increase from AWS support.",
+      "difficulty": 3,
+      "objectiveTitle": "Design Secure Architectures"
+    },
+    {
+      "questionText": "Which database migration service helps migrate databases to AWS with minimal downtime?",
+      "questionType": "multiple-choice",
+      "options": [
+        "AWS DataSync",
+        "AWS Database Migration Service",
+        "AWS Glue",
+        "AWS Transfer Family"
+      ],
+      "correctAnswer": [1],
+      "explanation": "AWS Database Migration Service (DMS) helps migrate databases to AWS quickly and securely. The source database remains fully operational during migration, minimizing downtime.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Resilient Architectures"
+    },
+    {
+      "questionText": "What is the primary benefit of using AWS CloudTrail?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Performance monitoring",
+        "Cost optimization",
+        "API activity logging and auditing",
+        "Application debugging"
+      ],
+      "correctAnswer": [2],
+      "explanation": "AWS CloudTrail enables governance, compliance, operational auditing, and risk auditing by logging and continuously monitoring API calls made within your AWS account.",
+      "difficulty": 2,
+      "objectiveTitle": "Design Secure Architectures"
+    },
+    {
+      "questionText": "Which service provides in-memory caching to improve application performance?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Amazon RDS",
+        "Amazon DynamoDB",
+        "Amazon ElastiCache",
+        "Amazon Redshift"
+      ],
+      "correctAnswer": [2],
+      "explanation": "Amazon ElastiCache offers fully managed in-memory data stores with Redis or Memcached, enabling you to retrieve information from fast, managed, in-memory systems.",
+      "difficulty": 1,
+      "objectiveTitle": "Design High-Performing Architectures"
+    },
+    {
+      "questionText": "What is the maximum size of an item in DynamoDB?",
+      "questionType": "multiple-choice",
+      "options": [
+        "64 KB",
+        "400 KB",
+        "1 MB",
+        "16 MB"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The maximum item size in DynamoDB is 400 KB, including both attribute names and values. For larger data, consider storing it in S3 and keeping references in DynamoDB.",
+      "difficulty": 3,
+      "objectiveTitle": "Design High-Performing Architectures"
+    }
+  ]
+}

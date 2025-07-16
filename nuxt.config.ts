@@ -17,10 +17,18 @@ export default defineNuxtConfig({
     }
   },
   
-  // Disable experimental features
+  // Experimental features for performance
   experimental: {
     componentIslands: false,
-    payloadExtraction: false,
+    payloadExtraction: true, // Enable for better performance
+    treeshakeClientOnly: true, // Remove client-only components from server bundle
+    asyncContext: true, // Better async handling
+    defaults: {
+      nuxtLink: {
+        prefetch: true, // Enable link prefetching
+        prefetchedClass: 'nuxt-link-prefetched',
+      },
+    },
   },
 
   // TypeScript configuration
@@ -43,6 +51,53 @@ export default defineNuxtConfig({
   vite: {
     ssr: {
       noExternal: ['vuetify'],
+    },
+    build: {
+      // Enable minification
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+        },
+      },
+      // Optimize chunk size
+      rollupOptions: {
+        output: {
+          // Manual chunk splitting for better caching
+          manualChunks: {
+            'vuetify': ['vuetify'],
+            'charts': ['apexcharts', 'vue3-apexcharts'],
+            'icons': ['@iconify/vue'],
+            'utils': ['lodash-es'], // 'dayjs' removed until needed
+          },
+          // Use content hash for better caching
+          chunkFileNames: 'js/[name]-[hash].js',
+          entryFileNames: 'js/[name]-[hash].js',
+          assetFileNames: (assetInfo) => {
+            const info = assetInfo.name.split('.')
+            const ext = info[info.length - 1]
+            if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+              return `images/[name]-[hash][extname]`
+            } else if (/woff2?|ttf|otf|eot/i.test(ext)) {
+              return `fonts/[name]-[hash][extname]`
+            }
+            return `assets/[name]-[hash][extname]`
+          },
+        },
+      },
+      // Chunk size warnings
+      chunkSizeWarningLimit: 1000,
+    },
+    // Optimize dependencies
+    optimizeDeps: {
+      include: [
+        'vuetify',
+        '@iconify/vue',
+        'apexcharts',
+        'vue3-apexcharts',
+      ],
+      exclude: ['@libsql/client'],
     },
   },
 
@@ -135,14 +190,33 @@ export default defineNuxtConfig({
         { name: 'description', content: 'Prepare for IT certification exams with comprehensive study tools and practice tests' },
         { name: 'format-detection', content: 'telephone=no' },
         { name: 'msapplication-tap-highlight', content: 'no' },
+        { name: 'mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'default' },
         { name: 'apple-mobile-web-app-title', content: 'PingToPass' }
       ],
       link: [
-        { rel: 'apple-touch-icon', href: '/icon-192x192.png' }
+        { rel: 'apple-touch-icon', href: '/icon-192x192.png' },
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: true },
       ]
     },
+  },
+
+  // Render optimizations
+  render: {
+    bundleRenderer: {
+      shouldPreload: (file, type) => {
+        // Preload critical assets
+        if (type === 'script' || type === 'style') {
+          return true
+        }
+        if (type === 'font') {
+          return /\.woff2$/.test(file)
+        }
+        return false
+      }
+    }
   },
 
   // Runtime configuration

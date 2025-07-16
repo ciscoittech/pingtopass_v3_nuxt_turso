@@ -1,9 +1,11 @@
 import { useDB } from '~/server/utils/db'
-import { userProgress, users, userStreaks } from '~/server/database/schema'
+import { userProgress, userStreaks } from '~/server/database/schema/userProgress'
+import { users } from '~/server/database/schema/users'
 import { eq, desc, and, gte, sql } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   try {
+    const db = useDB()
     const query = getQuery(event)
     const category = (query.category as string) || 'points'
     const timeframe = (query.timeframe as string) || 'all_time'

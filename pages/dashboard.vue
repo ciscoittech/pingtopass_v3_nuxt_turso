@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref } from "vue";
 // Theme Components from Spike
-import CongratsCard from "@/components/dashboards/dashboard1/CongratulationsCard.vue";
+import WelcomeCard from "@/components/dashboards/pingtopass/WelcomeCard.vue";
 import StudyStreak from "@/components/dashboards/pingtopass/StudyStreak.vue";
 import QuestionsAnswered from "@/components/dashboards/pingtopass/QuestionsAnswered.vue";
 import StudyProgress from "@/components/dashboards/pingtopass/StudyProgress.vue";
 import QuickActionsSpike from "@/components/dashboards/pingtopass/QuickActionsSpike.vue";
-import ProfitExpanse from "@/components/dashboards/dashboard2/ProfitExpanse.vue";
-import UpcommingSchedule from "@/components/dashboards/dashboard2/UpcommingSchedule.vue";
+import StudyAnalytics from "@/components/dashboards/pingtopass/StudyAnalytics.vue";
+import RecentActivity from "@/components/dashboards/pingtopass/RecentActivity.vue";
 
 
 // Require authentication
@@ -39,6 +39,18 @@ const { data: examsData } = await useFetch('/api/exams', {
 })
 const exams = computed(() => examsData.value?.data || [])
 
+// Get total exam count
+const totalExams = computed(() => examsData.value?.data?.length || 0)
+
+// Get today's study time
+const todayStudyTime = computed(() => {
+  const todayData = analytics.value?.daily?.find((day: any) => {
+    const today = new Date().toDateString();
+    return new Date(day.date).toDateString() === today;
+  });
+  return todayData?.studyTime || 0;
+});
+
 // Format time helper
 const formatTime = (seconds: number) => {
   const hours = Math.floor(seconds / 3600)
@@ -54,9 +66,15 @@ const formatTime = (seconds: number) => {
 
 <template>
   <v-row>
-    <!-- Congratulation Card -->
+    <!-- Welcome Card -->
     <v-col cols="12" sm="12" lg="6">
-      <CongratsCard />
+      <WelcomeCard 
+        :user-name="user?.name || 'Student'"
+        :total-exams="totalExams"
+        :completed-exams="progress?.overall?.examsCompleted || 0"
+        :study-streak="progress?.streaks?.currentDaily || 0"
+        :study-hours="todayStudyTime"
+      />
     </v-col>
     <v-col cols="12" sm="12" md="12" lg="6">
       <v-row>
@@ -87,13 +105,13 @@ const formatTime = (seconds: number) => {
         </v-col>
       </v-row>
     </v-col>
-    <!-- Study Chart  -->
+    <!-- Study Analytics Chart  -->
     <v-col cols="12" sm="12" lg="8">
-      <ProfitExpanse />
+      <StudyAnalytics />
     </v-col>
     <!-- Recent Activity  -->
     <v-col cols="12" sm="12" lg="4">
-      <UpcommingSchedule />
+      <RecentActivity />
     </v-col>
   </v-row>
 </template>

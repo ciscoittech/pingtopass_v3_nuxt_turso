@@ -1,8 +1,10 @@
 import { z } from 'zod'
 import { useDB } from '~/server/utils/db'
 import { testSessions, questions, exams } from '~/server/database/schema'
-import { eq, inArray } from 'drizzle-orm'
+import { eq, inArray, and } from 'drizzle-orm'
 import { generateId } from '~/server/utils/id'
+
+const db = useDB()
 
 const startTestSchema = z.object({
   examId: z.string().min(1, 'Exam ID is required'),
@@ -49,9 +51,11 @@ export default defineEventHandler(async (event) => {
       .select()
       .from(testSessions)
       .where(
-        eq(testSessions.userId, userId) &&
-        eq(testSessions.examId, examId) &&
-        eq(testSessions.status, 'active')
+        and(
+          eq(testSessions.userId, userId),
+          eq(testSessions.examId, examId),
+          eq(testSessions.status, 'active')
+        )
       )
       .get()
 
@@ -64,34 +68,52 @@ export default defineEventHandler(async (event) => {
         .where(eq(questions.id, questionIdsArray[existingActiveSession.currentQuestionIndex || 0]))
         .get()
 
+      // Get all questions for this session (using same questionIdsArray from above)
+      const sessionQuestions = await db
+        .select()
+        .from(questions)
+        .where(inArray(questions.id, questionIdsArray))
+
+      // Preserve original order
+      const orderedQuestions = questionIdsArray.map(id => 
+        sessionQuestions.find(q => q.id === id)
+      ).filter(Boolean)
+
+      // Prepare questions without answers
+      const questionsForClient = orderedQuestions.map((q) => ({
+        id: q.id,
+        questionText: q.questionText,
+        questionType: q.questionType,
+        options: q.options ? JSON.parse(q.options) : [],
+        codeBlock: q.codeBlock,
+      }))
+
       return {
         success: true,
         data: {
           sessionId: existingActiveSession.id,
           examId: existingActiveSession.examId,
           totalQuestions: existingActiveSession.totalQuestions,
-          timeLimit: existingActiveSession.timeLimit,
-          currentQuestionIndex: existingActiveSession.currentQuestionIndex,
+          duration: existingActiveSession.timeLimit,
+          currentQuestionIndex: existingActiveSession.currentQuestionIndex || 0,
           timeRemaining: existingActiveSession.timeRemaining,
           startedAt: existingActiveSession.startedAt,
-          currentQuestion: currentQuestion ? {
-            id: currentQuestion.id,
-            questionText: currentQuestion.questionText,
-            questionType: currentQuestion.questionType,
-            options: currentQuestion.options ? JSON.parse(currentQuestion.options) : [],
-            examId: currentQuestion.examId,
-            difficultyLevel: currentQuestion.difficultyLevel
-          } : null,
+          questions: questionsForClient,
           isResuming: true
         }
       }
     }
 
-    // Build question query
+    // Build question query - only get active questions
     let questionQuery = db
       .select()
       .from(questions)
-      .where(eq(questions.examId, examId))
+      .where(
+        and(
+          eq(questions.examId, examId),
+          eq(questions.isActive, 1) // isActive is an integer in the database
+        )
+      )
 
     // Apply filters if provided
     if (questionTypes && questionTypes.length > 0) {
@@ -140,12 +162,20 @@ export default defineEventHandler(async (event) => {
       updatedAt: timestamp
     }
 
-    const db = useDB()
-
     await db.insert(testSessions).values(newTestSession)
 
     // Get first question details
     const firstQuestion = testQuestions[0]
+
+    // Prepare questions array WITHOUT correct answers for security
+    const questionsForClient = testQuestions.map((q, index) => ({
+      id: q.id,
+      questionText: q.questionText,
+      questionType: q.questionType,
+      options: q.options ? JSON.parse(q.options) : [],
+      codeBlock: q.codeBlock,
+      // DO NOT include correctAnswer or explanation in test mode
+    }))
 
     return {
       success: true,
@@ -155,18 +185,11 @@ export default defineEventHandler(async (event) => {
         examName: exam.name,
         examCode: exam.code,
         totalQuestions: testQuestions.length,
-        timeLimit: testTimeLimit,
+        duration: testTimeLimit, // Match what frontend expects
         currentQuestionIndex: 0,
         timeRemaining: testTimeLimit,
         startedAt: timestamp,
-        currentQuestion: {
-          id: firstQuestion.id,
-          questionText: firstQuestion.questionText,
-          questionType: firstQuestion.questionType,
-          options: firstQuestion.options ? JSON.parse(firstQuestion.options) : [],
-          examId: firstQuestion.examId,
-          difficultyLevel: firstQuestion.difficultyLevel
-        },
+        questions: questionsForClient, // Return all questions WITHOUT answers
         isResuming: false
       }
     }

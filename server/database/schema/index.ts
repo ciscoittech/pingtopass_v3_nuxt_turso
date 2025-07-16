@@ -6,10 +6,11 @@ export * from './objectives'
 export * from './questions'
 export * from './bookmarks'
 export * from './flags'
-// Export specific items from sessions to avoid conflicts
-export { studySessions, testResponses, testSessionQuestions } from './sessions'
-export type { StudySession, NewStudySession, TestResponse, NewTestResponse, TestSessionQuestion, NewTestSessionQuestion } from './sessions'
-// Use testSessions from the dedicated file
+// Export specific items from old sessions file (keeping for backward compatibility)
+export { testResponses, testSessionQuestions } from './sessions'
+export type { TestResponse, NewTestResponse, TestSessionQuestion, NewTestSessionQuestion } from './sessions'
+// Export from new dedicated session files
+export * from './studySessions'
 export * from './testSessions'
 export * from './userProgress'
 // Export specific items from progress to avoid conflicts

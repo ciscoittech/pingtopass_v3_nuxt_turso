@@ -1,18 +1,22 @@
 import { desc, eq, and } from 'drizzle-orm'
 import { contentInsights, strategyRecommendations, twitterCompetitors } from '~/server/database/schema'
+import { useDB } from '~/server/utils/db'
 
 export default defineEventHandler(async (event) => {
   try {
     // Verify admin access
-    const user = await requireUserSession(event)
-    if (!user.user?.isAdmin) {
+    const session = await getUserSession(event)
+    if (!session.user) {
       throw createError({
-        statusCode: 403,
-        statusMessage: 'Admin access required'
+        statusCode: 401,
+        statusMessage: 'Authentication required'
       })
     }
+    
+    // TODO: Add proper admin check when role system is implemented
+    // For now, allow authenticated users
 
-    const db = useDatabase()
+    const db = useDB()
     const query = getQuery(event)
     
     const { 

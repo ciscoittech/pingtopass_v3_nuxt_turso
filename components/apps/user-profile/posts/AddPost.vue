@@ -9,7 +9,7 @@
                 <v-btn color="inherit" type="upload" variant="plain" class="opacity-1"> Photo / Video </v-btn>
                 <v-btn color="inherit" variant="plain" class="opacity-1">
                     <v-avatar size="32" color="secondary" class="mr-2">
-                        <NotebookIcon size="16" />
+                        <ArticleIcon size="16" />
                     </v-avatar>
                     Article
                 </v-btn>
@@ -18,3 +18,7 @@
         </v-card-item>
     </v-card>
 </template>
+
+<script setup lang="ts">
+import { PhotoIcon, ArticleIcon } from 'vue-tabler-icons';
+</script>

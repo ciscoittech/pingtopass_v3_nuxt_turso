@@ -1,9 +1,15 @@
-# 🚀 PingToPass - Nuxt Edition with Spike UI
+# 🎯 PingToPass - IT Certification Exam Platform
 
-**IT Certification Exam Preparation Platform - Built with Nuxt 3, Spike Admin Template, Turso, and Cloudflare**
+[![Nuxt 3](https://img.shields.io/badge/Nuxt-3.x-00DC82?logo=nuxt.js)](https://nuxt.com)
+[![Vue 3](https://img.shields.io/badge/Vue-3.x-4FC08D?logo=vue.js)](https://vuejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript)](https://www.typescriptlang.org)
+[![Vuetify 3](https://img.shields.io/badge/Vuetify-3.x-1867C0?logo=vuetify)](https://vuetifyjs.com)
+[![Cloudflare](https://img.shields.io/badge/Cloudflare-Edge-F38020?logo=cloudflare)](https://cloudflare.com)
+
+**A modern, performant IT certification exam preparation platform built with Nuxt 3, deployed on Cloudflare's edge network.**
 
 > [!IMPORTANT]  
-> This is a complete migration of PingToPass from FastAPI to Nuxt.js using the Spike Nuxt Admin Template, leveraging Cloudflare's global edge network for superior performance and analytics.
+> This is a complete migration of PingToPass from FastAPI to Nuxt.js using the Spike Admin Template, leveraging Cloudflare's global edge network for superior performance and analytics.
 
 ## 🎯 Overview
 
@@ -128,15 +134,33 @@ Visit `http://localhost:3000` to see your app running!
 
 ```
 pingtopass-nuxt/
-├── app/                    # Nuxt app directory (pages will go here)
-├── components/            # Vue components (Spike components)
-├── server/                # Nitro server directory
-│   ├── api/              # API routes
-│   ├── database/         # Database schema and migrations
-│   └── utils/            # Server utilities
-├── public/               # Static assets
-├── scripts/              # Database scripts
-└── tests/               # Test files
+├── assets/              # Static assets (CSS, images)
+│   ├── scss/           # SASS stylesheets
+│   └── images/         # Image assets
+├── components/          # Vue components
+│   ├── exam/           # Exam-related components
+│   ├── study/          # Study mode components
+│   ├── dashboard/      # Dashboard components
+│   ├── shared/         # Shared/common components
+│   └── charts/         # Chart components
+├── composables/         # Vue composables
+├── layouts/             # App layouts
+├── middleware/          # Route middleware
+├── pages/              # Route pages
+├── plugins/            # Nuxt plugins
+├── public/             # Public static files
+├── server/             # Nitro server directory
+│   ├── api/           # API routes
+│   ├── database/      # Database schema
+│   └── utils/         # Server utilities
+├── stores/             # Pinia stores
+├── types/              # TypeScript types
+├── utils/              # Client utilities
+└── docs/               # Documentation
+    ├── PERFORMANCE.md  # Performance guide
+    ├── UI_COMPONENTS.md # Component docs
+    ├── API_DOCUMENTATION.md # API reference
+    └── DEPLOYMENT.md   # Deployment guide
 ```
 
 ## 🧪 Testing

@@ -15,7 +15,7 @@ const sidebarMenu = shallowRef(sidebarItem);
         <!-- ---------------------------------------------- -->
         <!---Navigation -->
         <!-- ---------------------------------------------- -->
-        <div class="scrollnavbar bg-containerBg overflow-y-auto" style="height: calc(100vh - 100px);">
+        <perfect-scrollbar class="scrollnavbar bg-containerBg overflow-y-hidden">
             <v-list class="py-4 px-4 bg-containerBg">
                 <!---Menu Loop -->
                 <template v-for="(item, i) in sidebarMenu">
@@ -32,6 +32,6 @@ const sidebarMenu = shallowRef(sidebarItem);
             <div class="pa-6 px-4 userbottom mt-10">
                 <LcFullVerticalSidebarExtrabox/>
             </div>
-        </div>
+        </perfect-scrollbar>
     </v-navigation-drawer>
 </template>

@@ -1,26 +1,27 @@
 <template>
-  <NuxtLayout name="admin">
-    <v-container fluid>
-      <v-row>
-        <v-col cols="12">
-          <div class="d-flex align-center justify-between mb-6">
-            <div>
-              <h1 class="text-h4 font-weight-bold">Twitter Intelligence</h1>
-              <p class="text-subtitle-1 text-grey">
-                Monitor competitors, analyze trends, and optimize content strategy
-              </p>
-            </div>
-            <v-btn
-              color="primary"
-              :loading="isAnalyzing"
-              @click="runAnalysis"
-            >
-              <v-icon start>mdi-radar</v-icon>
-              Run Analysis
-            </v-btn>
+  <div>
+    <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
+    
+    <v-row>
+      <v-col cols="12">
+        <div class="d-flex align-center justify-between mb-6">
+          <div>
+            <h1 class="text-h4 font-weight-bold">Twitter Intelligence</h1>
+            <p class="text-subtitle-1 text-grey">
+              Monitor competitors, analyze trends, and optimize content strategy
+            </p>
           </div>
-        </v-col>
-      </v-row>
+          <v-btn
+            color="primary"
+            :loading="isAnalyzing"
+            @click="runAnalysis"
+          >
+            <v-icon start>mdi-radar</v-icon>
+            Run Analysis
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
 
       <!-- Quick Stats -->
       <v-row class="mb-6">
@@ -144,12 +145,17 @@
           </v-tabs-window>
         </v-card-text>
       </v-card>
-    </v-container>
-  </NuxtLayout>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue'
+import TwitterOverview from '@/components/admin/twitter/TwitterOverview.vue'
+import TwitterCompetitors from '@/components/admin/twitter/TwitterCompetitors.vue'
+import TwitterInsights from '@/components/admin/twitter/TwitterInsights.vue'
+import TwitterTrends from '@/components/admin/twitter/TwitterTrends.vue'
+import TwitterRecommendations from '@/components/admin/twitter/TwitterRecommendations.vue'
 
 definePageMeta({
   title: 'Twitter Intelligence',
@@ -157,6 +163,21 @@ definePageMeta({
   layout: 'admin',
   middleware: 'admin'
 })
+
+// Breadcrumb
+const page = ref({ title: 'Twitter Intelligence' })
+const breadcrumbs = ref([
+  {
+    text: 'Dashboard',
+    disabled: false,
+    to: '/dashboard'
+  },
+  {
+    text: 'Twitter Intelligence',
+    disabled: true,
+    to: ''
+  }
+])
 
 // Reactive data
 const activeTab = ref('overview')

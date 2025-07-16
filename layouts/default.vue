@@ -52,7 +52,12 @@ watch(() => customizer.actTheme, (val) => {
 </script>
 
 <template>
-  <v-app>
+  <v-app
+    :class="[
+      'verticalLayout',
+      customizer.mini_sidebar ? 'mini-sidebar' : '',
+    ]"
+  >
     <!-- VerticalSidebar -->
     <LcFullVerticalSidebar 
       v-model="sDrawer" 
@@ -60,16 +65,18 @@ watch(() => customizer.actTheme, (val) => {
       :expand-on-hover="mini"
     />
     
-    <!-- Header -->
-    <LcFullVerticalHeader 
-      @sDrawerToggle="sDrawer = !sDrawer" 
-      @miniSidebar="miniSidebar" 
-    />
+    <!-- Header with wrapper -->
+    <div :class="customizer.boxed ? 'maxWidth' : 'full-header'">
+      <LcFullVerticalHeader 
+        @sDrawerToggle="sDrawer = !sDrawer" 
+        @miniSidebar="miniSidebar" 
+      />
+    </div>
     
     <!-- Main Content -->
     <v-main>
-      <v-container fluid class="page-wrapper">
-        <div class="maxWidth">
+      <v-container fluid class="page-wrapper px-sm-5 px-4 pt-12 rounded-xl">
+        <div :class="customizer.boxed ? 'maxWidth' : ''">
           <slot />
         </div>
       </v-container>

@@ -1,125 +1,176 @@
-<script setup lang="ts">
-interface Props {
-  question: {
-    questionText: string
-    questionType: string
-    options: string[]
-    correctAnswer: number[]
-    explanation: string
-  }
-}
-
-const props = defineProps<Props>()
-
-const getOptionLabel = (index: number) => {
-  return String.fromCharCode(65 + index) // A, B, C, D, etc.
-}
-
-const isCorrectAnswer = (index: number) => {
-  return props.question.correctAnswer.includes(index)
-}
-</script>
-
 <template>
-  <v-card class="question-preview" elevation="2">
-    <v-card-title class="d-flex align-center">
-      <v-icon class="mr-2">mdi-eye</v-icon>
-      Question Preview
+  <v-card elevation="10">
+    <v-card-title class="text-h6">
+      <Icon icon="solar:eye-line-duotone" class="mr-2" />
+      Preview
     </v-card-title>
     
     <v-card-text>
-      <!-- Question Text -->
-      <div class="mb-4">
-        <h3 class="text-h6 mb-3">{{ question.questionText || 'Question text will appear here...' }}</h3>
-        
+      <div class="question-preview">
         <!-- Question Type Badge -->
-        <v-chip
-          :color="question.questionType === 'multiple-choice' ? 'primary' : 'secondary'"
+        <QuestionTypeChip
+          :question-type="question.questionType"
           size="small"
-          class="mb-3"
-        >
-          {{ question.questionType.replace('-', ' ').toUpperCase() }}
-        </v-chip>
-      </div>
-
-      <!-- Answer Options -->
-      <div v-if="question.options.length > 0" class="mb-4">
-        <h4 class="text-subtitle-1 mb-2">Answer Options:</h4>
+          class="mb-4"
+          show-icon
+        />
         
-        <v-list density="compact">
-          <v-list-item
-            v-for="(option, index) in question.options"
-            :key="index"
-            class="pa-2 ma-1 rounded"
-            :class="{
-              'bg-success-lighten-4': isCorrectAnswer(index),
-              'bg-grey-lighten-4': !isCorrectAnswer(index)
-            }"
+        <!-- Question Text -->
+        <div class="text-body-1 mb-4">
+          <strong>Question:</strong>
+          <div class="mt-2" v-html="formattedQuestionText"></div>
+        </div>
+        
+        <!-- Answer Options -->
+        <div v-if="hasOptions" class="mb-4">
+          <strong class="text-body-2">Options:</strong>
+          
+          <!-- Multiple Choice / Multiple Select -->
+          <v-radio-group
+            v-if="question.questionType === 'multiple-choice'"
+            :model-value="question.correctAnswer[0]"
+            readonly
+            class="mt-2"
           >
-            <template v-slot:prepend>
-              <v-avatar
-                size="24"
-                :color="isCorrectAnswer(index) ? 'success' : 'grey-lighten-1'"
-                class="mr-3"
-              >
-                <span class="text-caption font-weight-bold">
-                  {{ getOptionLabel(index) }}
+            <v-radio
+              v-for="(option, index) in question.options"
+              :key="index"
+              :label="option || `Option ${index + 1}`"
+              :value="index"
+              :color="question.correctAnswer.includes(index) ? 'success' : 'default'"
+            >
+              <template #label>
+                <span :class="{ 'text-success font-weight-medium': question.correctAnswer.includes(index) }">
+                  {{ option || `Option ${index + 1}` }}
+                  <Icon 
+                    v-if="question.correctAnswer.includes(index)" 
+                    icon="solar:check-circle-bold" 
+                    class="ml-1" 
+                    size="16" 
+                  />
                 </span>
-              </v-avatar>
+              </template>
+            </v-radio>
+          </v-radio-group>
+          
+          <!-- Multiple Select -->
+          <div v-else-if="question.questionType === 'multiple-select'" class="mt-2">
+            <v-checkbox
+              v-for="(option, index) in question.options"
+              :key="index"
+              :label="option || `Option ${index + 1}`"
+              :model-value="question.correctAnswer.includes(index)"
+              readonly
+              :color="question.correctAnswer.includes(index) ? 'success' : 'default'"
+              class="mb-2"
+            >
+              <template #label>
+                <span :class="{ 'text-success font-weight-medium': question.correctAnswer.includes(index) }">
+                  {{ option || `Option ${index + 1}` }}
+                  <Icon 
+                    v-if="question.correctAnswer.includes(index)" 
+                    icon="solar:check-circle-bold" 
+                    class="ml-1" 
+                    size="16" 
+                  />
+                </span>
+              </template>
+            </v-checkbox>
+          </div>
+          
+          <!-- True/False -->
+          <v-radio-group
+            v-else-if="question.questionType === 'true-false'"
+            :model-value="question.correctAnswer[0]"
+            readonly
+            class="mt-2"
+          >
+            <v-radio
+              label="True"
+              :value="0"
+              :color="question.correctAnswer.includes(0) ? 'success' : 'default'"
+            >
+              <template #label>
+                <span :class="{ 'text-success font-weight-medium': question.correctAnswer.includes(0) }">
+                  True
+                  <Icon 
+                    v-if="question.correctAnswer.includes(0)" 
+                    icon="solar:check-circle-bold" 
+                    class="ml-1" 
+                    size="16" 
+                  />
+                </span>
+              </template>
+            </v-radio>
+            <v-radio
+              label="False"
+              :value="1"
+              :color="question.correctAnswer.includes(1) ? 'success' : 'default'"
+            >
+              <template #label>
+                <span :class="{ 'text-success font-weight-medium': question.correctAnswer.includes(1) }">
+                  False
+                  <Icon 
+                    v-if="question.correctAnswer.includes(1)" 
+                    icon="solar:check-circle-bold" 
+                    class="ml-1" 
+                    size="16" 
+                  />
+                </span>
+              </template>
+            </v-radio>
+          </v-radio-group>
+        </div>
+        
+        <!-- Explanation -->
+        <div v-if="question.explanation" class="mt-4">
+          <v-alert
+            type="info"
+            variant="tonal"
+            density="compact"
+          >
+            <template #prepend>
+              <Icon icon="solar:info-circle-line-duotone" />
             </template>
-            
-            <v-list-item-title>
-              {{ option || `Option ${getOptionLabel(index)}` }}
-              <v-icon
-                v-if="isCorrectAnswer(index)"
-                color="success"
-                size="small"
-                class="ml-2"
-              >
-                mdi-check-circle
-              </v-icon>
-            </v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </div>
-
-      <!-- No Options Message -->
-      <div v-else class="mb-4">
-        <v-alert
-          type="info"
-          variant="tonal"
-          density="compact"
-        >
-          Add answer options to see preview
-        </v-alert>
-      </div>
-
-      <!-- Explanation -->
-      <div v-if="question.explanation" class="mb-2">
-        <h4 class="text-subtitle-1 mb-2">Explanation:</h4>
-        <v-card variant="outlined" class="pa-3">
-          <p class="text-body-2 mb-0">{{ question.explanation }}</p>
-        </v-card>
-      </div>
-
-      <!-- Correct Answer Summary -->
-      <div v-if="question.correctAnswer.length > 0" class="mt-4">
-        <v-chip
-          color="success"
-          variant="outlined"
-          size="small"
-        >
-          <v-icon start>mdi-check</v-icon>
-          Correct Answer{{ question.correctAnswer.length > 1 ? 's' : '' }}: 
-          {{ question.correctAnswer.map(i => getOptionLabel(i)).join(', ') }}
-        </v-chip>
+            <strong>Explanation:</strong>
+            <div class="mt-1">{{ question.explanation }}</div>
+          </v-alert>
+        </div>
+        
+        <!-- No Content Message -->
+        <div v-if="!question.questionText" class="text-center py-8 text-medium-emphasis">
+          <Icon icon="solar:document-text-broken" size="48" class="mb-2" />
+          <div>Enter question details to see preview</div>
+        </div>
       </div>
     </v-card-text>
   </v-card>
 </template>
 
+<script setup lang="ts">
+import { Icon } from '@iconify/vue'
+import QuestionTypeChip from '@/components/admin/QuestionTypeChip.vue'
+import type { QuestionFormData } from '@/types/question'
+
+interface Props {
+  question: QuestionFormData
+}
+
+const props = defineProps<Props>()
+
+const hasOptions = computed(() => {
+  return ['multiple-choice', 'multiple-select', 'true-false'].includes(props.question.questionType)
+})
+
+const formattedQuestionText = computed(() => {
+  if (!props.question.questionText) return ''
+  // Simple formatting - convert line breaks to <br>
+  return props.question.questionText.replace(/\n/g, '<br>')
+})
+</script>
+
 <style scoped>
 .question-preview {
-  border: 2px solid #e0e0e0;
+  min-height: 200px;
 }
 </style>

@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import UiParentCard from '@/components/shared/UiParentCard.vue'
-import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue'
 import { Icon } from '@iconify/vue'
+import { useExamStore } from '~/stores/exams'
+import type { Exam } from '~/types/exam'
 
 // Require authentication
 definePageMeta({
-  middleware: 'auth'
+  middleware: 'auth',
+  layout: 'default'
 })
 
 const route = useRoute()
 const examId = route.params.id as string
+const examStore = useExamStore()
 
 // Fetch exam details
 const { data: examData, error } = await useFetch(`/api/exams/${examId}`)
@@ -49,32 +51,37 @@ const statistics = computed(() => examProgress.value?.statistics || {
   lastActivity: 0
 })
 
-// Breadcrumb
-const page = ref({ title: exam.value?.examCode || 'Exam Details' })
-const breadcrumbs = ref([
-  {
-    text: 'Dashboard',
-    disabled: false,
-    to: '/dashboard'
-  },
-  {
-    text: 'Exams',
-    disabled: false,
-    to: '/exams'
-  },
-  {
-    text: exam.value?.examCode || 'Details',
-    disabled: true,
-    to: ''
-  }
+// SEO Meta
+useSeoMeta({
+  title: `${exam.value?.examCode} - ${exam.value?.examName} | PingToPass`,
+  description: exam.value?.description || `Practice ${exam.value?.examName} certification exam with comprehensive study materials and track your progress.`
+})
+
+// Study mode options
+const studyModes = ref([
+  { text: 'Study Mode', value: 'study', icon: 'solar:book-line-duotone', color: 'primary' },
+  { text: 'Practice Test', value: 'test', icon: 'solar:clipboard-text-line-duotone', color: 'secondary' },
+  { text: 'Quick Review', value: 'review', icon: 'solar:refresh-circle-line-duotone', color: 'info' }
+])
+
+const selectedMode = ref('study')
+
+// Exam features for display
+const examFeatures = computed(() => [
+  { icon: 'solar:document-text-line-duotone', label: 'Questions', value: exam.value?.numberOfQuestions || 0 },
+  { icon: 'solar:clock-circle-line-duotone', label: 'Duration', value: `${exam.value?.examDuration || 90} minutes` },
+  { icon: 'solar:shield-check-line-duotone', label: 'Pass Score', value: `${exam.value?.passingScore || 70}%` },
+  { icon: 'solar:star-line-duotone', label: 'Difficulty', value: exam.value?.difficulty || 'Intermediate' }
 ])
 
 // Navigation functions
 const startStudyMode = () => {
+  // Use the exam ID, not the code
   navigateTo(`/study/${examId}`)
 }
 
 const startTestMode = () => {
+  // Use the exam ID, not the code
   navigateTo(`/test/${examId}`)
 }
 
@@ -107,295 +114,356 @@ const getScoreColor = (score: number) => {
 </script>
 
 <template>
-  <div>
-    <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
-
-    <!-- Exam Header Card -->
-    <v-card elevation="10" class="mb-6">
-      <v-img
-        :src="`/images/exam-banners/${exam.vendorName?.toLowerCase() || 'default'}.jpg`"
-        :lazy-src="'/images/exam-banners/default.jpg'"
-        height="300"
-        cover
-        class="align-end"
-      >
-        <template v-slot:error>
-          <v-img
-            src="/images/exam-banners/default.jpg"
-            height="300"
-            cover
-            class="align-end"
-          >
-            <div class="exam-header-overlay pa-6">
-              <v-chip
-                :color="getMasteryColor(statistics.masteryLevel)"
-                variant="flat"
-                size="small"
-                class="mb-3"
-              >
-                {{ statistics.masteryLevel }}
-              </v-chip>
-              <h1 class="text-h3 font-weight-bold text-white mb-2">
-                {{ exam.examCode }}
-              </h1>
-              <h2 class="text-h5 text-white-50 mb-4">
-                {{ exam.examName }}
-              </h2>
-              <div class="d-flex flex-wrap gap-2">
-                <v-chip color="white" variant="tonal" size="small">
-                  <Icon icon="solar:buildings-bold-duotone" class="mr-1" />
-                  {{ exam.vendorName }}
-                </v-chip>
-                <v-chip color="white" variant="tonal" size="small">
-                  <Icon icon="solar:question-circle-bold-duotone" class="mr-1" />
-                  {{ exam.numberOfQuestions }} Questions
-                </v-chip>
-                <v-chip color="white" variant="tonal" size="small">
-                  <Icon icon="solar:clock-circle-bold-duotone" class="mr-1" />
-                  {{ exam.examDuration }} Minutes
-                </v-chip>
-                <v-chip color="white" variant="tonal" size="small">
-                  <Icon icon="solar:shield-check-bold-duotone" class="mr-1" />
-                  Pass: {{ exam.passingScore }}%
-                </v-chip>
-              </div>
-            </div>
-          </v-img>
-        </template>
-        <div class="exam-header-overlay pa-6">
-          <v-chip
-            :color="getMasteryColor(statistics.masteryLevel)"
-            variant="flat"
-            size="small"
-            class="mb-3"
-          >
-            {{ statistics.masteryLevel }}
-          </v-chip>
-          <h1 class="text-h3 font-weight-bold text-white mb-2">
-            {{ exam.examCode }}
-          </h1>
-          <h2 class="text-h5 text-white-50 mb-4">
-            {{ exam.examName }}
-          </h2>
-          <div class="d-flex flex-wrap gap-2">
-            <v-chip color="white" variant="tonal" size="small">
-              <Icon icon="solar:buildings-bold-duotone" class="mr-1" />
-              {{ exam.vendorName }}
-            </v-chip>
-            <v-chip color="white" variant="tonal" size="small">
-              <Icon icon="solar:question-circle-bold-duotone" class="mr-1" />
-              {{ exam.numberOfQuestions }} Questions
-            </v-chip>
-            <v-chip color="white" variant="tonal" size="small">
-              <Icon icon="solar:clock-circle-bold-duotone" class="mr-1" />
-              {{ exam.examDuration }} Minutes
-            </v-chip>
-            <v-chip color="white" variant="tonal" size="small">
-              <Icon icon="solar:shield-check-bold-duotone" class="mr-1" />
-              Pass: {{ exam.passingScore }}%
-            </v-chip>
-          </div>
-        </div>
-      </v-img>
-    </v-card>
-
+  <div v-if="exam">
+    <!-- Main Exam Detail Layout -->
     <v-row>
-      <!-- Left Column - Progress & Quick Actions -->
-      <v-col cols="12" lg="4">
-        <!-- Progress Overview -->
-        <UiParentCard title="Your Progress" class="mb-6">
-          <div class="text-center mb-6">
-            <v-progress-circular
-              :model-value="statistics.accuracy"
-              :size="120"
-              :width="12"
-              :color="getScoreColor(statistics.accuracy)"
-            >
-              <span class="text-h4 font-weight-bold">{{ Math.round(statistics.accuracy) }}%</span>
-            </v-progress-circular>
-            <p class="text-body-2 text-medium-emphasis mt-3">
-              Overall Accuracy
+      <!-- Left Column - Exam Overview -->
+      <v-col cols="12" lg="6">
+        <!-- Exam Header Info -->
+        <v-card elevation="0" class="mb-6">
+          <v-card-text class="pa-6">
+            <!-- Vendor Icon and Badge -->
+            <div class="d-flex align-center mb-4">
+              <SharedVendorIcon 
+                :vendor="exam.vendorName"
+                :size="48"
+                :icon-size="28"
+                elevation
+                class="mr-3"
+              />
+              <v-chip 
+                size="small" 
+                variant="tonal" 
+                color="primary"
+              >
+                {{ exam.vendorName }}
+              </v-chip>
+            </div>
+
+            <!-- Exam Title -->
+            <h1 class="text-h4 font-weight-bold mb-2">{{ exam.examCode }}</h1>
+            <h2 class="text-h6 text-grey100 mb-4">{{ exam.examName }}</h2>
+
+            <!-- Description -->
+            <p class="text-body-1 text-grey100 mb-6">
+              {{ exam.description || 'Master this certification exam with comprehensive practice questions and detailed explanations. Track your progress and achieve certification success.' }}
             </p>
-          </div>
 
-          <v-list class="pa-0">
-            <v-list-item class="px-0">
-              <template v-slot:prepend>
-                <v-avatar color="primary" variant="tonal" size="40">
-                  <Icon icon="solar:clock-circle-bold-duotone" />
-                </v-avatar>
-              </template>
-              <v-list-item-title class="font-weight-semibold">
-                {{ formatStudyTime(statistics.totalStudyTime) }}
-              </v-list-item-title>
-              <v-list-item-subtitle>Total Study Time</v-list-item-subtitle>
-            </v-list-item>
+            <!-- Exam Features Grid -->
+            <v-row class="mb-6">
+              <v-col 
+                v-for="feature in examFeatures" 
+                :key="feature.label"
+                cols="6"
+                sm="3"
+              >
+                <div class="text-center">
+                  <Icon 
+                    :icon="feature.icon" 
+                    size="24" 
+                    class="mb-2 text-primary"
+                  />
+                  <div class="text-caption text-grey100">{{ feature.label }}</div>
+                  <div class="text-body-2 font-weight-semibold">{{ feature.value }}</div>
+                </div>
+              </v-col>
+            </v-row>
 
-            <v-list-item class="px-0">
-              <template v-slot:prepend>
-                <v-avatar color="success" variant="tonal" size="40">
-                  <Icon icon="solar:document-text-bold-duotone" />
-                </v-avatar>
-              </template>
-              <v-list-item-title class="font-weight-semibold">
-                {{ statistics.totalQuestions }}
-              </v-list-item-title>
-              <v-list-item-subtitle>Questions Practiced</v-list-item-subtitle>
-            </v-list-item>
+            <!-- Progress Overview -->
+            <v-divider class="mb-6" />
+            
+            <div class="d-flex justify-space-between align-center mb-4">
+              <h3 class="text-h6">Your Progress</h3>
+              <v-chip 
+                :color="getMasteryColor(statistics.masteryLevel)" 
+                size="small"
+                variant="flat"
+              >
+                {{ statistics.masteryLevel }} Level
+              </v-chip>
+            </div>
 
-            <v-list-item class="px-0">
-              <template v-slot:prepend>
-                <v-avatar color="info" variant="tonal" size="40">
-                  <Icon icon="solar:clipboard-list-bold-duotone" />
-                </v-avatar>
-              </template>
-              <v-list-item-title class="font-weight-semibold">
-                {{ statistics.testsTaken }}
-              </v-list-item-title>
-              <v-list-item-subtitle>Tests Completed</v-list-item-subtitle>
-            </v-list-item>
+            <!-- Progress Stats -->
+            <v-row class="mb-4">
+              <v-col cols="6">
+                <div class="stat-box">
+                  <div class="text-h4 font-weight-bold text-primary">{{ statistics.accuracy }}%</div>
+                  <div class="text-caption text-grey100">Accuracy Rate</div>
+                </div>
+              </v-col>
+              <v-col cols="6">
+                <div class="stat-box">
+                  <div class="text-h4 font-weight-bold text-success">{{ statistics.totalQuestions }}</div>
+                  <div class="text-caption text-grey100">Questions Practiced</div>
+                </div>
+              </v-col>
+            </v-row>
 
-            <v-list-item class="px-0">
-              <template v-slot:prepend>
-                <v-avatar color="warning" variant="tonal" size="40">
-                  <Icon icon="solar:medal-star-bold-duotone" />
-                </v-avatar>
-              </template>
-              <v-list-item-title class="font-weight-semibold">
-                {{ statistics.bestTestScore }}%
-              </v-list-item-title>
-              <v-list-item-subtitle>Best Test Score</v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
-        </UiParentCard>
+            <v-row>
+              <v-col cols="6">
+                <div class="stat-box">
+                  <div class="text-h4 font-weight-bold text-info">{{ formatStudyTime(statistics.totalStudyTime) }}</div>
+                  <div class="text-caption text-grey100">Study Time</div>
+                </div>
+              </v-col>
+              <v-col cols="6">
+                <div class="stat-box">
+                  <div class="text-h4 font-weight-bold text-warning">{{ statistics.testsTaken }}</div>
+                  <div class="text-caption text-grey100">Tests Taken</div>
+                </div>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
 
-        <!-- Quick Actions -->
-        <UiParentCard title="Quick Actions">
-          <v-btn
-            color="primary"
-            size="large"
-            block
-            @click="startStudyMode"
-            class="mb-3"
-          >
-            <Icon icon="solar:book-bold-duotone" class="mr-2" />
-            Start Study Session
-          </v-btn>
-          <v-btn
-            color="secondary"
-            size="large"
-            block
-            @click="startTestMode"
-          >
-            <Icon icon="solar:clipboard-text-bold-duotone" class="mr-2" />
-            Take Practice Test
-          </v-btn>
-        </UiParentCard>
+        <!-- Exam Objectives -->
+        <v-card elevation="0">
+          <v-card-text class="pa-6">
+            <h3 class="text-h6 mb-4">Exam Objectives</h3>
+            
+            <v-expansion-panels variant="accordion" elevation="0">
+              <v-expansion-panel
+                v-for="(objective, idx) in (exam.objectives || [])"
+                :key="idx"
+              >
+                <v-expansion-panel-title>
+                  <div class="d-flex align-center justify-space-between flex-grow-1 mr-2">
+                    <span class="text-body-2">{{ objective.title }}</span>
+                    <v-chip size="x-small" color="primary" variant="tonal">
+                      {{ objective.weight }}%
+                    </v-chip>
+                  </div>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <p class="text-body-2 text-grey100 pt-2">
+                    {{ objective.description || 'Master the key concepts and skills covered in this exam domain.' }}
+                  </p>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
+
+            <v-alert
+              v-if="!exam.objectives || exam.objectives.length === 0"
+              type="info"
+              variant="tonal"
+              class="mt-2"
+            >
+              Exam objectives will be available soon.
+            </v-alert>
+          </v-card-text>
+        </v-card>
       </v-col>
 
-      <!-- Right Column - Exam Details -->
-      <v-col cols="12" lg="8">
-        <!-- Exam Overview -->
-        <UiParentCard title="Exam Overview" class="mb-6">
-          <p class="text-body-1 mb-4">
-            {{ exam.description || 'Prepare for this certification exam with our comprehensive study materials and practice tests. Master the concepts, practice with real exam questions, and track your progress.' }}
-          </p>
-
-          <v-divider class="my-4" />
-
-          <h5 class="text-h6 font-weight-semibold mb-3">
-            <Icon icon="solar:target-bold-duotone" class="mr-2" />
-            Exam Objectives
-          </h5>
-          
-          <v-list v-if="exam.objectives && exam.objectives.length > 0" class="pa-0">
-            <v-list-item
-              v-for="(objective, index) in exam.objectives"
-              :key="objective.id || index"
-              class="px-0 py-2"
-            >
-              <template v-slot:prepend>
-                <v-avatar color="primary" variant="tonal" size="32">
-                  {{ index + 1 }}
-                </v-avatar>
-              </template>
-              <v-list-item-title class="font-weight-medium mb-1">
-                {{ objective.title }}
-              </v-list-item-title>
-              <v-list-item-subtitle v-if="objective.description" class="text-wrap">
-                {{ objective.description }}
-              </v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
-          
-          <v-alert
-            v-else
-            type="info"
-            variant="tonal"
-            class="mt-2"
-          >
-            <template v-slot:prepend>
-              <Icon icon="solar:info-circle-bold-duotone" />
-            </template>
-            Detailed exam objectives are being prepared and will be available soon.
-          </v-alert>
-        </UiParentCard>
-
-        <!-- Study Resources -->
-        <UiParentCard title="Study Resources">
-          <v-row>
-            <v-col cols="12" md="6">
-              <v-card variant="outlined" class="h-100">
-                <v-card-item>
-                  <template v-slot:prepend>
-                    <v-avatar color="primary" variant="tonal">
-                      <Icon icon="solar:book-2-bold-duotone" />
-                    </v-avatar>
-                  </template>
-                  <v-card-title>Study Guide</v-card-title>
-                  <v-card-subtitle>Comprehensive exam preparation</v-card-subtitle>
-                </v-card-item>
-                <v-card-text>
-                  Review all exam topics with detailed explanations and examples.
-                </v-card-text>
-                <v-card-actions>
-                  <v-btn variant="text" color="primary" disabled>
-                    Coming Soon
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-col>
+      <!-- Right Column - Actions & Options -->
+      <v-col cols="12" lg="6">
+        <!-- Study Options Card -->
+        <v-card elevation="0" class="mb-6 sticky-card">
+          <v-card-text class="pa-6">
+            <h3 class="text-h6 mb-4">Choose Study Mode</h3>
             
-            <v-col cols="12" md="6">
-              <v-card variant="outlined" class="h-100">
-                <v-card-item>
-                  <template v-slot:prepend>
-                    <v-avatar color="success" variant="tonal">
-                      <Icon icon="solar:video-library-bold-duotone" />
-                    </v-avatar>
+            <!-- Mode Selector -->
+            <v-select
+              v-model="selectedMode"
+              :items="studyModes"
+              item-title="text"
+              item-value="value"
+              variant="outlined"
+              density="comfortable"
+              class="mb-6"
+            >
+              <template #item="{ item, props }">
+                <v-list-item v-bind="props">
+                  <template #prepend>
+                    <Icon :icon="item.raw.icon" size="20" :class="`text-${item.raw.color}`" />
                   </template>
-                  <v-card-title>Video Tutorials</v-card-title>
-                  <v-card-subtitle>Learn from expert instructors</v-card-subtitle>
-                </v-card-item>
-                <v-card-text>
-                  Watch video explanations for complex topics and concepts.
-                </v-card-text>
-                <v-card-actions>
-                  <v-btn variant="text" color="primary" disabled>
-                    Coming Soon
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-col>
-          </v-row>
-        </UiParentCard>
+                </v-list-item>
+              </template>
+              <template #selection="{ item }">
+                <div class="d-flex align-center">
+                  <Icon :icon="item.raw.icon" size="20" class="mr-2" :class="`text-${item.raw.color}`" />
+                  {{ item.title }}
+                </div>
+              </template>
+            </v-select>
+
+            <!-- Action Buttons -->
+            <v-btn
+              color="primary"
+              size="x-large"
+              block
+              rounded="pill"
+              class="mb-3"
+              @click="selectedMode === 'test' ? startTestMode() : startStudyMode()"
+            >
+              <Icon 
+                :icon="selectedMode === 'test' ? 'solar:play-circle-bold' : 'solar:book-bold'" 
+                class="mr-2" 
+                size="20" 
+              />
+              {{ selectedMode === 'test' ? 'Start Practice Test' : 'Start Studying' }}
+            </v-btn>
+
+            <v-btn
+              variant="tonal"
+              size="large"
+              block
+              rounded="pill"
+              @click="exam && examStore.toggleBookmark(exam.id)"
+            >
+              <Icon 
+                :icon="exam?.isBookmarked ? 'solar:bookmark-bold-duotone' : 'solar:bookmark-line-duotone'" 
+                class="mr-2" 
+                size="20" 
+              />
+              {{ exam.isBookmarked ? 'Bookmarked' : 'Bookmark Exam' }}
+            </v-btn>
+
+            <!-- Quick Stats -->
+            <v-divider class="my-6" />
+            
+            <div class="quick-stats">
+              <div class="d-flex justify-space-between align-center mb-3">
+                <span class="text-body-2 text-grey100">Best Test Score</span>
+                <span class="text-body-2 font-weight-semibold" :class="`text-${getScoreColor(statistics.bestTestScore)}`">
+                  {{ statistics.bestTestScore }}%
+                </span>
+              </div>
+              <div class="d-flex justify-space-between align-center mb-3">
+                <span class="text-body-2 text-grey100">Average Score</span>
+                <span class="text-body-2 font-weight-semibold">{{ statistics.averageTestScore }}%</span>
+              </div>
+              <div class="d-flex justify-space-between align-center mb-3">
+                <span class="text-body-2 text-grey100">Study Sessions</span>
+                <span class="text-body-2 font-weight-semibold">{{ statistics.studySessions }}</span>
+              </div>
+              <div class="d-flex justify-space-between align-center">
+                <span class="text-body-2 text-grey100">Last Activity</span>
+                <span class="text-body-2 font-weight-semibold">
+                  {{ statistics.lastActivity ? new Date(statistics.lastActivity * 1000).toLocaleDateString() : 'Never' }}
+                </span>
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+
+        <!-- Additional Resources -->
+        <v-card elevation="0">
+          <v-card-text class="pa-6">
+            <h3 class="text-h6 mb-4">Learning Resources</h3>
+            
+            <v-list density="comfortable" class="pa-0">
+              <v-list-item
+                class="px-0"
+                @click="navigateTo('/study-guides')"
+              >
+                <template #prepend>
+                  <Icon icon="solar:document-text-line-duotone" size="20" class="mr-3" />
+                </template>
+                <v-list-item-title class="text-body-2">Study Guides</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Comprehensive exam preparation materials</v-list-item-subtitle>
+                <template #append>
+                  <v-chip size="x-small" variant="tonal">Coming Soon</v-chip>
+                </template>
+              </v-list-item>
+              
+              <v-list-item
+                class="px-0"
+                @click="navigateTo('/video-tutorials')"
+              >
+                <template #prepend>
+                  <Icon icon="solar:play-circle-line-duotone" size="20" class="mr-3" />
+                </template>
+                <v-list-item-title class="text-body-2">Video Tutorials</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Learn from expert instructors</v-list-item-subtitle>
+                <template #append>
+                  <v-chip size="x-small" variant="tonal">Coming Soon</v-chip>
+                </template>
+              </v-list-item>
+              
+              <v-list-item
+                class="px-0"
+                @click="navigateTo('/community')"
+              >
+                <template #prepend>
+                  <Icon icon="solar:users-group-two-rounded-line-duotone" size="20" class="mr-3" />
+                </template>
+                <v-list-item-title class="text-body-2">Community Forums</v-list-item-title>
+                <v-list-item-subtitle class="text-caption">Connect with other learners</v-list-item-subtitle>
+                <template #append>
+                  <v-chip size="x-small" variant="tonal">Coming Soon</v-chip>
+                </template>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
   </div>
+  
+  <!-- Loading State -->
+  <v-container v-else class="py-16">
+    <v-row justify="center">
+      <v-col cols="12" md="8" lg="6" class="text-center">
+        <v-progress-circular
+          indeterminate
+          size="64"
+          color="primary"
+          class="mb-4"
+        />
+        <h3 class="text-h6 text-grey100">Loading exam details...</h3>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <style scoped>
-.exam-header-overlay {
-  background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.3));
+.stat-box {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(var(--v-theme-primary), 0.05);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(var(--v-theme-primary), 0.1);
+  }
+}
+
+.sticky-card {
+  position: sticky;
+  top: 80px;
+}
+
+@media (max-width: 1280px) {
+  .sticky-card {
+    position: relative;
+    top: auto;
+  }
+}
+
+.quick-stats {
+  background: rgb(var(--v-theme-surface));
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--v-theme-borderColor), 0.5);
+}
+
+.v-expansion-panel {
+  &::before {
+    opacity: 0 !important;
+  }
+  
+  &:not(:last-child) {
+    border-bottom: 1px solid rgba(var(--v-theme-borderColor), 0.5);
+  }
+}
+
+.v-expansion-panel-title {
+  padding: 16px 0;
+  min-height: 48px;
+}
+
+.v-expansion-panel-text {
+  padding: 0 0 16px 0;
 }
 </style>

@@ -2,6 +2,14 @@ import type { User } from '../database/schema'
 import { users } from '../database/schema'
 import { eq } from 'drizzle-orm'
 import { generateUserId } from './id'
+import type { H3Event } from 'h3'
+
+export interface AuthUser {
+  id: string
+  email: string
+  name?: string
+  isAdmin?: boolean
+}
 
 export async function ensureUser(event: any) {
   const session = await getUserSession(event)
@@ -67,4 +75,43 @@ export async function findOrCreateUser(profile: {
   await db.insert(users).values(newUser)
   
   return newUser
+}
+
+export async function requireAuth(event: H3Event): Promise<AuthUser> {
+  console.log('[Auth] requireAuth called')
+  const session = await getUserSession(event)
+  console.log('[Auth] Session data:', session ? 'Found' : 'Not found')
+  
+  if (!session?.user?.id) {
+    console.error('[Auth] No user in session:', session)
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Authentication required'
+    })
+  }
+  
+  const authUser = {
+    id: session.user.id,
+    email: session.user.email,
+    name: session.user.name || session.user.fullName,
+    isAdmin: session.user.isAdmin || false
+  }
+  
+  console.log('[Auth] Authenticated user:', authUser.id, authUser.email)
+  return authUser
+}
+
+export async function optionalAuth(event: H3Event): Promise<AuthUser | null> {
+  const session = await getUserSession(event)
+  
+  if (!session?.user?.id) {
+    return null
+  }
+  
+  return {
+    id: session.user.id,
+    email: session.user.email,
+    name: session.user.name || session.user.fullName,
+    isAdmin: session.user.isAdmin || false
+  }
 }

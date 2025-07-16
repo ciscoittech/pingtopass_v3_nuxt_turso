@@ -1,8 +1,19 @@
 <script setup lang="ts">
-import { ref, shallowRef } from 'vue';
-import { HeartIcon, PhotoIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
+import { ref, shallowRef, onMounted, computed } from 'vue';
+import { 
+    HeartIcon, 
+    PhotoIcon, 
+    UserCircleIcon, 
+    UsersIcon, 
+    FileDescriptionIcon, 
+    UserCheckIcon,
+    BrandFacebookIcon,
+    BrandTwitterIcon,
+    BrandDribbbleIcon,
+    BrandYoutubeIcon
+} from 'vue-tabler-icons';
 import profileBg from '/images/backgrounds/profilebg.jpg';
-import UserImage from '/images/profile/user6.jpg';
+import DefaultUserImage from '/images/profile/user6.jpg';
 
 const tab = ref(null);
 const items = shallowRef([
@@ -12,6 +23,21 @@ const items = shallowRef([
     { tab: 'Gallery', icon: PhotoIcon, href: '/apps/userprofile/two/gallery' }
 ]);
 
+// Use the profile composable
+const { profile, loading, fetchProfile } = useProfile();
+
+// Fetch profile data on mount
+onMounted(async () => {
+  await fetchProfile();
+});
+
+// Computed values with fallbacks
+const userName = computed(() => profile.value?.user?.name || 'Loading...');
+const userRole = computed(() => profile.value?.user?.role || 'User');
+const userAvatar = computed(() => profile.value?.user?.avatarUrl || DefaultUserImage);
+const postsCount = computed(() => profile.value?.stats?.posts || 0);
+const followersCount = computed(() => profile.value?.stats?.followers || 0);
+const followingCount = computed(() => profile.value?.stats?.following || 0);
 
 </script>
 
@@ -25,17 +51,17 @@ const items = shallowRef([
                         <v-row class="justify-center">
                             <v-col cols="4" class="text-center">
                                 <FileDescriptionIcon size="20" class="text-grey100" />
-                                <h4 class="text-h4 font-weight-semibold">938</h4>
+                                <h4 class="text-h4 font-weight-semibold">{{ postsCount }}</h4>
                                 <h6 class="text-h6 font-weight-medium text-grey100">Posts</h6>
                             </v-col>
                             <v-col cols="4" class="text-center">
                                 <UserCircleIcon size="20" class="text-grey100" />
-                                <h4 class="text-h4 font-weight-semibold">3,586</h4>
+                                <h4 class="text-h4 font-weight-semibold">{{ followersCount }}</h4>
                                 <h6 class="text-h6 font-weight-medium text-grey100">Followers</h6>
                             </v-col>
                             <v-col cols="4" class="text-center">
                                 <UserCheckIcon size="20" class="text-grey100" />
-                                <h4 class="text-h4 font-weight-semibold">2,659</h4>
+                                <h4 class="text-h4 font-weight-semibold">{{ followingCount }}</h4>
                                 <h6 class="text-h6 font-weight-medium text-grey100">Following</h6>
                             </v-col>
                         </v-row>
@@ -45,11 +71,11 @@ const items = shallowRef([
                     <div class="text-center top-spacer">
                         <div class="avatar-border">
                             <v-avatar size="100" class="userImage">
-                                <img :src="UserImage" width="100" alt="Mathew" />
+                                <img :src="userAvatar" width="100" :alt="userName" />
                             </v-avatar>
                         </div>
-                        <h5 class="text-h5 mt-3 font-weight-semibold">Mike Nielsen</h5>
-                        <span class="text-h6 font-weight-regular">Designer</span>
+                        <h5 class="text-h5 mt-3 font-weight-semibold">{{ userName }}</h5>
+                        <span class="text-h6 font-weight-regular">{{ userRole }}</span>
                     </div>
                 </v-col>
                 <v-col cols="12" lg="4" class="d-flex align-center justify-center justify-lg-end order-sm-third text-sm-right text-center">

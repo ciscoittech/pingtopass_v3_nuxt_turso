@@ -1,17 +1,38 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue'
+import ProgressOverviewCard from '@/components/progress/ProgressOverviewCard.vue'
+import ProgressMetricCard from '@/components/progress/ProgressMetricCard.vue'
+import ProgressAnalyticsChart from '@/components/progress/ProgressAnalyticsChart.vue'
+import ExamPerformanceCard from '@/components/progress/ExamPerformanceCard.vue'
+import ProgressActivityCalendar from '@/components/progress/ProgressActivityCalendar.vue'
+import { Icon } from '@iconify/vue'
 
 // Page metadata
 definePageMeta({
-  middleware: 'auth'
+  middleware: 'auth',
+  layout: 'default'
 })
+
+// Breadcrumb
+const page = ref({ title: 'Your Progress' })
+const breadcrumbs = ref([
+  {
+    text: 'Dashboard',
+    disabled: false,
+    to: '/dashboard'
+  },
+  {
+    text: 'Progress Analytics',
+    disabled: true,
+    to: ''
+  }
+])
 
 // State management
 const selectedPeriod = ref('month')
 const selectedExam = ref('')
 const showGoalsDialog = ref(false)
-const weeklyGoal = ref(0)
-const monthlyGoal = ref(0)
+const weeklyGoal = ref(300) // minutes
 
 // Data fetching
 const { data: progressData, pending: progressLoading, refresh: refreshProgress } = await useFetch('/api/progress')
@@ -88,18 +109,13 @@ const getMasteryColor = (level: string) => {
 }
 
 // Goals management
-const loadGoals = () => {
-  weeklyGoal.value = progress.value?.weeklyProgress?.goal || 0
-  monthlyGoal.value = 0 // We'll add monthly goals later
-}
-
 const saveGoals = async () => {
   try {
     await $fetch('/api/progress/goals', {
       method: 'POST',
       body: {
         weeklyGoal: weeklyGoal.value,
-        monthlyGoal: monthlyGoal.value
+        monthlyGoal: weeklyGoal.value * 4
       }
     })
     
@@ -119,13 +135,8 @@ const studyTimeChartData = computed(() => {
   return {
     labels: last7Days.map(day => new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })),
     datasets: [{
-      label: 'Study Time (minutes)',
-      data: last7Days.map(day => Math.round(day.studyTime / 60)),
-      backgroundColor: 'rgba(25, 118, 210, 0.2)',
-      borderColor: 'rgba(25, 118, 210, 1)',
-      borderWidth: 2,
-      fill: true,
-      tension: 0.4
+      name: 'Study Time (minutes)',
+      data: last7Days.map(day => Math.round(day.studyTime / 60))
     }]
   }
 })
@@ -138,494 +149,476 @@ const accuracyChartData = computed(() => {
   return {
     labels: last7Days.map(day => new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })),
     datasets: [{
-      label: 'Accuracy (%)',
+      name: 'Accuracy %',
       data: last7Days.map(day => Math.round(day.accuracy)),
-      backgroundColor: 'rgba(76, 175, 80, 0.2)',
-      borderColor: 'rgba(76, 175, 80, 1)',
-      borderWidth: 2,
-      fill: true,
-      tension: 0.4
+      color: 'rgba(var(--v-theme-success))'
     }]
   }
 })
 
-onMounted(() => {
-  loadGoals()
+const questionsChartData = computed(() => {
+  if (!analytics.value?.dailyStats) return { labels: [], datasets: [] }
+  
+  const last7Days = analytics.value.dailyStats.slice(-7)
+  
+  return {
+    labels: last7Days.map(day => new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })),
+    datasets: [{
+      name: 'Questions Answered',
+      data: last7Days.map(day => day.questionsAnswered),
+      color: 'rgba(var(--v-theme-info))'
+    }]
+  }
 })
+
+// Loading state
+const isLoading = computed(() => progressLoading.value || analyticsLoading.value || examPerformanceLoading.value)
 </script>
 
 <template>
-  <div class="progress-page">
-    <v-container>
-      <!-- Header -->
-      <div class="page-header mb-6">
-        <div class="d-flex align-center justify-space-between">
-          <div>
-            <h1 class="text-h4 font-weight-bold mb-2">Your Progress</h1>
-            <p class="text-body-1 text-grey-darken-1">
-              Track your learning journey and analyze your performance
-            </p>
-          </div>
-          
-          <v-btn
-            color="primary"
-            @click="showGoalsDialog = true"
-          >
-            <v-icon start>mdi-target</v-icon>
-            Set Goals
-          </v-btn>
-        </div>
-      </div>
+  <div>
+    <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
 
-      <!-- Loading State -->
-      <div v-if="progressLoading || analyticsLoading" class="text-center py-8">
-        <v-progress-circular indeterminate color="primary" size="64" />
-        <p class="text-h6 mt-4">Loading your analytics...</p>
-      </div>
-
-      <!-- Progress Content -->
-      <div v-else>
-        <!-- Filters -->
-        <v-card class="mb-6" elevation="2">
-          <v-card-text class="pa-4">
-            <v-row align="center">
-              <v-col cols="12" md="4">
-                <v-select
-                  v-model="selectedPeriod"
-                  label="Time Period"
-                  :items="[
-                    { title: 'Last Week', value: 'week' },
-                    { title: 'Last Month', value: 'month' },
-                    { title: 'Last Quarter', value: 'quarter' },
-                    { title: 'Last Year', value: 'year' }
-                  ]"
-                  variant="outlined"
-                  density="compact"
-                />
-              </v-col>
-              
-              <v-col cols="12" md="4">
-                <v-select
-                  v-model="selectedExam"
-                  label="Filter by Exam"
-                  :items="[
-                    { title: 'All Exams', value: '' },
-                    ...exams.map(exam => ({ title: `${exam.code} - ${exam.name}`, value: exam.id }))
-                  ]"
-                  variant="outlined"
-                  density="compact"
-                />
-              </v-col>
-              
-              <v-col cols="12" md="4" class="text-right">
-                <v-chip
-                  :color="analytics?.trends?.accuracy === 'increasing' ? 'success' : 
-                         analytics?.trends?.accuracy === 'decreasing' ? 'error' : 'warning'"
-                  variant="tonal"
-                  class="mr-2"
-                >
-                  <v-icon start>{{ getTrendIcon(analytics?.trends?.accuracy || 'stable') }}</v-icon>
-                  Accuracy {{ analytics?.trends?.accuracy || 'stable' }}
-                </v-chip>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
-
-        <!-- Streak Overview -->
-        <v-card class="mb-6" color="primary" variant="tonal" elevation="4">
-          <v-card-text class="pa-6">
-            <v-row align="center">
-              <v-col cols="12" md="8">
-                <h2 class="text-h5 mb-3">{{ getStreakMessage() }}</h2>
-                <div class="d-flex flex-wrap gap-4">
-                  <div class="streak-stat">
-                    <v-icon color="primary" size="24" class="mr-2">mdi-fire</v-icon>
-                    <span class="text-h6">{{ progress?.streaks?.currentDaily || 0 }}</span>
-                    <span class="text-body-2 ml-1">day streak</span>
-                  </div>
-                  
-                  <div class="streak-stat">
-                    <v-icon color="warning" size="24" class="mr-2">mdi-lightning-bolt</v-icon>
-                    <span class="text-h6">{{ progress?.streaks?.currentAnswer || 0 }}</span>
-                    <span class="text-body-2 ml-1">correct answers</span>
-                  </div>
-                  
-                  <div class="streak-stat">
-                    <v-icon color="success" size="24" class="mr-2">mdi-trophy</v-icon>
-                    <span class="text-h6">{{ progress?.streaks?.longestDaily || 0 }}</span>
-                    <span class="text-body-2 ml-1">best streak</span>
-                  </div>
-                </div>
-              </v-col>
-              
-              <v-col cols="12" md="4" class="text-center">
-                <v-progress-circular
-                  :model-value="Math.min((progress?.streaks?.currentDaily || 0) * 10, 100)"
-                  :size="120"
-                  :width="12"
-                  color="primary"
-                >
-                  <div class="text-center">
-                    <div class="text-h4 font-weight-bold">{{ progress?.streaks?.currentDaily || 0 }}</div>
-                    <div class="text-caption">Days</div>
-                  </div>
-                </v-progress-circular>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
-
-        <!-- Key Metrics -->
-        <v-row class="mb-6">
-          <v-col cols="12" sm="6" md="3">
-            <v-card elevation="2" class="h-100">
-              <v-card-text class="pa-5 text-center">
-                <v-icon size="48" color="primary" class="mb-3">mdi-clock-outline</v-icon>
-                <h3 class="text-h4 font-weight-bold mb-2">{{ formatTime(analytics?.periodTotals?.totalStudyTime || 0) }}</h3>
-                <p class="text-body-2 text-grey-darken-1 mb-1">Study Time</p>
-                <p class="text-caption">This {{ selectedPeriod }}</p>
-              </v-card-text>
-            </v-card>
-          </v-col>
-          
-          <v-col cols="12" sm="6" md="3">
-            <v-card elevation="2" class="h-100">
-              <v-card-text class="pa-5 text-center">
-                <v-icon size="48" color="success" class="mb-3">mdi-help-circle</v-icon>
-                <h3 class="text-h4 font-weight-bold mb-2">{{ formatNumber(analytics?.periodTotals?.totalQuestions || 0) }}</h3>
-                <p class="text-body-2 text-grey-darken-1 mb-1">Questions</p>
-                <p class="text-caption">This {{ selectedPeriod }}</p>
-              </v-card-text>
-            </v-card>
-          </v-col>
-          
-          <v-col cols="12" sm="6" md="3">
-            <v-card elevation="2" class="h-100">
-              <v-card-text class="pa-5 text-center">
-                <v-icon size="48" color="warning" class="mb-3">mdi-target</v-icon>
-                <h3 class="text-h4 font-weight-bold mb-2">{{ Math.round(analytics?.periodTotals?.averageAccuracy || 0) }}%</h3>
-                <p class="text-body-2 text-grey-darken-1 mb-1">Accuracy</p>
-                <p class="text-caption">This {{ selectedPeriod }}</p>
-              </v-card-text>
-            </v-card>
-          </v-col>
-          
-          <v-col cols="12" sm="6" md="3">
-            <v-card elevation="2" class="h-100">
-              <v-card-text class="pa-5 text-center">
-                <v-icon size="48" color="info" class="mb-3">mdi-calendar-check</v-icon>
-                <h3 class="text-h4 font-weight-bold mb-2">{{ analytics?.periodTotals?.totalSessions || 0 }}</h3>
-                <p class="text-body-2 text-grey-darken-1 mb-1">Sessions</p>
-                <p class="text-caption">This {{ selectedPeriod }}</p>
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <!-- Charts Section -->
-        <v-row class="mb-6">
-          <v-col cols="12" md="6">
-            <v-card elevation="2" class="h-100">
-              <v-card-title class="d-flex align-center">
-                <v-icon class="mr-2">mdi-chart-line</v-icon>
-                Study Time Trend
-              </v-card-title>
-              <v-card-text>
-                <ProgressChart
-                  :chart-data="studyTimeChartData"
-                  type="line"
-                  height="300"
-                />
-              </v-card-text>
-            </v-card>
-          </v-col>
-          
-          <v-col cols="12" md="6">
-            <v-card elevation="2" class="h-100">
-              <v-card-title class="d-flex align-center">
-                <v-icon class="mr-2">mdi-chart-arc</v-icon>
-                Accuracy Trend
-              </v-card-title>
-              <v-card-text>
-                <ProgressChart
-                  :chart-data="accuracyChartData"
-                  type="line"
-                  height="300"
-                />
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <!-- Goals Progress -->
-        <v-card v-if="progress?.weeklyProgress" class="mb-6" elevation="2">
-          <v-card-title class="d-flex align-center">
-            <v-icon class="mr-2">mdi-target</v-icon>
-            Weekly Goal Progress
-          </v-card-title>
-          <v-card-text>
-            <div class="goal-progress">
-              <div class="d-flex justify-space-between mb-2">
-                <span>{{ formatTime((progress.weeklyProgress.current || 0) * 60) }}</span>
-                <span>{{ formatTime((progress.weeklyProgress.goal || 0) * 60) }}</span>
+    <!-- Page Header -->
+    <v-row class="mb-6">
+      <v-col cols="12">
+        <v-card elevation="0" class="bg-transparent">
+          <v-card-text class="pa-0">
+            <div class="d-flex align-center justify-space-between flex-wrap">
+              <div>
+                <h1 class="text-h4 font-weight-bold mb-2">Progress Analytics</h1>
+                <p class="text-subtitle-1 text-grey100">
+                  Track your learning journey and analyze your performance
+                </p>
               </div>
-              <v-progress-linear
-                :model-value="progress.weeklyProgress.percentage || 0"
-                :color="(progress.weeklyProgress.percentage || 0) >= 100 ? 'success' : 'primary'"
-                height="16"
-                rounded
-              >
-                <template #default="{ value }">
-                  <span class="text-white text-caption font-weight-bold">{{ Math.round(value) }}%</span>
-                </template>
-              </v-progress-linear>
               
-              <div class="mt-3">
-                <v-chip
-                  v-if="(progress.weeklyProgress.percentage || 0) >= 100"
-                  color="success"
-                  variant="tonal"
-                  size="small"
+              <div class="d-flex gap-2 mt-2 mt-sm-0">
+                <v-btn
+                  color="primary"
+                  variant="flat"
+                  @click="showGoalsDialog = true"
                 >
-                  <v-icon start size="16">mdi-check</v-icon>
-                  Goal Achieved!
-                </v-chip>
-                <v-chip
-                  v-else
-                  :color="(progress.weeklyProgress.percentage || 0) >= 75 ? 'warning' : 'info'"
-                  variant="tonal"
-                  size="small"
-                >
-                  {{ formatTime(((progress.weeklyProgress.goal || 0) - (progress.weeklyProgress.current || 0)) * 60) }} remaining
-                </v-chip>
+                  <Icon icon="solar:target-linear" class="mr-2" size="20" />
+                  Set Goals
+                </v-btn>
               </div>
             </div>
           </v-card-text>
         </v-card>
+      </v-col>
+    </v-row>
 
-        <!-- Daily Activity Calendar -->
-        <v-card class="mb-6" elevation="2">
-          <v-card-title class="d-flex align-center">
-            <v-icon class="mr-2">mdi-calendar-month</v-icon>
-            Daily Activity
-          </v-card-title>
-          <v-card-text>
-            <ProgressActivityCalendar
-              :daily-stats="analytics?.dailyStats || []"
-              :period="selectedPeriod"
-            />
-          </v-card-text>
-        </v-card>
+    <!-- Loading State -->
+    <div v-if="isLoading" class="text-center py-12">
+      <v-progress-circular indeterminate color="primary" size="64" />
+      <p class="text-h6 mt-4">Loading your analytics...</p>
+    </div>
 
-        <!-- Exam Performance Analysis -->
-        <v-card v-if="examPerformance?.examPerformance?.length > 0" class="mb-6" elevation="2">
-          <v-card-title class="d-flex align-center">
-            <v-icon class="mr-2">mdi-school</v-icon>
-            Exam Performance Analysis
-          </v-card-title>
-          <v-card-text>
-            <!-- Overall Summary -->
-            <v-row class="mb-4">
-              <v-col cols="12" md="3">
-                <v-card color="primary" variant="tonal">
-                  <v-card-text class="text-center pa-4">
-                    <v-icon size="32" class="mb-2">mdi-book-multiple</v-icon>
-                    <div class="text-h5 font-weight-bold">{{ examPerformance.overallStats.totalExams }}</div>
-                    <div class="text-body-2">Exams Studied</div>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-              
-              <v-col cols="12" md="3">
-                <v-card color="success" variant="tonal">
-                  <v-card-text class="text-center pa-4">
-                    <v-icon size="32" class="mb-2">mdi-target</v-icon>
-                    <div class="text-h5 font-weight-bold">{{ Math.round(examPerformance.overallStats.averageAccuracy) }}%</div>
-                    <div class="text-body-2">Overall Accuracy</div>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-              
-              <v-col cols="12" md="3" v-if="examPerformance.overallStats.strongestExam">
-                <v-card color="warning" variant="tonal">
-                  <v-card-text class="text-center pa-4">
-                    <v-icon size="32" class="mb-2">mdi-trophy</v-icon>
-                    <div class="text-h6 font-weight-bold">{{ examPerformance.overallStats.strongestExam.exam.code }}</div>
-                    <div class="text-body-2">Strongest Exam</div>
-                    <div class="text-caption">{{ Math.round(examPerformance.overallStats.strongestExam.statistics.accuracy) }}% accuracy</div>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-              
-              <v-col cols="12" md="3" v-if="examPerformance.overallStats.weakestExam">
-                <v-card color="error" variant="tonal">
-                  <v-card-text class="text-center pa-4">
-                    <v-icon size="32" class="mb-2">mdi-chart-line-variant</v-icon>
-                    <div class="text-h6 font-weight-bold">{{ examPerformance.overallStats.weakestExam.exam.code }}</div>
-                    <div class="text-body-2">Focus Area</div>
-                    <div class="text-caption">{{ Math.round(examPerformance.overallStats.weakestExam.statistics.accuracy) }}% accuracy</div>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
+    <!-- Progress Content -->
+    <div v-else>
+      <!-- Filters -->
+      <v-card class="mb-6" elevation="10">
+        <v-card-text class="pa-4">
+          <v-row align="center">
+            <v-col cols="12" md="4">
+              <v-select
+                v-model="selectedPeriod"
+                label="Time Period"
+                :items="[
+                  { title: 'Last Week', value: 'week' },
+                  { title: 'Last Month', value: 'month' },
+                  { title: 'Last Quarter', value: 'quarter' },
+                  { title: 'Last Year', value: 'year' }
+                ]"
+                variant="outlined"
+                density="compact"
+                hide-details
+              />
+            </v-col>
+            
+            <v-col cols="12" md="4">
+              <v-select
+                v-model="selectedExam"
+                label="Filter by Exam"
+                :items="[
+                  { title: 'All Exams', value: '' },
+                  ...exams.map(exam => ({ 
+                    title: `${exam.examCode || exam.code} - ${exam.examName || exam.name}`, 
+                    value: exam.id 
+                  }))
+                ]"
+                variant="outlined"
+                density="compact"
+                hide-details
+              />
+            </v-col>
+            
+            <v-col cols="12" md="4" class="text-right">
+              <v-chip-group>
+                <v-chip
+                  :color="analytics?.trends?.accuracy === 'increasing' ? 'success' : 
+                         analytics?.trends?.accuracy === 'decreasing' ? 'error' : 'warning'"
+                  variant="tonal"
+                >
+                  <Icon 
+                    :icon="analytics?.trends?.accuracy === 'increasing' ? 'solar:arrow-up-linear' : 
+                           analytics?.trends?.accuracy === 'decreasing' ? 'solar:arrow-down-linear' : 
+                           'solar:arrow-right-linear'" 
+                    class="mr-1" 
+                    size="16" 
+                  />
+                  Accuracy {{ analytics?.trends?.accuracy || 'stable' }}
+                </v-chip>
+              </v-chip-group>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
 
-            <!-- Individual Exam Performance -->
-            <h3 class="text-h6 mb-3">Individual Exam Performance</h3>
-            <v-row>
-              <v-col 
-                v-for="examData in examPerformance.examPerformance.slice(0, 6)" 
-                :key="examData.exam.id"
-                cols="12" 
-                md="6" 
-                lg="4"
-              >
-                <v-card variant="outlined" class="h-100">
-                  <v-card-text class="pa-4">
-                    <div class="d-flex align-center justify-space-between mb-3">
-                      <div>
-                        <h4 class="text-subtitle-1 font-weight-bold">{{ examData.exam.code }}</h4>
-                        <p class="text-caption text-grey-darken-1 mb-0">{{ examData.exam.name }}</p>
-                      </div>
-                      
-                      <v-chip
-                        :color="getMasteryColor(examData.statistics.masteryLevel)"
-                        size="small"
-                        variant="tonal"
-                      >
-                        {{ examData.statistics.masteryLevel }}
-                      </v-chip>
+      <!-- Streak Overview -->
+      <v-row class="mb-6">
+        <v-col cols="12">
+          <ProgressOverviewCard
+            :current-streak="progress?.streaks?.currentDaily || 0"
+            :longest-streak="progress?.streaks?.longestDaily || 0"
+            :correct-answers="progress?.streaks?.currentAnswer || 0"
+            :total-questions="analytics?.overall?.totalAnswered || 0"
+            :overall-accuracy="Math.round(progress?.overall?.averageAccuracy || 0)"
+          />
+        </v-col>
+      </v-row>
+
+      <!-- Key Metrics -->
+      <v-row class="mb-6">
+        <v-col cols="12" sm="6" md="3">
+          <ProgressMetricCard
+            title="Study Time"
+            :value="formatTime(analytics?.periodTotals?.totalStudyTime || 0)"
+            :subtitle="`This ${selectedPeriod}`"
+            icon="solar:clock-circle-bold"
+            color="primary"
+            :trend="{
+              value: 12,
+              direction: 'up'
+            }"
+            :sparkline-data="[30, 45, 50, 35, 40, 55, 60]"
+          />
+        </v-col>
+        
+        <v-col cols="12" sm="6" md="3">
+          <ProgressMetricCard
+            title="Questions Answered"
+            :value="formatNumber(analytics?.periodTotals?.totalQuestions || 0)"
+            :subtitle="`This ${selectedPeriod}`"
+            icon="solar:question-circle-bold"
+            color="success"
+            :trend="{
+              value: 8,
+              direction: 'up'
+            }"
+            :sparkline-data="[120, 180, 150, 200, 220, 240, 280]"
+          />
+        </v-col>
+        
+        <v-col cols="12" sm="6" md="3">
+          <ProgressMetricCard
+            title="Average Accuracy"
+            :value="`${Math.round(analytics?.periodTotals?.averageAccuracy || 0)}%`"
+            :subtitle="`This ${selectedPeriod}`"
+            icon="solar:target-bold"
+            color="warning"
+            :trend="{
+              value: 5,
+              direction: 'up'
+            }"
+            :sparkline-data="[75, 78, 80, 82, 85, 88, 90]"
+          />
+        </v-col>
+        
+        <v-col cols="12" sm="6" md="3">
+          <ProgressMetricCard
+            title="Study Sessions"
+            :value="analytics?.periodTotals?.totalSessions || 0"
+            :subtitle="`This ${selectedPeriod}`"
+            icon="solar:calendar-check-bold"
+            color="info"
+            :trend="{
+              value: 3,
+              direction: 'neutral'
+            }"
+            :sparkline-data="[2, 3, 3, 4, 3, 4, 5]"
+          />
+        </v-col>
+      </v-row>
+
+      <!-- Charts Section -->
+      <v-row class="mb-6">
+        <v-col cols="12" lg="4">
+          <ProgressAnalyticsChart
+            title="Study Time Trend"
+            subtitle="Daily study time in minutes"
+            chart-type="area"
+            :data="studyTimeChartData"
+            :height="300"
+          />
+        </v-col>
+        
+        <v-col cols="12" lg="4">
+          <ProgressAnalyticsChart
+            title="Accuracy Trend"
+            subtitle="Daily accuracy percentage"
+            chart-type="line"
+            :data="accuracyChartData"
+            :height="300"
+          />
+        </v-col>
+        
+        <v-col cols="12" lg="4">
+          <ProgressAnalyticsChart
+            title="Questions Activity"
+            subtitle="Questions answered per day"
+            chart-type="bar"
+            :data="questionsChartData"
+            :height="300"
+          />
+        </v-col>
+      </v-row>
+
+      <!-- Goals Progress -->
+      <v-row v-if="progress?.weeklyProgress" class="mb-6">
+        <v-col cols="12">
+          <v-card elevation="10">
+            <v-card-item>
+              <div class="d-flex align-center">
+                <Icon icon="solar:target-bold" class="mr-2" size="24" />
+                <h5 class="text-h5 font-weight-semibold">Weekly Goal Progress</h5>
+              </div>
+            </v-card-item>
+            <v-card-text>
+              <v-row>
+                <v-col cols="12" md="8">
+                  <div class="goal-progress">
+                    <div class="d-flex justify-space-between mb-2">
+                      <span class="text-subtitle-1">Current Progress</span>
+                      <span class="text-subtitle-1 font-weight-bold">
+                        {{ formatTime((progress.weeklyProgress.current || 0) * 60) }} / 
+                        {{ formatTime((progress.weeklyProgress.goal || 0) * 60) }}
+                      </span>
                     </div>
-
-                    <div class="exam-stats">
-                      <div class="stat-row">
-                        <span class="text-body-2">Accuracy:</span>
-                        <span class="font-weight-bold">{{ Math.round(examData.statistics.accuracy) }}%</span>
-                      </div>
-                      
-                      <div class="stat-row">
-                        <span class="text-body-2">Study Time:</span>
-                        <span class="font-weight-bold">{{ formatTime(examData.statistics.totalStudyTime) }}</span>
-                      </div>
-                      
-                      <div class="stat-row">
-                        <span class="text-body-2">Questions:</span>
-                        <span class="font-weight-bold">{{ formatNumber(examData.statistics.totalQuestions) }}</span>
-                      </div>
-                      
-                      <div v-if="examData.statistics.testsTaken > 0" class="stat-row">
-                        <span class="text-body-2">Best Score:</span>
-                        <span class="font-weight-bold">{{ examData.statistics.bestTestScore }}%</span>
-                      </div>
-                    </div>
-
+                    <v-progress-linear
+                      :model-value="progress.weeklyProgress.percentage || 0"
+                      :color="(progress.weeklyProgress.percentage || 0) >= 100 ? 'success' : 'primary'"
+                      height="20"
+                      rounded
+                    >
+                      <template #default="{ value }">
+                        <span class="text-caption font-weight-bold">{{ Math.round(value) }}%</span>
+                      </template>
+                    </v-progress-linear>
+                    
                     <div class="mt-3">
-                      <div class="d-flex align-center justify-space-between mb-1">
-                        <span class="text-caption">Progress</span>
-                        <span class="text-caption">{{ Math.round(examData.statistics.accuracy) }}%</span>
-                      </div>
-                      <v-progress-linear
-                        :model-value="examData.statistics.accuracy"
-                        :color="getMasteryColor(examData.statistics.masteryLevel)"
-                        height="6"
-                        rounded
-                      />
-                    </div>
-
-                    <!-- Improvement trend -->
-                    <div v-if="examData.statistics.improvementTrend !== 'stable'" class="mt-2">
                       <v-chip
-                        :color="examData.statistics.improvementTrend === 'improving' ? 'success' : 'warning'"
-                        size="x-small"
+                        v-if="(progress.weeklyProgress.percentage || 0) >= 100"
+                        color="success"
                         variant="tonal"
+                        size="small"
                       >
-                        <v-icon start size="12">
-                          {{ examData.statistics.improvementTrend === 'improving' ? 'mdi-trending-up' : 'mdi-trending-down' }}
-                        </v-icon>
-                        {{ examData.statistics.improvementTrend }}
+                        <Icon icon="solar:check-circle-bold" size="16" class="mr-1" />
+                        Goal Achieved!
+                      </v-chip>
+                      <v-chip
+                        v-else
+                        :color="(progress.weeklyProgress.percentage || 0) >= 75 ? 'warning' : 'info'"
+                        variant="tonal"
+                        size="small"
+                      >
+                        {{ formatTime(((progress.weeklyProgress.goal || 0) - (progress.weeklyProgress.current || 0)) * 60) }} remaining
                       </v-chip>
                     </div>
-                  </v-card-text>
-                </v-card>
-              </v-col>
-            </v-row>
+                  </div>
+                </v-col>
+                
+                <v-col cols="12" md="4" class="d-flex align-center justify-center">
+                  <div class="text-center">
+                    <v-progress-circular
+                      :model-value="progress.weeklyProgress.percentage || 0"
+                      :size="140"
+                      :width="12"
+                      :color="(progress.weeklyProgress.percentage || 0) >= 100 ? 'success' : 'primary'"
+                    >
+                      <div>
+                        <div class="text-h4 font-weight-bold">{{ Math.round(progress.weeklyProgress.percentage || 0) }}%</div>
+                        <div class="text-caption">Complete</div>
+                      </div>
+                    </v-progress-circular>
+                  </div>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <!-- Daily Activity Calendar -->
+      <v-row class="mb-6">
+        <v-col cols="12">
+          <v-card elevation="10">
+            <v-card-item>
+              <div class="d-flex align-center">
+                <Icon icon="solar:calendar-mark-bold" class="mr-2" size="24" />
+                <h5 class="text-h5 font-weight-semibold">Daily Activity</h5>
+              </div>
+            </v-card-item>
+            <v-card-text>
+              <ProgressActivityCalendar
+                :daily-stats="analytics?.dailyStats || []"
+                :period="selectedPeriod"
+              />
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <!-- Exam Performance Analysis -->
+      <v-card v-if="examPerformance?.examPerformance?.length > 0" class="mb-6" elevation="10">
+        <v-card-item>
+          <div class="d-flex align-center">
+            <Icon icon="solar:graduation-cap-bold" class="mr-2" size="24" />
+            <h5 class="text-h5 font-weight-semibold">Exam Performance Analysis</h5>
+          </div>
+        </v-card-item>
+        
+        <v-card-text>
+          <!-- Overall Summary -->
+          <v-row class="mb-6">
+            <v-col cols="12" md="3">
+              <v-card color="primary" variant="tonal" elevation="0">
+                <v-card-text class="text-center pa-4">
+                  <Icon icon="solar:book-2-bold" size="40" class="mb-2" />
+                  <div class="text-h4 font-weight-bold">{{ examPerformance.overallStats.totalExams }}</div>
+                  <div class="text-body-2">Exams Studied</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            
+            <v-col cols="12" md="3">
+              <v-card color="success" variant="tonal" elevation="0">
+                <v-card-text class="text-center pa-4">
+                  <Icon icon="solar:target-bold" size="40" class="mb-2" />
+                  <div class="text-h4 font-weight-bold">{{ Math.round(examPerformance.overallStats.averageAccuracy) }}%</div>
+                  <div class="text-body-2">Overall Accuracy</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            
+            <v-col cols="12" md="3" v-if="examPerformance.overallStats.strongestExam">
+              <v-card color="warning" variant="tonal" elevation="0">
+                <v-card-text class="text-center pa-4">
+                  <Icon icon="solar:trophy-bold" size="40" class="mb-2" />
+                  <div class="text-h5 font-weight-bold">{{ examPerformance.overallStats.strongestExam.exam.code }}</div>
+                  <div class="text-body-2">Strongest Exam</div>
+                  <div class="text-caption">{{ Math.round(examPerformance.overallStats.strongestExam.statistics.accuracy) }}% accuracy</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            
+            <v-col cols="12" md="3" v-if="examPerformance.overallStats.weakestExam">
+              <v-card color="error" variant="tonal" elevation="0">
+                <v-card-text class="text-center pa-4">
+                  <Icon icon="solar:chart-2-bold" size="40" class="mb-2" />
+                  <div class="text-h5 font-weight-bold">{{ examPerformance.overallStats.weakestExam.exam.code }}</div>
+                  <div class="text-body-2">Focus Area</div>
+                  <div class="text-caption">{{ Math.round(examPerformance.overallStats.weakestExam.statistics.accuracy) }}% accuracy</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <!-- Individual Exam Performance -->
+          <h3 class="text-h6 mb-4">Individual Exam Performance</h3>
+          <v-row>
+            <v-col 
+              v-for="examData in examPerformance.examPerformance.slice(0, 6)" 
+              :key="examData.exam.id"
+              cols="12" 
+              md="6" 
+              lg="4"
+            >
+              <ExamPerformanceCard :exam-data="examData" />
+            </v-col>
+          </v-row>
+          
+          <div v-if="examPerformance.examPerformance.length > 6" class="text-center mt-4">
+            <v-btn color="primary" variant="tonal" to="/exams">
+              View All Exams
+              <Icon icon="solar:arrow-right-linear" class="ml-2" size="18" />
+            </v-btn>
+          </div>
           </v-card-text>
         </v-card>
       </div>
 
-      <!-- Goals Dialog -->
-      <v-dialog v-model="showGoalsDialog" max-width="500px">
-        <v-card>
-          <v-card-title>Set Your Study Goals</v-card-title>
-          <v-card-text>
-            <v-row>
-              <v-col cols="12">
-                <v-text-field
-                  v-model.number="weeklyGoal"
-                  label="Weekly Goal (minutes)"
-                  type="number"
-                  min="0"
-                  max="2520"
-                  variant="outlined"
-                  hint="Recommended: 120-480 minutes per week"
-                />
-              </v-col>
-            </v-row>
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn text @click="showGoalsDialog = false">Cancel</v-btn>
-            <v-btn color="primary" @click="saveGoals">Save Goals</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
-    </v-container>
+    <!-- Goals Dialog -->
+    <v-dialog v-model="showGoalsDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <Icon icon="solar:target-bold" class="mr-2" size="24" />
+          Set Your Study Goals
+        </v-card-title>
+        <v-card-text>
+          <p class="text-body-2 text-grey100 mb-4">
+            Set achievable goals to stay motivated and track your progress
+          </p>
+          <v-row>
+            <v-col cols="12">
+              <v-text-field
+                v-model.number="weeklyGoal"
+                label="Weekly Goal (minutes)"
+                type="number"
+                min="0"
+                max="2520"
+                variant="outlined"
+                hint="Recommended: 120-480 minutes per week"
+                persistent-hint
+              >
+                <template v-slot:append-inner>
+                  <v-chip size="x-small" variant="tonal">
+                    {{ formatTime(weeklyGoal * 60) }}
+                  </v-chip>
+                </template>
+              </v-text-field>
+            </v-col>
+            
+            <v-col cols="12">
+              <v-alert
+                type="info"
+                variant="tonal"
+                density="compact"
+              >
+                <p class="text-caption mb-1">
+                  <strong>Suggested goals based on your level:</strong>
+                </p>
+                <ul class="text-caption">
+                  <li>Beginner: 2-4 hours/week (120-240 min)</li>
+                  <li>Intermediate: 4-6 hours/week (240-360 min)</li>
+                  <li>Advanced: 6-8 hours/week (360-480 min)</li>
+                </ul>
+              </v-alert>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn text @click="showGoalsDialog = false">Cancel</v-btn>
+          <v-btn color="primary" variant="flat" @click="saveGoals">Save Goals</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <style scoped>
-.progress-page {
-  background: #f5f5f5;
-  min-height: 100vh;
-  padding: 24px 0;
-}
-
-.page-header {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.streak-stat {
-  display: flex;
-  align-items: center;
-}
-
 .goal-progress {
   max-width: 600px;
-}
-
-.exam-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.stat-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-@media (max-width: 768px) {
-  .progress-page {
-    padding: 16px 0;
-  }
-  
-  .page-header {
-    padding: 16px;
-    margin-bottom: 16px;
-  }
 }
 </style>

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
+import QuestionTypeChip from '@/components/admin/QuestionTypeChip.vue'
+import type { QuestionType } from '@/types/question'
 
 interface Props {
   open: boolean
@@ -97,7 +99,7 @@ const generateQuestions = async () => {
       generatedQuestions.value = response.data.questions.map((q: any, index: number) => ({
         id: `generated_${index}`,
         questionText: q.question || q.questionText,
-        questionType: q.questionType || 'multiple-choice',
+        questionType: (q.questionType || 'multiple-choice') as QuestionType,
         options: q.options || [q.optionA, q.optionB, q.optionC, q.optionD].filter(Boolean),
         correctAnswer: parseCorrectAnswer(q.correctAnswer),
         explanation: q.explanation,
@@ -199,10 +201,14 @@ const selectedExamName = computed(() => {
     max-width="1200"
     scrollable
   >
-    <v-card>
+    <v-card elevation="10">
       <v-card-title class="d-flex align-center">
         <Icon icon="solar:magic-stick-3-bold-duotone" class="mr-2" />
         {{ dialogTitle }}
+        <v-spacer />
+        <v-btn icon variant="text" @click="resetDialog">
+          <Icon icon="solar:close-circle-line-duotone" />
+        </v-btn>
       </v-card-title>
 
       <!-- Step 1: Configuration -->
@@ -274,8 +280,8 @@ const selectedExamName = computed(() => {
         </v-row>
 
         <v-alert type="info" variant="tonal" class="mt-4">
-          <template v-slot:prepend>
-            <Icon icon="solar:info-circle-bold-duotone" />
+          <template #prepend>
+            <Icon icon="solar:info-circle-line-duotone" />
           </template>
           The AI will generate questions based on the exam's official objectives and your specifications. 
           Generated questions will follow the exam's style and difficulty level.
@@ -314,9 +320,7 @@ const selectedExamName = computed(() => {
             <div class="flex-grow-1">
               <div class="d-flex align-center mb-2">
                 <span class="text-h6 mr-2">Question {{ index + 1 }}</span>
-                <v-chip size="small" :color="question.questionType === 'multiple-choice' ? 'primary' : 'secondary'">
-                  {{ question.questionType }}
-                </v-chip>
+                <QuestionTypeChip :question-type="question.questionType" size="small" />
                 <v-chip size="small" class="ml-2" variant="tonal">
                   {{ question.difficulty || formData.difficulty }}
                 </v-chip>
@@ -332,12 +336,12 @@ const selectedExamName = computed(() => {
                   md="6"
                 >
                   <div class="d-flex align-center">
-                    <v-icon 
-                      :color="question.correctAnswer.includes(optIndex) ? 'success' : 'grey'"
+                    <Icon 
+                      :icon="question.correctAnswer.includes(optIndex) ? 'solar:check-circle-bold' : 'solar:circle-line-duotone'"
+                      :class="question.correctAnswer.includes(optIndex) ? 'text-success' : 'text-grey'"
                       class="mr-2"
-                    >
-                      {{ question.correctAnswer.includes(optIndex) ? 'mdi-check-circle' : 'mdi-circle-outline' }}
-                    </v-icon>
+                      size="20"
+                    />
                     <span :class="{ 'font-weight-bold': question.correctAnswer.includes(optIndex) }">
                       {{ option }}
                     </span>

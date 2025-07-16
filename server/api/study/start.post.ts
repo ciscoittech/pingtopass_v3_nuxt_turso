@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
       .where(
         and(
           eq(questions.examId, body.examId),
-          eq(questions.isActive, true)
+          eq(questions.isActive, 1) // isActive is an integer in the database
         )
       )
       .all()
@@ -118,6 +118,18 @@ export default defineEventHandler(async (event) => {
       studySession
     })
 
+    // Prepare all questions for client (study mode includes answers/explanations)
+    const questionsForClient = selectedQuestions.map(q => ({
+      id: q.id,
+      questionText: q.questionText,
+      questionType: q.questionType || 'multiple-choice',
+      options: q.options || [],
+      correctAnswers: q.correctAnswer || [],
+      explanation: q.explanation || '',
+      codeBlock: q.codeBlock,
+      resources: q.resources || []
+    }))
+
     return {
       success: true,
       data: {
@@ -126,12 +138,9 @@ export default defineEventHandler(async (event) => {
         totalQuestions: selectedQuestions.length,
         currentQuestionIndex: 0,
         studyMode: body.studyMode || 'sequential',
-        firstQuestion: selectedQuestions[0] ? {
-          ...selectedQuestions[0],
-          options: selectedQuestions[0].options ? JSON.parse(selectedQuestions[0].options) : [],
-          // Don't send correct answer to client
-          correctAnswer: undefined
-        } : null
+        questions: questionsForClient,
+        // Keep firstQuestion for backward compatibility
+        firstQuestion: questionsForClient[0] || null
       }
     }
 

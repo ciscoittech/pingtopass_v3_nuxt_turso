@@ -1,0 +1,390 @@
+{
+  "examCode": "N10-008",
+  "examName": "CompTIA Network+",
+  "vendorName": "CompTIA",
+  "objectives": [
+    {
+      "title": "Networking Concepts",
+      "description": "Explain basic networking concepts including the OSI model, network topologies, and protocols",
+      "weight": 23
+    },
+    {
+      "title": "Infrastructure",
+      "description": "Determine and explain the appropriate cabling, device and storage technologies",
+      "weight": 20
+    },
+    {
+      "title": "Network Operations",
+      "description": "Use best practices to manage the network, determine policies and ensure business continuity",
+      "weight": 16
+    },
+    {
+      "title": "Network Security",
+      "description": "Summarize physical security and common attacks while securing the wired and wireless network",
+      "weight": 19
+    },
+    {
+      "title": "Network Troubleshooting and Tools",
+      "description": "Explain the troubleshooting methodology and the appropriate tools to support connectivity and performance",
+      "weight": 22
+    }
+  ],
+  "questions": [
+    {
+      "questionText": "Which layer of the OSI model is responsible for establishing, maintaining, and terminating sessions between applications?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Physical Layer",
+        "Transport Layer",
+        "Session Layer",
+        "Application Layer"
+      ],
+      "correctAnswer": [2],
+      "explanation": "The Session Layer (Layer 5) of the OSI model is responsible for establishing, maintaining, and terminating sessions between applications. It manages dialogue control and synchronization between communicating systems.",
+      "difficulty": 2,
+      "objectiveTitle": "Networking Concepts",
+      "resources": [
+        {
+          "title": "OSI Model Reference",
+          "url": "https://www.comptia.org/training/resources/osi-model"
+        }
+      ]
+    },
+    {
+      "questionText": "What is the default subnet mask for a Class B IP address?",
+      "questionType": "multiple-choice",
+      "options": [
+        "255.0.0.0",
+        "255.255.0.0",
+        "255.255.255.0",
+        "255.255.255.255"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Class B IP addresses use a default subnet mask of 255.255.0.0, which provides 16 bits for the network portion and 16 bits for the host portion of the address.",
+      "difficulty": 2,
+      "objectiveTitle": "Networking Concepts"
+    },
+    {
+      "questionText": "Which port number is used by HTTPS?",
+      "questionType": "multiple-choice",
+      "options": [
+        "80",
+        "443",
+        "8080",
+        "22"
+      ],
+      "correctAnswer": [1],
+      "explanation": "HTTPS (Hypertext Transfer Protocol Secure) uses port 443 by default. This is the secure version of HTTP, which uses port 80.",
+      "difficulty": 1,
+      "objectiveTitle": "Networking Concepts"
+    },
+    {
+      "questionText": "What is the maximum cable length for Cat 6 Ethernet cable when running at 1 Gbps?",
+      "questionType": "multiple-choice",
+      "options": [
+        "55 meters",
+        "100 meters",
+        "150 meters",
+        "300 meters"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Category 6 (Cat 6) Ethernet cable supports speeds up to 1 Gbps at a maximum distance of 100 meters (328 feet). This is the standard maximum length for most Ethernet copper cabling.",
+      "difficulty": 2,
+      "objectiveTitle": "Infrastructure"
+    },
+    {
+      "questionText": "Which type of fiber optic cable is typically used for long-distance transmissions?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Single-mode fiber",
+        "Multi-mode fiber",
+        "Coaxial cable",
+        "Shielded twisted pair"
+      ],
+      "correctAnswer": [0],
+      "explanation": "Single-mode fiber optic cable is used for long-distance transmissions because it has a smaller core diameter (8-10 microns) that allows light to travel in a single path, reducing signal dispersion and enabling transmission over greater distances.",
+      "difficulty": 2,
+      "objectiveTitle": "Infrastructure"
+    },
+    {
+      "questionText": "Which RAID level provides disk mirroring without parity or striping?",
+      "questionType": "multiple-choice",
+      "options": [
+        "RAID 0",
+        "RAID 1",
+        "RAID 5",
+        "RAID 10"
+      ],
+      "correctAnswer": [1],
+      "explanation": "RAID 1 provides disk mirroring, where data is written identically to two or more drives. It offers redundancy without parity or striping, providing fault tolerance but no performance improvement.",
+      "difficulty": 2,
+      "objectiveTitle": "Infrastructure"
+    },
+    {
+      "questionText": "What is the purpose of a VLAN?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To increase network speed",
+        "To logically segment a network",
+        "To provide wireless connectivity",
+        "To encrypt network traffic"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A VLAN (Virtual Local Area Network) is used to logically segment a network, creating separate broadcast domains within a physical network infrastructure. This improves security, performance, and management.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Operations"
+    },
+    {
+      "questionText": "Which protocol is used to automatically assign IP addresses to devices on a network?",
+      "questionType": "multiple-choice",
+      "options": [
+        "DNS",
+        "DHCP",
+        "SMTP",
+        "SNMP"
+      ],
+      "correctAnswer": [1],
+      "explanation": "DHCP (Dynamic Host Configuration Protocol) automatically assigns IP addresses and other network configuration parameters to devices on a network, eliminating the need for manual configuration.",
+      "difficulty": 1,
+      "objectiveTitle": "Network Operations"
+    },
+    {
+      "questionText": "What is the primary purpose of implementing QoS on a network?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To encrypt data transmission",
+        "To prioritize network traffic",
+        "To prevent unauthorized access",
+        "To increase bandwidth"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Quality of Service (QoS) is implemented to prioritize network traffic, ensuring that critical applications and services receive the necessary bandwidth and low latency they require for optimal performance.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Operations"
+    },
+    {
+      "questionText": "Which type of attack involves flooding a network with traffic to make it unavailable?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Phishing",
+        "DDoS",
+        "Man-in-the-middle",
+        "SQL injection"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A DDoS (Distributed Denial of Service) attack involves flooding a network or server with traffic from multiple sources to overwhelm it and make it unavailable to legitimate users.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Security"
+    },
+    {
+      "questionText": "Which wireless security protocol provides the strongest encryption?",
+      "questionType": "multiple-choice",
+      "options": [
+        "WEP",
+        "WPA",
+        "WPA2",
+        "WPA3"
+      ],
+      "correctAnswer": [3],
+      "explanation": "WPA3 (Wi-Fi Protected Access 3) is the newest and most secure wireless security protocol, providing stronger encryption and better protection against brute-force attacks compared to its predecessors.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Security"
+    },
+    {
+      "questionText": "What is the purpose of a DMZ in network security?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To provide wireless access",
+        "To create a buffer zone between internal and external networks",
+        "To encrypt all network traffic",
+        "To increase network speed"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A DMZ (Demilitarized Zone) creates a buffer zone between an internal network and the internet, where public-facing servers can be placed with limited access to the internal network, enhancing security.",
+      "difficulty": 3,
+      "objectiveTitle": "Network Security"
+    },
+    {
+      "questionText": "Which command is used to test connectivity between two hosts?",
+      "questionType": "multiple-choice",
+      "options": [
+        "ipconfig",
+        "ping",
+        "netstat",
+        "tracert"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The ping command is used to test connectivity between two hosts by sending ICMP echo request packets and waiting for echo reply packets, measuring response time and packet loss.",
+      "difficulty": 1,
+      "objectiveTitle": "Network Troubleshooting and Tools"
+    },
+    {
+      "questionText": "What is the first step in the network troubleshooting methodology?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Establish a theory of probable cause",
+        "Identify the problem",
+        "Test the theory",
+        "Document findings"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The first step in the network troubleshooting methodology is to identify the problem by gathering information, questioning users, and determining what has changed.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Troubleshooting and Tools"
+    },
+    {
+      "questionText": "Which tool would you use to identify the path packets take between source and destination?",
+      "questionType": "multiple-choice",
+      "options": [
+        "ping",
+        "ipconfig",
+        "traceroute",
+        "arp"
+      ],
+      "correctAnswer": [2],
+      "explanation": "Traceroute (tracert on Windows) is used to identify the path packets take between source and destination by showing each hop along the route and the time taken for each hop.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Troubleshooting and Tools"
+    },
+    {
+      "questionText": "What does the acronym DNS stand for?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Dynamic Network System",
+        "Domain Name System",
+        "Digital Network Service",
+        "Distributed Network Security"
+      ],
+      "correctAnswer": [1],
+      "explanation": "DNS stands for Domain Name System, which translates human-readable domain names (like www.example.com) into IP addresses that computers use to identify each other on the network.",
+      "difficulty": 1,
+      "objectiveTitle": "Networking Concepts"
+    },
+    {
+      "questionText": "Which IPv4 address range is reserved for private networks?",
+      "questionType": "multiple-choice",
+      "options": [
+        "10.0.0.0 - 10.255.255.255",
+        "127.0.0.0 - 127.255.255.255",
+        "169.254.0.0 - 169.254.255.255",
+        "224.0.0.0 - 239.255.255.255"
+      ],
+      "correctAnswer": [0],
+      "explanation": "The 10.0.0.0 - 10.255.255.255 range is one of three IPv4 address ranges reserved for private networks (along with 172.16.0.0 - 172.31.255.255 and 192.168.0.0 - 192.168.255.255).",
+      "difficulty": 2,
+      "objectiveTitle": "Networking Concepts"
+    },
+    {
+      "questionText": "What is the maximum transmission speed of 802.11ac Wi-Fi?",
+      "questionType": "multiple-choice",
+      "options": [
+        "54 Mbps",
+        "150 Mbps",
+        "600 Mbps",
+        "1.3 Gbps"
+      ],
+      "correctAnswer": [3],
+      "explanation": "802.11ac (Wi-Fi 5) can achieve maximum theoretical speeds of up to 1.3 Gbps on the 5 GHz band, though actual speeds depend on various factors including channel width and MIMO configuration.",
+      "difficulty": 3,
+      "objectiveTitle": "Infrastructure"
+    },
+    {
+      "questionText": "Which backup type backs up only the files that have changed since the last full backup?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Full backup",
+        "Incremental backup",
+        "Differential backup",
+        "Mirror backup"
+      ],
+      "correctAnswer": [2],
+      "explanation": "A differential backup backs up all files that have changed since the last full backup, regardless of any other backups performed in between. This differs from incremental backups which only backup changes since the last backup of any type.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Operations"
+    },
+    {
+      "questionText": "What type of authentication uses something you have and something you know?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Single-factor authentication",
+        "Two-factor authentication",
+        "Biometric authentication",
+        "Certificate-based authentication"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Two-factor authentication (2FA) combines two different authentication factors, such as something you know (password) and something you have (smartphone, token), providing stronger security than single-factor authentication.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Security"
+    },
+    {
+      "questionText": "Which cable tester function verifies that wires are connected to the correct pins?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Continuity test",
+        "Wire mapping",
+        "Distance test",
+        "Attenuation test"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Wire mapping is a cable tester function that verifies each wire is connected to the correct pin at both ends of the cable, detecting crossed pairs, reversed pairs, and other wiring faults.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Troubleshooting and Tools"
+    },
+    {
+      "questionText": "Which protocol operates at Layer 2 of the OSI model and prevents switching loops?",
+      "questionType": "multiple-choice",
+      "options": [
+        "RIP",
+        "OSPF",
+        "STP",
+        "BGP"
+      ],
+      "correctAnswer": [2],
+      "explanation": "STP (Spanning Tree Protocol) operates at Layer 2 (Data Link Layer) of the OSI model and prevents switching loops by creating a loop-free logical topology in networks with redundant paths.",
+      "difficulty": 3,
+      "objectiveTitle": "Infrastructure"
+    },
+    {
+      "questionText": "What is the purpose of NAT (Network Address Translation)?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To encrypt network traffic",
+        "To translate private IP addresses to public IP addresses",
+        "To assign IP addresses automatically",
+        "To route traffic between VLANs"
+      ],
+      "correctAnswer": [1],
+      "explanation": "NAT (Network Address Translation) translates private IP addresses used on internal networks to public IP addresses for internet communication, allowing multiple devices to share a single public IP address.",
+      "difficulty": 2,
+      "objectiveTitle": "Networking Concepts"
+    },
+    {
+      "questionText": "Which type of DNS record maps a domain name to an IPv6 address?",
+      "questionType": "multiple-choice",
+      "options": [
+        "A record",
+        "AAAA record",
+        "MX record",
+        "CNAME record"
+      ],
+      "correctAnswer": [1],
+      "explanation": "An AAAA record (quad-A record) maps a domain name to an IPv6 address, while an A record maps to an IPv4 address. The four A's represent the four times larger address space of IPv6.",
+      "difficulty": 2,
+      "objectiveTitle": "Networking Concepts"
+    },
+    {
+      "questionText": "What is the administrative distance of OSPF?",
+      "questionType": "multiple-choice",
+      "options": [
+        "90",
+        "110",
+        "120",
+        "170"
+      ],
+      "correctAnswer": [1],
+      "explanation": "OSPF (Open Shortest Path First) has an administrative distance of 110. Administrative distance is used by routers to select the best path when multiple routing protocols provide route information for the same destination.",
+      "difficulty": 3,
+      "objectiveTitle": "Infrastructure"
+    }
+  ]
+}

@@ -1,13 +1,316 @@
+<template>
+  <div>
+    <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
+
+    <!-- Header with Stats -->
+    <v-row class="mb-6">
+      <v-col cols="12">
+        <v-card elevation="10" class="leaderboard-header">
+          <v-card-text class="pa-6">
+            <div class="d-flex align-center justify-space-between flex-wrap">
+              <div>
+                <h1 class="text-h4 font-weight-bold mb-2">
+                  <Icon icon="solar:trophy-bold-duotone" class="mr-2" size="36" />
+                  Global Leaderboard
+                </h1>
+                <p class="text-subtitle-1 text-grey100">
+                  See how you rank against other learners worldwide
+                </p>
+              </div>
+              
+              <v-chip
+                v-if="getCurrentUserRank()"
+                color="primary"
+                variant="elevated"
+                size="large"
+                class="font-weight-bold"
+              >
+                <Icon icon="solar:user-bold" class="mr-2" />
+                Your Rank: #{{ getCurrentUserRank() }}
+              </v-chip>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Filters -->
+    <v-row class="mb-6">
+      <v-col cols="12">
+        <v-card elevation="10">
+          <v-card-text>
+            <v-row align="center">
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="selectedCategory"
+                  label="Category"
+                  :items="categories"
+                  item-title="title"
+                  item-value="value"
+                  variant="outlined"
+                  density="compact"
+                >
+                  <template #item="{ props, item }">
+                    <v-list-item v-bind="props">
+                      <template #prepend>
+                        <Icon :icon="item.raw.icon" size="20" />
+                      </template>
+                      <v-list-item-title>{{ item.raw.title }}</v-list-item-title>
+                      <v-list-item-subtitle>{{ item.raw.description }}</v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                  <template #prepend-inner>
+                    <Icon :icon="getCategoryIcon(selectedCategory)" size="20" />
+                  </template>
+                </v-select>
+              </v-col>
+              
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="selectedTimeframe"
+                  label="Time Period"
+                  :items="timeframes"
+                  variant="outlined"
+                  density="compact"
+                >
+                  <template #prepend-inner>
+                    <Icon icon="solar:calendar-linear" size="20" />
+                  </template>
+                </v-select>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Top 3 Podium -->
+    <v-row v-if="!leaderboardLoading && leaderboard?.entries?.length > 0" class="mb-6">
+      <v-col cols="12">
+        <v-card elevation="10" class="podium-section">
+          <v-card-text class="pa-6">
+            <h2 class="text-h5 font-weight-bold text-center mb-6 text-white">
+              <Icon icon="solar:crown-star-bold" class="mr-2" />
+              Top Performers
+            </h2>
+            <v-row>
+              <v-col
+                v-for="(entry, index) in getTopThree()"
+                :key="entry.userId"
+                cols="12"
+                md="4"
+                :class="{ 'order-1': index === 1, 'order-0': index === 0, 'order-2': index === 2 }"
+              >
+                <v-card
+                  :color="getPodiumColor(entry.rank)"
+                  variant="elevated"
+                  elevation="8"
+                  class="text-center podium-card"
+                  :class="{ 'current-user': isCurrentUser(entry.userId) }"
+                >
+                  <v-card-text class="pa-4">
+                    <!-- Crown for first place -->
+                    <div v-if="entry.rank === 1" class="mb-2">
+                      <Icon icon="solar:crown-star-bold-duotone" size="48" color="yellow" />
+                    </div>
+                    
+                    <!-- Avatar -->
+                    <v-avatar
+                      :size="entry.rank === 1 ? 100 : 80"
+                      :color="entry.userAvatar ? undefined : 'white'"
+                      class="mb-3 elevation-4"
+                    >
+                      <v-img v-if="entry.userAvatar" :src="entry.userAvatar" />
+                      <Icon v-else icon="solar:user-bold-duotone" size="40" />
+                    </v-avatar>
+                    
+                    <!-- Rank Badge -->
+                    <div class="mb-3">
+                      <v-chip
+                        :color="getRankChipColor(entry.rank)"
+                        variant="elevated"
+                        size="large"
+                        class="font-weight-bold"
+                      >
+                        <Icon :icon="getRankIcon(entry.rank)" class="mr-1" />
+                        #{{ entry.rank }}
+                      </v-chip>
+                    </div>
+                    
+                    <!-- User Name -->
+                    <h3 class="text-h6 font-weight-bold text-white mb-1">
+                      {{ entry.userName || 'Anonymous' }}
+                    </h3>
+                    
+                    <!-- Score -->
+                    <div class="text-h4 font-weight-bold text-white mb-2">
+                      {{ formatScore(entry.score, selectedCategory) }}
+                    </div>
+                    
+                    <!-- Additional Info -->
+                    <div v-if="entry.metadata" class="text-caption text-white-70">
+                      {{ getMetadataDisplay(entry.metadata, selectedCategory) }}
+                    </div>
+                    
+                    <!-- Current User Badge -->
+                    <div v-if="isCurrentUser(entry.userId)" class="mt-3">
+                      <v-chip color="white" text-color="primary" size="small">
+                        <Icon icon="solar:user-bold" class="mr-1" size="16" />
+                        You
+                      </v-chip>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- Main Leaderboard -->
+    <v-row>
+      <v-col cols="12">
+        <UiParentCard title="Complete Rankings">
+          <template #action>
+            <v-btn
+              icon
+              variant="text"
+              @click="refreshLeaderboard"
+              :loading="leaderboardLoading"
+            >
+              <Icon icon="solar:refresh-linear" />
+            </v-btn>
+          </template>
+
+          <!-- Loading State -->
+          <div v-if="leaderboardLoading" class="text-center py-12">
+            <v-progress-circular indeterminate color="primary" size="64" />
+            <p class="text-h6 mt-4">Loading rankings...</p>
+          </div>
+
+          <!-- Rankings List -->
+          <div v-else-if="leaderboard?.entries?.length > 0">
+            <v-list lines="two" class="pa-0">
+              <v-list-item
+                v-for="(entry, index) in getRemainingEntries()"
+                :key="entry.userId"
+                class="ranking-item px-4"
+                :class="{ 'current-user-item': isCurrentUser(entry.userId) }"
+              >
+                <template #prepend>
+                  <div class="rank-display mr-4">
+                    <v-chip
+                      :color="isCurrentUser(entry.userId) ? 'primary' : 'grey-lighten-1'"
+                      variant="elevated"
+                    >
+                      #{{ entry.rank }}
+                    </v-chip>
+                  </div>
+                  
+                  <v-avatar
+                    size="56"
+                    :color="entry.userAvatar ? undefined : 'grey-lighten-1'"
+                  >
+                    <v-img v-if="entry.userAvatar" :src="entry.userAvatar" />
+                    <Icon v-else icon="solar:user-bold-duotone" size="28" />
+                  </v-avatar>
+                </template>
+
+                <v-list-item-title class="font-weight-semibold">
+                  {{ entry.userName || 'Anonymous' }}
+                  <v-chip
+                    v-if="isCurrentUser(entry.userId)"
+                    color="primary"
+                    size="x-small"
+                    variant="tonal"
+                    class="ml-2"
+                  >
+                    You
+                  </v-chip>
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  {{ getMetadataDisplay(entry.metadata, selectedCategory) }}
+                </v-list-item-subtitle>
+
+                <template #append>
+                  <div class="text-right">
+                    <div class="text-h5 font-weight-bold">
+                      {{ formatScore(entry.score, selectedCategory) }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ getCategoryLabel(selectedCategory) }}
+                    </div>
+                  </div>
+                </template>
+              </v-list-item>
+            </v-list>
+
+            <!-- Show More Button -->
+            <div v-if="hasMoreEntries" class="text-center pa-4">
+              <v-btn
+                color="primary"
+                variant="tonal"
+                @click="loadMore"
+              >
+                Show More
+                <Icon icon="solar:arrow-down-linear" class="ml-1" />
+              </v-btn>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else class="text-center py-12">
+            <Icon icon="solar:trophy-broken" size="64" class="mb-4 text-grey-lighten-1" />
+            <h5 class="text-h5 mb-2">No Rankings Available</h5>
+            <p class="text-body-1 text-grey100 mb-4">
+              Be the first to claim the top spot!
+            </p>
+            <v-btn
+              color="primary"
+              variant="flat"
+              to="/study"
+            >
+              Start Studying
+              <Icon icon="solar:arrow-right-linear" class="ml-1" />
+            </v-btn>
+          </div>
+        </UiParentCard>
+      </v-col>
+    </v-row>
+  </div>
+</template>
+
 <script setup lang="ts">
-// Require authentication
+import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue'
+import UiParentCard from '@/components/shared/UiParentCard.vue'
+import { Icon } from '@iconify/vue'
+
 definePageMeta({
-  middleware: 'auth'
+  middleware: 'auth',
+  layout: 'default'
 })
+
+// Breadcrumb
+const page = ref({ title: 'Leaderboard' })
+const breadcrumbs = ref([
+  {
+    text: 'Dashboard',
+    disabled: false,
+    to: '/dashboard'
+  },
+  {
+    text: 'Leaderboard',
+    disabled: true,
+    to: ''
+  }
+])
 
 // State management
 const selectedCategory = ref('points')
 const selectedTimeframe = ref('all_time')
-const loading = ref(false)
+const displayLimit = ref(20)
+const hasMoreEntries = ref(false)
 
 // Get current user
 const { data: userData } = await useFetch('/api/auth/me')
@@ -27,16 +330,42 @@ const leaderboard = computed(() => leaderboardData.value?.data)
 
 // Watch for category/timeframe changes
 watch([selectedCategory, selectedTimeframe], () => {
+  displayLimit.value = 20
   refreshLeaderboard()
 })
 
 // Available categories and timeframes
 const categories = [
-  { title: 'Total Points', value: 'points', icon: 'mdi-star', description: 'Points earned from studying and achievements' },
-  { title: 'Accuracy', value: 'accuracy', icon: 'mdi-target', description: 'Overall question accuracy (min. 50 questions)' },
-  { title: 'Study Streak', value: 'streak', icon: 'mdi-fire', description: 'Current daily study streak' },
-  { title: 'Questions Answered', value: 'questions', icon: 'mdi-help-circle', description: 'Total number of questions answered' },
-  { title: 'Study Time', value: 'study_time', icon: 'mdi-clock', description: 'Total time spent studying' }
+  { 
+    title: 'Total Points', 
+    value: 'points', 
+    icon: 'solar:star-bold-duotone', 
+    description: 'Points earned from studying and achievements' 
+  },
+  { 
+    title: 'Accuracy', 
+    value: 'accuracy', 
+    icon: 'solar:target-bold-duotone', 
+    description: 'Overall question accuracy (min. 50 questions)' 
+  },
+  { 
+    title: 'Study Streak', 
+    value: 'streak', 
+    icon: 'solar:fire-bold-duotone', 
+    description: 'Current daily study streak' 
+  },
+  { 
+    title: 'Questions Answered', 
+    value: 'questions', 
+    icon: 'solar:question-circle-bold-duotone', 
+    description: 'Total number of questions answered' 
+  },
+  { 
+    title: 'Study Time', 
+    value: 'study_time', 
+    icon: 'solar:clock-circle-bold-duotone', 
+    description: 'Total time spent studying' 
+  }
 ]
 
 const timeframes = [
@@ -75,10 +404,29 @@ const formatTime = (seconds: number) => {
   return `${minutes}m`
 }
 
-const getRankColor = (rank: number) => {
+const getCategoryIcon = (category: string) => {
+  const cat = categories.find(c => c.value === category)
+  return cat?.icon || 'solar:star-bold-duotone'
+}
+
+const getCategoryLabel = (category: string) => {
+  const cat = categories.find(c => c.value === category)
+  return cat?.title || 'Score'
+}
+
+const getPodiumColor = (rank: number) => {
   switch (rank) {
-    case 1: return 'amber'
+    case 1: return 'warning'
     case 2: return 'grey'
+    case 3: return 'deep-orange'
+    default: return 'primary'
+  }
+}
+
+const getRankChipColor = (rank: number) => {
+  switch (rank) {
+    case 1: return 'yellow'
+    case 2: return 'white'
     case 3: return 'orange'
     default: return 'primary'
   }
@@ -86,10 +434,10 @@ const getRankColor = (rank: number) => {
 
 const getRankIcon = (rank: number) => {
   switch (rank) {
-    case 1: return 'mdi-trophy'
-    case 2: return 'mdi-medal'
-    case 3: return 'mdi-medal'
-    default: return 'mdi-numeric-' + Math.min(rank, 9) + '-circle'
+    case 1: return 'solar:trophy-bold'
+    case 2: return 'solar:medal-star-bold'
+    case 3: return 'solar:medal-star-bold'
+    default: return 'solar:hashtag-circle-linear'
   }
 }
 
@@ -103,310 +451,95 @@ const getCurrentUserRank = () => {
   const userEntry = leaderboard.value.entries.find((entry: any) => entry.userId === currentUser.value.id)
   return userEntry?.rank || null
 }
-</script>
 
-<template>
-  <div class="leaderboard-page">
-    <v-container>
-      <!-- Header -->
-      <div class="page-header mb-6">
-        <div class="d-flex align-center justify-space-between">
-          <div>
-            <h1 class="text-h4 font-weight-bold mb-2">
-              <v-icon class="mr-2" color="primary">mdi-trophy</v-icon>
-              Leaderboard
-            </h1>
-            <p class="text-body-1 text-grey-darken-1">
-              See how you stack up against other learners
-            </p>
-          </div>
-          
-          <v-chip
-            v-if="getCurrentUserRank()"
-            color="primary"
-            variant="elevated"
-            size="large"
-          >
-            <v-icon start>mdi-account</v-icon>
-            Your Rank: #{{ getCurrentUserRank() }}
-          </v-chip>
-        </div>
-      </div>
-
-      <!-- Filters -->
-      <v-card class="mb-6" elevation="2">
-        <v-card-text class="pa-4">
-          <v-row align="center">
-            <v-col cols="12" md="6">
-              <v-select
-                v-model="selectedCategory"
-                label="Category"
-                :items="categories"
-                item-title="title"
-                item-value="value"
-                variant="outlined"
-                density="compact"
-              >
-                <template #item="{ props, item }">
-                  <v-list-item v-bind="props">
-                    <template #prepend>
-                      <v-icon :icon="item.raw.icon" />
-                    </template>
-                    <v-list-item-title>{{ item.raw.title }}</v-list-item-title>
-                    <v-list-item-subtitle>{{ item.raw.description }}</v-list-item-subtitle>
-                  </v-list-item>
-                </template>
-              </v-select>
-            </v-col>
-            
-            <v-col cols="12" md="6">
-              <v-select
-                v-model="selectedTimeframe"
-                label="Time Period"
-                :items="timeframes"
-                variant="outlined"
-                density="compact"
-              />
-            </v-col>
-          </v-row>
-          
-          <!-- Description -->
-          <div v-if="leaderboard?.metadata?.description" class="mt-3">
-            <v-chip color="info" variant="tonal" size="small">
-              <v-icon start size="16">mdi-information</v-icon>
-              {{ leaderboard.metadata.description }}
-            </v-chip>
-          </div>
-        </v-card-text>
-      </v-card>
-
-      <!-- Leaderboard -->
-      <v-card elevation="2">
-        <v-card-title class="d-flex align-center">
-          <v-icon class="mr-2">mdi-format-list-numbered</v-icon>
-          Top Performers
-          <v-spacer />
-          <v-btn
-            icon
-            variant="text"
-            @click="refreshLeaderboard"
-            :loading="leaderboardLoading"
-          >
-            <v-icon>mdi-refresh</v-icon>
-          </v-btn>
-        </v-card-title>
-
-        <v-card-text class="pa-0">
-          <!-- Loading State -->
-          <div v-if="leaderboardLoading" class="text-center py-8">
-            <v-progress-circular indeterminate color="primary" size="64" />
-            <p class="text-h6 mt-4">Loading leaderboard...</p>
-          </div>
-
-          <!-- Leaderboard Entries -->
-          <div v-else-if="leaderboard?.entries?.length > 0">
-            <!-- Top 3 Podium -->
-            <div class="podium-section pa-6">
-              <v-row>
-                <v-col
-                  v-for="(entry, index) in leaderboard.entries.slice(0, 3)"
-                  :key="entry.userId"
-                  cols="12"
-                  md="4"
-                  :class="{ 'order-1': index === 1, 'order-0': index === 0, 'order-2': index === 2 }"
-                >
-                  <v-card
-                    :color="getRankColor(entry.rank)"
-                    variant="elevated"
-                    elevation="4"
-                    class="text-center podium-card"
-                    :class="{ 'current-user': isCurrentUser(entry.userId) }"
-                  >
-                    <v-card-text class="pa-4">
-                      <v-avatar
-                        :size="index === 0 ? 80 : 64"
-                        :color="entry.userAvatar ? undefined : 'primary'"
-                        class="mb-3"
-                      >
-                        <v-img v-if="entry.userAvatar" :src="entry.userAvatar" />
-                        <v-icon v-else size="32">mdi-account</v-icon>
-                      </v-avatar>
-                      
-                      <div class="mb-2">
-                        <v-icon
-                          :color="entry.rank === 1 ? 'yellow' : 'white'"
-                          :size="index === 0 ? 40 : 32"
-                        >
-                          {{ getRankIcon(entry.rank) }}
-                        </v-icon>
-                      </div>
-                      
-                      <h3 class="text-h6 font-weight-bold text-white mb-1">
-                        {{ entry.userName || 'Anonymous' }}
-                      </h3>
-                      
-                      <div class="text-h5 font-weight-bold text-white">
-                        {{ formatScore(entry.score, selectedCategory) }}
-                      </div>
-                      
-                      <div v-if="isCurrentUser(entry.userId)" class="mt-2">
-                        <v-chip color="white" text-color="primary" size="small">
-                          <v-icon start size="16">mdi-account</v-icon>
-                          You
-                        </v-chip>
-                      </div>
-                    </v-card-text>
-                  </v-card>
-                </v-col>
-              </v-row>
-            </div>
-
-            <!-- Remaining Rankings -->
-            <v-divider />
-            <div class="rankings-list">
-              <v-list>
-                <v-list-item
-                  v-for="entry in leaderboard.entries.slice(3)"
-                  :key="entry.userId"
-                  class="ranking-item"
-                  :class="{ 'current-user-item': isCurrentUser(entry.userId) }"
-                >
-                  <template #prepend>
-                    <div class="rank-number">
-                      <v-chip
-                        :color="isCurrentUser(entry.userId) ? 'primary' : 'grey-lighten-1'"
-                        size="small"
-                        variant="elevated"
-                      >
-                        #{{ entry.rank }}
-                      </v-chip>
-                    </div>
-                    
-                    <v-avatar
-                      size="48"
-                      :color="entry.userAvatar ? undefined : 'grey-lighten-1'"
-                      class="ml-3"
-                    >
-                      <v-img v-if="entry.userAvatar" :src="entry.userAvatar" />
-                      <v-icon v-else>mdi-account</v-icon>
-                    </v-avatar>
-                  </template>
-
-                  <v-list-item-title class="font-weight-medium">
-                    {{ entry.userName || 'Anonymous' }}
-                    <v-chip
-                      v-if="isCurrentUser(entry.userId)"
-                      color="primary"
-                      size="x-small"
-                      variant="tonal"
-                      class="ml-2"
-                    >
-                      You
-                    </v-chip>
-                  </v-list-item-title>
-
-                  <template #append>
-                    <div class="text-right">
-                      <div class="text-h6 font-weight-bold">
-                        {{ formatScore(entry.score, selectedCategory) }}
-                      </div>
-                      <div v-if="entry.metadata" class="text-caption text-grey-darken-1">
-                        <!-- Additional metadata based on category -->
-                        <span v-if="selectedCategory === 'points' && entry.metadata.level">
-                          Level {{ JSON.parse(entry.metadata).level }}
-                        </span>
-                        <span v-else-if="selectedCategory === 'accuracy' && entry.metadata.totalQuestions">
-                          {{ JSON.parse(entry.metadata).totalQuestions }} questions
-                        </span>
-                        <span v-else-if="selectedCategory === 'streak' && entry.metadata.longestDailyStreak">
-                          Best: {{ JSON.parse(entry.metadata).longestDailyStreak }} days
-                        </span>
-                      </div>
-                    </div>
-                  </template>
-                </v-list-item>
-              </v-list>
-            </div>
-          </div>
-
-          <!-- Empty State -->
-          <div v-else class="text-center py-8">
-            <v-icon size="64" color="grey-lighten-1">mdi-trophy-outline</v-icon>
-            <h3 class="text-h6 mt-4">No rankings available</h3>
-            <p class="text-body-2">Start studying to appear on the leaderboard!</p>
-          </div>
-        </v-card-text>
-      </v-card>
-    </v-container>
-  </div>
-</template>
-
-<style scoped>
-.leaderboard-page {
-  background: #f5f5f5;
-  min-height: 100vh;
-  padding: 24px 0;
+const getMetadataDisplay = (metadata: string, category: string) => {
+  if (!metadata) return ''
+  
+  try {
+    const data = JSON.parse(metadata)
+    switch (category) {
+      case 'points':
+        return data.level ? `Level ${data.level}` : ''
+      case 'accuracy':
+        return data.totalQuestions ? `${data.totalQuestions} questions answered` : ''
+      case 'streak':
+        return data.longestDailyStreak ? `Best streak: ${data.longestDailyStreak} days` : ''
+      case 'questions':
+        return data.accuracy ? `${Math.round(data.accuracy)}% accuracy` : ''
+      case 'study_time':
+        return data.sessions ? `${data.sessions} study sessions` : ''
+      default:
+        return ''
+    }
+  } catch (e) {
+    return ''
+  }
 }
 
-.page-header {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+const getTopThree = () => {
+  if (!leaderboard.value?.entries) return []
+  return leaderboard.value.entries.slice(0, 3)
+}
+
+const getRemainingEntries = () => {
+  if (!leaderboard.value?.entries) return []
+  const remaining = leaderboard.value.entries.slice(3, displayLimit.value)
+  hasMoreEntries.value = leaderboard.value.entries.length > displayLimit.value
+  return remaining
+}
+
+const loadMore = () => {
+  displayLimit.value += 20
+}
+</script>
+
+<style scoped>
+.leaderboard-header {
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.1) 0%, rgba(var(--v-theme-secondary), 0.1) 100%);
 }
 
 .podium-section {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
 }
 
 .podium-card {
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .podium-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
 }
 
-.current-user {
-  border: 3px solid rgb(var(--v-theme-warning)) !important;
-  box-shadow: 0 0 20px rgba(var(--v-theme-warning), 0.3) !important;
+.podium-card.current-user {
+  border: 3px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.4) !important;
 }
 
 .ranking-item {
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .ranking-item:hover {
-  background: rgba(var(--v-theme-surface), 0.05);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .current-user-item {
-  background: rgba(var(--v-theme-primary), 0.1) !important;
+  background: linear-gradient(90deg, rgba(var(--v-theme-primary), 0.1) 0%, transparent 100%) !important;
   border-left: 4px solid rgb(var(--v-theme-primary));
 }
 
-.rank-number {
-  min-width: 60px;
-  text-align: center;
+.rank-display {
+  min-width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.rankings-list {
-  max-height: 600px;
-  overflow-y: auto;
-}
-
-@media (max-width: 768px) {
-  .leaderboard-page {
-    padding: 16px 0;
-  }
-  
-  .page-header {
-    padding: 16px;
-  }
-  
-  .podium-section {
-    padding: 16px;
-  }
+.text-white-70 {
+  color: rgba(255, 255, 255, 0.7);
 }
 </style>

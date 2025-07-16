@@ -1,0 +1,74 @@
+# Cloudflare Workers Configuration for PingToPass
+# This configuration supports the Nuxt.js application and MCP server integration
+
+name = "pingtopass-nuxt"
+main = ".output/server/index.mjs"
+compatibility_date = "2024-01-15"
+compatibility_flags = ["nodejs_compat"]
+
+# Build configuration
+[build]
+command = "npm run build"
+
+# Environment variables
+[env.production.vars]
+NUXT_SESSION_PASSWORD = "production-session-secret-change-this"
+NODE_ENV = "production"
+APP_NAME = "PingToPass"
+BASE_URL = "https://pingtopass.com"
+
+[env.staging.vars]
+NUXT_SESSION_PASSWORD = "staging-session-secret"
+NODE_ENV = "staging"
+APP_NAME = "PingToPass Staging"
+BASE_URL = "https://staging.pingtopass.com"
+
+# KV namespaces for caching and session storage
+[[kv_namespaces]]
+binding = "CACHE"
+id = "cache_namespace_id"
+preview_id = "cache_preview_id"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "sessions_namespace_id"
+preview_id = "sessions_preview_id"
+
+# D1 Database bindings (if switching from Turso)
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "pingtopass-db"
+# database_id = "your_d1_database_id"
+
+# R2 bucket for file storage
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "pingtopass-assets"
+preview_bucket_name = "pingtopass-assets-preview"
+
+# Analytics Engine for custom metrics
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+dataset = "pingtopass_analytics"
+
+# Worker routes for custom domains
+[[routes]]
+pattern = "pingtopass.com/*"
+zone_name = "pingtopass.com"
+
+[[routes]]
+pattern = "www.pingtopass.com/*"
+zone_name = "pingtopass.com"
+
+# Cron triggers for background tasks
+[[triggers.crons]]
+cron = "0 2 * * *"  # Daily at 2 AM UTC
+
+# Limits and performance
+[limits]
+cpu_ms = 30000
+
+# MCP server configuration
+[vars]
+MCP_ENABLED = "true"
+MCP_SERVER_NAME = "pingtopass-twitter-intelligence"

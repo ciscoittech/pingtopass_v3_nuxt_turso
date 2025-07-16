@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { computed } from 'vue';
+import { Icon } from '@iconify/vue';
 
 const props = defineProps<{
   streak: number;

@@ -1,30 +1,13 @@
 import { useDB } from '~/server/utils/db'
-import { objectives } from '~/server/database/schema'
+import { objectives } from '~/server/database/schema/objectives'
 import { eq } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {
   try {
-    // Check authentication
-    const session = await getUserSession(event)
-    if (!session.user) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Authentication required'
-      })
-    }
-
-    // TODO: Add admin role check
-    // if (!session.user.role?.includes('admin')) {
-    //   throw createError({
-    //     statusCode: 403,
-    //     statusMessage: 'Admin access required'
-    //   })
-    // }
-
+    const db = useDB()
     const objectiveId = getRouterParam(event, 'id')
     const body = await readBody(event)
-    const { title, description, weight } = body
-
+    
     if (!objectiveId) {
       throw createError({
         statusCode: 400,
@@ -32,61 +15,65 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Check if objective exists
-    const existingObjective = await db
+    // Validate weight if provided
+    if (body.weight !== undefined && body.weight !== null) {
+      if (body.weight < 1 || body.weight > 100) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Weight must be between 1 and 100'
+        })
+      }
+    }
+
+    const updateData: any = {
+      updatedAt: new Date().toISOString()
+    }
+
+    // Only update fields that are provided
+    if (body.title !== undefined) updateData.title = body.title
+    if (body.description !== undefined) updateData.description = body.description
+    if (body.weight !== undefined) updateData.weight = Number(body.weight)
+    if (body.order !== undefined) updateData.order = Number(body.order)
+    if (body.isActive !== undefined) updateData.isActive = body.isActive ? 1 : 0
+
+    await db
+      .update(objectives)
+      .set(updateData)
+      .where(eq(objectives.id, objectiveId))
+
+    console.log(`[API] /api/objectives/${objectiveId} - Updated objective`)
+
+    // Fetch and return the updated objective
+    const updatedObjective = await db
       .select()
       .from(objectives)
       .where(eq(objectives.id, objectiveId))
-      .then(rows => rows[0])
+      .get()
 
-    if (!existingObjective) {
+    if (!updatedObjective) {
       throw createError({
         statusCode: 404,
         statusMessage: 'Objective not found'
       })
     }
 
-    // Validate fields if provided
-    if (title && title.trim().length === 0) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Title cannot be empty'
-      })
-    }
-
-    if (weight !== undefined && (weight < 0 || weight > 100)) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Weight must be between 0 and 100'
-      })
-    }
-
-    // Build update object
-    const updateData: any = {
-      updatedAt: new Date().toISOString()
-    }
-
-    if (title !== undefined) updateData.title = title.trim()
-    if (description !== undefined) updateData.description = description?.trim() || null
-    if (weight !== undefined) updateData.weight = weight
-
-    const updatedObjective = await db
-      .update(objectives)
-      .set(updateData)
-      .where(eq(objectives.id, objectiveId))
-      .returning()
-
     return {
       success: true,
-      data: updatedObjective[0]
+      data: {
+        ...updatedObjective,
+        isActive: updatedObjective.isActive === 1
+      }
     }
-
   } catch (error: any) {
-    console.error('Update objective error:', error)
+    console.error('Failed to update objective:', error)
+    
+    if (error.statusCode) {
+      throw error
+    }
     
     throw createError({
       statusCode: 500,
-      statusMessage: error?.message || 'Failed to update objective'
+      statusMessage: error.message || 'Failed to update objective'
     })
   }
 })

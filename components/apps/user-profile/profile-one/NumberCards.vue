@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
-import { BrandGithubIcon, BrandReactNativeIcon, IdIcon, LayoutIcon, TemplateIcon} from 'vue-tabler-icons';
+import { BrandGithubIcon, BrandReactNativeIcon, IdIcon, LayoutIcon, TemplateIcon, UsersIcon, UserCheckIcon, FileDescriptionIcon} from 'vue-tabler-icons';
 
+const { profileData } = useProfile();
 </script>
 <template>
     <v-row class="justify-content-center mb-4">
@@ -10,11 +11,11 @@ import { BrandGithubIcon, BrandReactNativeIcon, IdIcon, LayoutIcon, TemplateIcon
                 <v-card-item class="py-6 px-md-6 px-5">
                     <div class="d-flex align-center">
                         <v-avatar size="48" class="bg-lightprimary">
-                            <TemplateIcon size="24" stroke-width="1.5" class="text-primary"/>
+                            <FileDescriptionIcon size="24" stroke-width="1.5" class="text-primary"/>
                         </v-avatar>
                         <div class="ml-3">
-                            <h5 class="text-h4 font-weight-semibold text-grey200 mb-1">680</h5>
-                            <p class="text-subtitle-1 font-weight-medium text-grey100">120 members</p>
+                            <h5 class="text-h4 font-weight-semibold text-grey200 mb-1">{{ profileData?.stats?.posts || 0 }}</h5>
+                            <p class="text-subtitle-1 font-weight-medium text-grey100">Posts</p>
                         </div> 
                     </div>
                 </v-card-item>
@@ -25,11 +26,11 @@ import { BrandGithubIcon, BrandReactNativeIcon, IdIcon, LayoutIcon, TemplateIcon
                 <v-card-item class="py-6 px-md-6 px-5">
                     <div class="d-flex align-center">
                         <v-avatar size="48" class="bg-lightsuccess">
-                            <LayoutIcon size="24" stroke-width="1.5" class="text-success"/>
+                            <UsersIcon size="24" stroke-width="1.5" class="text-success"/>
                         </v-avatar>
                         <div class="ml-3">
-                            <h5 class="text-h4 font-weight-semibold text-grey200 mb-1">42</h5>
-                            <p class="text-subtitle-1 font-weight-medium text-grey100">Projects</p>
+                            <h5 class="text-h4 font-weight-semibold text-grey200 mb-1">{{ profileData?.stats?.followers || 0 }}</h5>
+                            <p class="text-subtitle-1 font-weight-medium text-grey100">Followers</p>
                         </div> 
                     </div>
                 </v-card-item>
@@ -40,11 +41,11 @@ import { BrandGithubIcon, BrandReactNativeIcon, IdIcon, LayoutIcon, TemplateIcon
                 <v-card-item class="py-6 px-md-6 px-5">
                     <div class="d-flex align-center">
                         <v-avatar size="48" class="bg-lighterror">
-                            <IdIcon size="24" stroke-width="1.5" class="text-error"/>
+                            <UserCheckIcon size="24" stroke-width="1.5" class="text-error"/>
                         </v-avatar>
                         <div class="ml-3">
-                            <h5 class="text-h4 font-weight-semibold text-grey200 mb-1">$780</h5>
-                            <p class="text-subtitle-1 font-weight-medium text-grey100">Sales</p>
+                            <h5 class="text-h4 font-weight-semibold text-grey200 mb-1">{{ profileData?.stats?.following || 0 }}</h5>
+                            <p class="text-subtitle-1 font-weight-medium text-grey100">Following</p>
                         </div> 
                     </div>
                 </v-card-item>

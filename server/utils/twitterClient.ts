@@ -8,73 +8,10 @@
  * - Hashtag and trend analysis
  */
 
-export interface TwitterUser {
-  id: string
-  username: string
-  name: string
-  description: string
-  followers_count: number
-  following_count: number
-  tweet_count: number
-  listed_count: number
-  verified: boolean
-  profile_image_url: string
-  created_at: string
-}
+import type { TwitterUser, Tweet, TwitterMetrics, CompetitorAnalysis } from './langchain/agents/twitter/types'
 
-export interface Tweet {
-  id: string
-  text: string
-  author_id: string
-  created_at: string
-  public_metrics: {
-    retweet_count: number
-    like_count: number
-    reply_count: number
-    quote_count: number
-  }
-  entities?: {
-    hashtags?: Array<{ tag: string }>
-    mentions?: Array<{ username: string; id: string }>
-    urls?: Array<{ expanded_url: string; display_url: string }>
-  }
-  referenced_tweets?: Array<{
-    type: 'retweeted' | 'quoted' | 'replied_to'
-    id: string
-  }>
-  context_annotations?: Array<{
-    domain: { id: string; name: string; description: string }
-    entity: { id: string; name: string; description?: string }
-  }>
-}
-
-export interface TwitterMetrics {
-  engagement_rate: number
-  avg_likes: number
-  avg_retweets: number
-  avg_replies: number
-  total_impressions: number
-  top_performing_tweets: Tweet[]
-  hashtag_performance: Record<string, number>
-  posting_frequency: number
-}
-
-export interface CompetitorAnalysis {
-  user: TwitterUser
-  recent_tweets: Tweet[]
-  metrics: TwitterMetrics
-  content_themes: string[]
-  posting_patterns: {
-    best_times: string[]
-    frequency: string
-    consistency_score: number
-  }
-  engagement_insights: {
-    top_content_types: string[]
-    audience_engagement: string
-    viral_factors: string[]
-  }
-}
+// Re-export for backward compatibility
+export type { TwitterUser, Tweet, TwitterMetrics, CompetitorAnalysis }
 
 export class TwitterClient {
   private apiKey: string

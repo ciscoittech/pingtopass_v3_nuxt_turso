@@ -7,6 +7,7 @@ export const vendors = sqliteTable('vendors', {
   description: text('description'),
   website: text('website'),
   logoUrl: text('logo_url'),
+  isActive: integer('is_active').default(1).notNull(),
   createdAt: integer('created_at'),
   updatedAt: integer('updated_at'),
 })

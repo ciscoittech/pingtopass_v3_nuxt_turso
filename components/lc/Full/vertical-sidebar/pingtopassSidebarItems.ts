@@ -61,6 +61,12 @@ const sidebarItem: menu[] = [
   },
   { header: "Study Tools" },
   {
+    title: "Study Tools",
+    icon: "notebook-bookmark-linear",
+    BgColor: "primary",
+    to: "/study-tools",
+  },
+  {
     title: "Bookmarks",
     icon: "bookmark-linear",
     BgColor: "secondary",
@@ -77,6 +83,31 @@ const sidebarItem: menu[] = [
     icon: "clipboard-text-linear",
     BgColor: "info",
     to: "/study-plans",
+  },
+  { header: "Twitter Intelligence" },
+  {
+    title: "Twitter Analytics",
+    icon: "chart-square-linear",
+    BgColor: "info",
+    to: "/admin/twitter",
+    children: [
+      {
+        title: "Dashboard",
+        to: "/admin/twitter",
+      },
+      {
+        title: "Competitor Analysis",
+        to: "/admin/twitter/competitors",
+      },
+      {
+        title: "Content Strategy",
+        to: "/admin/twitter/content",
+      },
+      {
+        title: "Monitoring & Alerts",
+        to: "/admin/twitter/monitoring",
+      },
+    ],
   },
   { header: "Admin" },
   {

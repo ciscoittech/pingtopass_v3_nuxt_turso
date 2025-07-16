@@ -1,165 +1,171 @@
 <template>
-  <div>
+  <div class="test-overview-page">
     <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
+
+    <!-- Quick Start Section -->
+    <v-alert
+      v-if="exams.length > 0"
+      type="info"
+      variant="tonal"
+      prominent
+      class="mb-6"
+    >
+      <v-alert-title class="text-h6">Ready to Test Your Knowledge?</v-alert-title>
+      <div class="d-flex align-center justify-space-between flex-wrap mt-3">
+        <div>
+          <p class="mb-0">Select any exam below to start a practice test with real exam conditions.</p>
+          <p class="text-caption mb-0 mt-1">Tests are timed and scored just like the real certification exams.</p>
+        </div>
+        <v-btn
+          v-if="exams.length > 0"
+          color="primary"
+          variant="flat"
+          size="large"
+          class="mt-3 mt-sm-0"
+          @click="startTest(exams[0].id)"
+        >
+          <v-icon start>mdi-play-circle</v-icon>
+          Quick Start: {{ exams[0].code || exams[0].examCode }}
+        </v-btn>
+      </div>
+    </v-alert>
 
     <!-- Test Performance Overview -->
     <v-row class="mb-6">
-      <v-col cols="12" md="3">
-        <v-card elevation="10" class="h-100">
-          <v-card-text>
-            <div class="d-flex align-center justify-space-between">
-              <div>
-                <p class="text-body-2 text-medium-emphasis mb-1">Tests Completed</p>
-                <h4 class="text-h4 font-weight-bold">{{ testStats.totalTests }}</h4>
-              </div>
-              <v-avatar color="primary" variant="tonal" size="48">
-                <Icon icon="solar:clipboard-list-bold-duotone" size="24" />
-              </v-avatar>
-            </div>
-          </v-card-text>
-        </v-card>
+      <v-col cols="12" sm="6" lg="3">
+        <TestStatCard
+          title="Tests Completed"
+          :value="testStats.totalTests"
+          icon="mdi-clipboard-list"
+          color="primary"
+          :trend="12"
+          subtitle="Last 30 days"
+        />
       </v-col>
-      <v-col cols="12" md="3">
-        <v-card elevation="10" class="h-100">
-          <v-card-text>
-            <div class="d-flex align-center justify-space-between">
-              <div>
-                <p class="text-body-2 text-medium-emphasis mb-1">Average Score</p>
-                <h4 class="text-h4 font-weight-bold">{{ Math.round(testStats.averageScore) }}%</h4>
-              </div>
-              <v-avatar color="success" variant="tonal" size="48">
-                <Icon icon="solar:chart-bold-duotone" size="24" />
-              </v-avatar>
-            </div>
-          </v-card-text>
-        </v-card>
+      <v-col cols="12" sm="6" lg="3">
+        <TestStatCard
+          title="Average Score"
+          :value="Math.round(testStats.averageScore)"
+          icon="mdi-chart-line"
+          color="success"
+          format="percent"
+          :trend="5"
+          subtitle="Improvement"
+        />
       </v-col>
-      <v-col cols="12" md="3">
-        <v-card elevation="10" class="h-100">
-          <v-card-text>
-            <div class="d-flex align-center justify-space-between">
-              <div>
-                <p class="text-body-2 text-medium-emphasis mb-1">Best Score</p>
-                <h4 class="text-h4 font-weight-bold">{{ testStats.bestScore }}%</h4>
-              </div>
-              <v-avatar color="info" variant="tonal" size="48">
-                <Icon icon="solar:medal-star-bold-duotone" size="24" />
-              </v-avatar>
-            </div>
-          </v-card-text>
-        </v-card>
+      <v-col cols="12" sm="6" lg="3">
+        <TestStatCard
+          title="Best Score"
+          :value="testStats.bestScore"
+          icon="mdi-trophy"
+          color="info"
+          format="percent"
+          subtitle="Personal record"
+        />
       </v-col>
-      <v-col cols="12" md="3">
-        <v-card elevation="10" class="h-100">
-          <v-card-text>
-            <div class="d-flex align-center justify-space-between">
-              <div>
-                <p class="text-body-2 text-medium-emphasis mb-1">Pass Rate</p>
-                <h4 class="text-h4 font-weight-bold">{{ testStats.passRate }}%</h4>
-              </div>
-              <v-avatar color="warning" variant="tonal" size="48">
-                <Icon icon="solar:verified-check-bold-duotone" size="24" />
-              </v-avatar>
-            </div>
-          </v-card-text>
-        </v-card>
+      <v-col cols="12" sm="6" lg="3">
+        <TestStatCard
+          title="Pass Rate"
+          :value="testStats.passRate"
+          icon="mdi-check-decagram"
+          color="warning"
+          format="percent"
+          :trend="-2"
+          subtitle="70% required"
+        />
       </v-col>
     </v-row>
 
     <!-- Recent Tests & Quick Actions -->
     <v-row class="mb-6">
-      <v-col cols="12" md="8">
-        <UiParentCard title="Recent Test Results">
-          <template #action>
-            <v-btn variant="text" color="primary" size="small" :to="'/progress'">
-              View All
-              <Icon icon="solar:arrow-right-linear" class="ml-1" />
-            </v-btn>
-          </template>
-          <v-list v-if="recentTests.length > 0" lines="two" class="pa-0">
-            <v-list-item
-              v-for="(test, index) in recentTests"
-              :key="index"
-              :to="`/test/${test.examId}/results`"
-              class="px-0"
-            >
-              <template v-slot:prepend>
-                <v-avatar :color="getScoreColor(test.score)" variant="tonal">
-                  <Icon icon="solar:document-text-linear" />
-                </v-avatar>
-              </template>
-              <v-list-item-title class="font-weight-semibold">
-                {{ test.examName }}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                Score: {{ test.score }}% • {{ test.questionsAnswered }}/{{ test.totalQuestions }} questions • {{ formatRelativeTime(test.timestamp) }}
-              </v-list-item-subtitle>
-              <template v-slot:append>
-                <div class="text-right">
-                  <v-chip
-                    :color="test.passed ? 'success' : 'error'"
-                    size="small"
-                    variant="tonal"
-                  >
-                    {{ test.passed ? 'Passed' : 'Failed' }}
-                  </v-chip>
-                  <p class="text-caption text-medium-emphasis mt-1">{{ formatDuration(test.duration) }}</p>
-                </div>
-              </template>
-            </v-list-item>
-          </v-list>
-          <div v-else class="text-center py-8">
-            <Icon icon="solar:clipboard-broken" size="48" class="mb-2 text-grey-lighten-1" />
-            <p class="text-body-2 text-medium-emphasis">No test results yet</p>
-          </div>
-        </UiParentCard>
+      <v-col cols="12" lg="8">
+        <TestRecentCard :recent-tests="recentTests" />
       </v-col>
-      <v-col cols="12" md="4">
-        <UiParentCard title="Test Recommendations">
-          <v-list class="pa-0">
-            <v-list-item
-              v-if="recommendedExam"
-              @click="startTest(recommendedExam.exam.id)"
-              class="px-0 mb-2"
-            >
-              <template v-slot:prepend>
-                <v-avatar color="primary" variant="tonal">
-                  <Icon icon="solar:star-bold" />
-                </v-avatar>
-              </template>
-              <v-list-item-title>{{ recommendedExam.exam.code }}</v-list-item-title>
-              <v-list-item-subtitle>Ready for assessment</v-list-item-subtitle>
-            </v-list-item>
-            <v-list-item
-              v-if="retakeExam"
-              @click="startTest(retakeExam.exam.id)"
-              class="px-0 mb-2"
-            >
-              <template v-slot:prepend>
-                <v-avatar color="warning" variant="tonal">
-                  <Icon icon="solar:refresh-bold" />
-                </v-avatar>
-              </template>
-              <v-list-item-title>Retake {{ retakeExam.exam.code }}</v-list-item-title>
-              <v-list-item-subtitle>Improve your score</v-list-item-subtitle>
-            </v-list-item>
-            <v-list-item @click="navigateTo('/exams')" class="px-0">
-              <template v-slot:prepend>
-                <v-avatar color="success" variant="tonal">
-                  <Icon icon="solar:add-circle-bold" />
-                </v-avatar>
-              </template>
-              <v-list-item-title>Explore New Exams</v-list-item-title>
-              <v-list-item-subtitle>Expand your skills</v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
-        </UiParentCard>
+      <v-col cols="12" lg="4">
+        <v-card elevation="0" rounded="lg" class="recommendations-card h-100">
+          <v-card-title class="d-flex align-center">
+            <v-icon class="mr-2" color="primary">mdi-lightbulb</v-icon>
+            <span>Test Recommendations</span>
+          </v-card-title>
+          
+          <v-divider />
+          
+          <v-card-text class="pa-0">
+            <v-list lines="two" class="pa-0">
+              <v-list-item
+                v-if="recommendedExam"
+                @click="startTest(recommendedExam.exam.id)"
+                class="recommendation-item"
+              >
+                <template v-slot:prepend>
+                  <v-avatar color="primary" variant="flat" size="44">
+                    <v-icon>mdi-star</v-icon>
+                  </v-avatar>
+                </template>
+                <v-list-item-title class="font-weight-semibold">
+                  {{ recommendedExam.exam.code }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  Ready for assessment • {{ recommendedExam.statistics.accuracy }}% accuracy
+                </v-list-item-subtitle>
+                <template v-slot:append>
+                  <v-icon size="20">mdi-chevron-right</v-icon>
+                </template>
+              </v-list-item>
+              
+              <v-list-item
+                v-if="retakeExam"
+                @click="startTest(retakeExam.exam.id)"
+                class="recommendation-item"
+              >
+                <template v-slot:prepend>
+                  <v-avatar color="warning" variant="flat" size="44">
+                    <v-icon>mdi-refresh</v-icon>
+                  </v-avatar>
+                </template>
+                <v-list-item-title class="font-weight-semibold">
+                  Retake {{ retakeExam.exam.code }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  Improve from {{ retakeExam.statistics.recentScores[0] }}%
+                </v-list-item-subtitle>
+                <template v-slot:append>
+                  <v-icon size="20">mdi-chevron-right</v-icon>
+                </template>
+              </v-list-item>
+              
+              <v-list-item 
+                @click="navigateTo('/exams')" 
+                class="recommendation-item"
+              >
+                <template v-slot:prepend>
+                  <v-avatar color="success" variant="flat" size="44">
+                    <v-icon>mdi-plus-circle</v-icon>
+                  </v-avatar>
+                </template>
+                <v-list-item-title class="font-weight-semibold">
+                  Explore New Exams
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  Expand your certification portfolio
+                </v-list-item-subtitle>
+                <template v-slot:append>
+                  <v-icon size="20">mdi-chevron-right</v-icon>
+                </template>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
 
     <!-- Available Exams for Testing -->
-    <UiParentCard title="Available Practice Tests">
-      <template #action>
+    <v-card elevation="0" rounded="lg" class="available-tests-card">
+      <v-card-title class="d-flex align-center justify-space-between flex-wrap">
+        <div class="d-flex align-center">
+          <v-icon class="mr-2" color="primary">mdi-format-list-checks</v-icon>
+          <span>Available Practice Tests</span>
+        </div>
         <v-text-field
           v-model="searchQuery"
           density="compact"
@@ -168,117 +174,56 @@
           prepend-inner-icon="mdi-magnify"
           hide-details
           clearable
-          style="max-width: 300px"
+          class="search-field mt-2 mt-sm-0"
         />
-      </template>
-
-      <v-row v-if="filteredExams.length > 0">
-        <v-col
-          v-for="exam in filteredExams"
-          :key="exam.id"
-          cols="12"
-          md="6"
-          lg="4"
-        >
-          <v-card
-            variant="outlined"
-            class="h-100 border cursor-pointer"
-            hover
-            @click="startTest(exam.id)"
+      </v-card-title>
+      
+      <v-divider />
+      
+      <v-card-text>
+        <v-row v-if="filteredExams.length > 0">
+          <v-col
+            v-for="exam in filteredExams"
+            :key="exam.id"
+            cols="12"
+            md="6"
+            lg="4"
           >
-            <v-card-item>
-              <template v-slot:prepend>
-                <v-avatar color="primary" variant="tonal" size="48">
-                  <Icon icon="solar:document-text-bold-duotone" size="24" />
-                </v-avatar>
-              </template>
-              <v-card-title class="font-weight-semibold">
-                {{ exam.code }}
-              </v-card-title>
-              <v-card-subtitle>
-                {{ exam.name }}
-              </v-card-subtitle>
-            </v-card-item>
+            <TestExamCard
+              :exam="exam"
+              :user-stats="getExamStats(exam.id)"
+              @start-test="startTest"
+            />
+          </v-col>
+        </v-row>
 
-            <v-card-text>
-              <!-- Exam Info -->
-              <v-list density="compact" class="pa-0">
-                <v-list-item class="px-0">
-                  <template v-slot:prepend>
-                    <Icon icon="solar:question-circle-linear" class="mr-2" size="16" />
-                  </template>
-                  <v-list-item-title class="text-body-2">
-                    {{ exam.numberOfQuestions }} questions
-                  </v-list-item-title>
-                </v-list-item>
-                <v-list-item class="px-0">
-                  <template v-slot:prepend>
-                    <Icon icon="solar:clock-circle-linear" class="mr-2" size="16" />
-                  </template>
-                  <v-list-item-title class="text-body-2">
-                    {{ exam.examDuration }} minutes
-                  </v-list-item-title>
-                </v-list-item>
-                <v-list-item class="px-0">
-                  <template v-slot:prepend>
-                    <Icon icon="solar:shield-check-linear" class="mr-2" size="16" />
-                  </template>
-                  <v-list-item-title class="text-body-2">
-                    Pass: {{ exam.passingScore }}%
-                  </v-list-item-title>
-                </v-list-item>
-              </v-list>
-
-              <!-- User's Performance (if exists) -->
-              <div v-if="getExamStats(exam.id)" class="mt-3">
-                <v-divider class="mb-3" />
-                <div class="d-flex justify-space-between align-center">
-                  <span class="text-body-2 text-medium-emphasis">Your Best</span>
-                  <v-chip
-                    :color="getScoreColor(getExamStats(exam.id)?.bestScore || 0)"
-                    size="small"
-                    variant="tonal"
-                  >
-                    {{ getExamStats(exam.id)?.bestScore || 0 }}%
-                  </v-chip>
-                </div>
-                <div class="d-flex justify-space-between align-center mt-1">
-                  <span class="text-body-2 text-medium-emphasis">Attempts</span>
-                  <span class="text-body-2 font-weight-bold">{{ getExamStats(exam.id)?.attempts || 0 }}</span>
-                </div>
-              </div>
-            </v-card-text>
-
-            <v-card-actions>
-              <v-btn
-                color="primary"
-                variant="tonal"
-                block
-              >
-                Start Practice Test
-                <Icon icon="solar:play-circle-linear" class="ml-1" />
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <!-- Empty State -->
-      <div v-else class="text-center py-12">
-        <Icon icon="solar:document-text-broken" size="64" class="mb-4 text-grey-lighten-1" />
-        <h5 class="text-h5 mb-2">No exams found</h5>
-        <p class="text-body-1 text-grey100">
-          Try adjusting your search criteria
-        </p>
-      </div>
-    </UiParentCard>
+        <!-- Empty State -->
+        <div v-else class="empty-state text-center py-12">
+          <v-icon size="80" color="grey-lighten-1" class="mb-4">
+            mdi-file-document-remove
+          </v-icon>
+          <h3 class="text-h5 mb-2">No exams found</h3>
+          <p class="text-body-1 text-medium-emphasis mb-4">
+            Try adjusting your search criteria
+          </p>
+          <v-btn
+            color="primary"
+            variant="flat"
+            @click="searchQuery = ''"
+          >
+            Clear Search
+          </v-btn>
+        </div>
+      </v-card-text>
+    </v-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import UiParentCard from '@/components/shared/UiParentCard.vue'
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue'
-import { Icon } from '@iconify/vue'
+import TestStatCard from '@/components/test/TestStatCard.vue'
+import TestRecentCard from '@/components/test/TestRecentCard.vue'
+import TestExamCard from '@/components/test/TestExamCard.vue'
 
 definePageMeta({
   middleware: 'auth',
@@ -307,7 +252,16 @@ const searchQuery = ref('')
 
 // Fetch exams
 const { data: examData } = await useFetch('/api/exams')
-const exams = computed(() => examData.value?.data || [])
+const exams = computed(() => {
+  const data = examData.value?.data
+  // Handle both formats: direct array or nested object with exams array
+  if (Array.isArray(data)) {
+    return data
+  } else if (data && Array.isArray(data.exams)) {
+    return data.exams
+  }
+  return []
+})
 
 // Fetch test performance data
 const { data: performanceData } = await useFetch('/api/progress/exams', {
@@ -389,10 +343,23 @@ const retakeExam = computed(() => {
 
 // Filtered exams based on search
 const filteredExams = computed(() => {
-  if (!searchQuery.value) return exams.value
+  // Map exams to expected format
+  const mappedExams = exams.value.map((exam: any) => ({
+    id: exam.id,
+    examCode: exam.examCode || exam.code,
+    examName: exam.examName || exam.name,
+    vendorId: exam.vendorId,
+    vendorName: exam.vendor?.name || exam.vendorName || 'Unknown Vendor',
+    vendor: exam.vendor || { name: exam.vendorName || 'Unknown' },
+    numberOfQuestions: exam.numberOfQuestions || exam.totalQuestions || exam.questionCount || 0,
+    examDuration: exam.examDuration || exam.duration || 90,
+    passingScore: exam.passingScore || 70
+  }))
+  
+  if (!searchQuery.value) return mappedExams
   
   const query = searchQuery.value.toLowerCase()
-  return exams.value.filter((exam: any) => 
+  return mappedExams.filter((exam: any) => 
     exam.examCode?.toLowerCase().includes(query) ||
     exam.examName?.toLowerCase().includes(query) ||
     exam.vendorName?.toLowerCase().includes(query)
@@ -404,9 +371,17 @@ const getExamStats = (examId: string) => {
   const exam = examPerformance.value.find((e: any) => e.exam.id === examId)
   if (!exam || !exam.statistics?.testsTaken) return null
   
+  const stats = exam.statistics
+  const recentScores = stats.recentScores || []
+  const avgScore = recentScores.length > 0 
+    ? recentScores.reduce((a: number, b: number) => a + b, 0) / recentScores.length
+    : 0
+  
   return {
-    bestScore: exam.statistics.bestTestScore,
-    attempts: exam.statistics.testsTaken
+    bestScore: stats.bestTestScore || 0,
+    avgScore,
+    attempts: stats.testsTaken || 0,
+    lastAttempt: stats.lastActivity || 0
   }
 }
 
@@ -442,7 +417,67 @@ const getScoreColor = (score: number) => {
 }
 
 // Navigation
-const startTest = (examId: string) => {
-  router.push(`/test/${examId}`)
+const startTest = async (examId: string) => {
+  console.log('[Test Page] Starting test for exam:', examId)
+  if (!examId) {
+    console.error('[Test Page] No examId provided!')
+    return
+  }
+  
+  try {
+    await navigateTo(`/test/${examId}`)
+  } catch (error) {
+    console.error('[Test Page] Navigation error:', error)
+    // Fallback to router.push
+    router.push(`/test/${examId}`)
+  }
 }
 </script>
+
+<style lang="scss" scoped>
+.test-overview-page {
+  .recommendations-card {
+    background: linear-gradient(135deg, 
+      rgba(var(--v-theme-surface), 1) 0%, 
+      rgba(var(--v-theme-surface-variant), 0.3) 100%);
+    
+    .recommendation-item {
+      border-bottom: 1px solid rgba(var(--v-border-color), 0.08);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &:hover {
+        background: rgba(var(--v-theme-primary), 0.04);
+        padding-left: 20px;
+      }
+    }
+  }
+  
+  .available-tests-card {
+    background: linear-gradient(135deg, 
+      rgba(var(--v-theme-surface), 1) 0%, 
+      rgba(var(--v-theme-surface-variant), 0.3) 100%);
+    
+    .search-field {
+      max-width: 300px;
+      
+      @media (max-width: 960px) {
+        max-width: 100%;
+        width: 100%;
+      }
+    }
+  }
+  
+  .empty-state {
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+}
+</style>

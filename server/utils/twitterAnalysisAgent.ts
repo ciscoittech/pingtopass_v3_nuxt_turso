@@ -4,48 +4,13 @@
  * Uses AI to analyze competitor Twitter strategies and generate actionable insights
  */
 
-import { TwitterClient, type CompetitorAnalysis, type Tweet, type TwitterMetrics } from './twitterClient'
+import { TwitterClient } from './twitterClient'
+import type { CompetitorAnalysis, Tweet, TwitterMetrics, CompetitorInsight, StrategyRecommendation, Benchmark as CompetitorBenchmark } from './langchain/agents/twitter/types'
 import { OpenRouterClient } from './openrouter'
 import { nanoid } from 'nanoid'
 
-export interface CompetitorInsight {
-  id: string
-  type: 'content_strategy' | 'posting_pattern' | 'engagement_tactics' | 'audience_building' | 'viral_content'
-  title: string
-  description: string
-  confidence: number // 0-1
-  impact: 'high' | 'medium' | 'low'
-  recommendation: string
-  actionable_steps: string[]
-  supporting_data: any
-  competitors_involved: string[]
-}
-
-export interface StrategyRecommendation {
-  id: string
-  category: 'content' | 'timing' | 'hashtags' | 'engagement' | 'audience'
-  title: string
-  description: string
-  priority: 'high' | 'medium' | 'low'
-  effort: 'high' | 'medium' | 'low'
-  expected_impact: string
-  implementation_steps: string[]
-  success_metrics: string[]
-  timeline: string
-  budget_required: 'none' | 'low' | 'medium' | 'high'
-}
-
-export interface CompetitorBenchmark {
-  metric: string
-  our_performance: number
-  competitor_average: number
-  best_performer: {
-    username: string
-    value: number
-  }
-  improvement_opportunity: number
-  recommendation: string
-}
+// Re-export types for backward compatibility
+export type { CompetitorInsight, StrategyRecommendation, CompetitorBenchmark }
 
 export class TwitterAnalysisAgent {
   private twitterClient: TwitterClient

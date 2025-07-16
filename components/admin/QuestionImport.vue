@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Icon } from '@iconify/vue'
+
 interface Props {
   open: boolean
   examId?: string
@@ -229,18 +231,23 @@ watch(() => props.open, (newVal) => {
 
 <template>
   <v-dialog :model-value="open" @update:model-value="close" max-width="800px" persistent>
-    <v-card>
+    <v-card elevation="10">
       <v-card-title class="d-flex align-center">
-        <v-icon class="mr-2">mdi-upload</v-icon>
+        <Icon icon="solar:upload-bold-duotone" class="mr-2" />
         Import Questions
         <v-spacer />
-        <v-btn icon="mdi-close" variant="text" @click="close" />
+        <v-btn icon variant="text" @click="close">
+          <Icon icon="solar:close-circle-line-duotone" />
+        </v-btn>
       </v-card-title>
 
       <v-card-text>
         <!-- Step 1: File Upload -->
         <div v-if="step === 1">
           <v-alert type="info" variant="tonal" class="mb-4">
+            <template #prepend>
+              <Icon icon="solar:info-circle-line-duotone" />
+            </template>
             Upload a CSV or JSON file containing questions. Download a template to get started.
           </v-alert>
 
@@ -253,8 +260,8 @@ watch(() => props.open, (newVal) => {
                   variant="outlined"
                   block
                   @click="downloadTemplate('csv')"
-                  prepend-icon="mdi-file-table"
                 >
+                  <Icon icon="solar:file-text-line-duotone" class="mr-2" size="18" />
                   CSV Template
                 </v-btn>
               </v-col>
@@ -263,8 +270,8 @@ watch(() => props.open, (newVal) => {
                   variant="outlined"
                   block
                   @click="downloadTemplate('json')"
-                  prepend-icon="mdi-code-json"
                 >
+                  <Icon icon="solar:code-square-line-duotone" class="mr-2" size="18" />
                   JSON Template
                 </v-btn>
               </v-col>
@@ -289,9 +296,7 @@ watch(() => props.open, (newVal) => {
               @click="openFileDialog"
               style="cursor: pointer; border-style: dashed;"
             >
-              <v-icon size="48" class="mb-4" color="primary">
-                mdi-cloud-upload
-              </v-icon>
+              <Icon icon="solar:cloud-upload-bold-duotone" size="48" class="mb-4 text-primary" />
               <h4 class="text-h6 mb-2">
                 {{ file ? file.name : 'Click to select file' }}
               </h4>
@@ -318,6 +323,9 @@ watch(() => props.open, (newVal) => {
         <!-- Step 2: Preview -->
         <div v-else-if="step === 2">
           <v-alert type="success" variant="tonal" class="mb-4">
+            <template #prepend>
+              <Icon icon="solar:check-circle-line-duotone" />
+            </template>
             Found {{ importData.length }} questions ready to import.
           </v-alert>
 
@@ -341,9 +349,7 @@ watch(() => props.open, (newVal) => {
                         :class="{ 'font-weight-bold text-success': question.correctAnswer.includes(optIndex) }"
                       >
                         {{ option }}
-                        <v-icon v-if="question.correctAnswer.includes(optIndex)" color="success" size="small">
-                          mdi-check
-                        </v-icon>
+                        <Icon v-if="question.correctAnswer.includes(optIndex)" icon="solar:check-circle-bold" color="success" size="16" />
                       </li>
                     </ul>
                     <p v-if="question.explanation"><strong>Explanation:</strong> {{ question.explanation }}</p>

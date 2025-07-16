@@ -1,0 +1,459 @@
+{
+  "examCode": "200-301",
+  "examName": "Cisco Certified Network Associate (CCNA)",
+  "vendorName": "Cisco",
+  "objectives": [
+    {
+      "title": "Network Fundamentals",
+      "description": "Explain the role and function of network components, network topology architectures, and IPv4/IPv6 addressing",
+      "weight": 20
+    },
+    {
+      "title": "Network Access",
+      "description": "Configure and verify VLANs, interswitch connectivity, Layer 2 discovery protocols, and EtherChannel",
+      "weight": 20
+    },
+    {
+      "title": "IP Connectivity",
+      "description": "Interpret routing table components, configure and verify IPv4 and IPv6 static routing, and OSPFv2",
+      "weight": 25
+    },
+    {
+      "title": "IP Services",
+      "description": "Configure and verify NAT, NTP, DHCP, DNS, SNMP, and syslog features",
+      "weight": 10
+    },
+    {
+      "title": "Security Fundamentals",
+      "description": "Define security concepts, configure device access control, and implement Layer 2 security features",
+      "weight": 15
+    },
+    {
+      "title": "Automation and Programmability",
+      "description": "Explain automation impacts, compare controller-based and software-defined architectures",
+      "weight": 10
+    }
+  ],
+  "questions": [
+    {
+      "questionText": "What is the primary function of a router in a network?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To connect devices within the same network",
+        "To forward packets between different networks",
+        "To amplify network signals",
+        "To encrypt network traffic"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A router's primary function is to forward packets between different networks by examining the destination IP address and using its routing table to determine the best path.",
+      "difficulty": 1,
+      "objectiveTitle": "Network Fundamentals"
+    },
+    {
+      "questionText": "Which command displays the routing table on a Cisco router?",
+      "questionType": "multiple-choice",
+      "options": [
+        "show route",
+        "show ip route",
+        "display routing-table",
+        "show routing"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The 'show ip route' command displays the IPv4 routing table on a Cisco router, showing all known routes including directly connected, static, and dynamically learned routes.",
+      "difficulty": 1,
+      "objectiveTitle": "IP Connectivity"
+    },
+    {
+      "questionText": "What is the default administrative distance for OSPF?",
+      "questionType": "multiple-choice",
+      "options": [
+        "90",
+        "100",
+        "110",
+        "120"
+      ],
+      "correctAnswer": [2],
+      "explanation": "OSPF (Open Shortest Path First) has a default administrative distance of 110 on Cisco devices. This is higher than EIGRP (90) but lower than RIP (120).",
+      "difficulty": 2,
+      "objectiveTitle": "IP Connectivity"
+    },
+    {
+      "questionText": "Which VLAN is typically reserved for native VLAN traffic on a trunk link?",
+      "questionType": "multiple-choice",
+      "options": [
+        "VLAN 0",
+        "VLAN 1",
+        "VLAN 99",
+        "VLAN 1024"
+      ],
+      "correctAnswer": [1],
+      "explanation": "VLAN 1 is the default native VLAN on Cisco switches. Native VLAN traffic is sent untagged across trunk links. It's a security best practice to change the native VLAN from the default.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Access"
+    },
+    {
+      "questionText": "What protocol does Cisco use for Layer 2 loop prevention?",
+      "questionType": "multiple-choice",
+      "options": [
+        "HSRP",
+        "STP",
+        "VTP",
+        "CDP"
+      ],
+      "correctAnswer": [1],
+      "explanation": "STP (Spanning Tree Protocol) is used for Layer 2 loop prevention by blocking redundant paths and creating a loop-free topology in switched networks.",
+      "difficulty": 1,
+      "objectiveTitle": "Network Access"
+    },
+    {
+      "questionText": "What is the subnet mask for a /26 network?",
+      "questionType": "multiple-choice",
+      "options": [
+        "255.255.255.0",
+        "255.255.255.128",
+        "255.255.255.192",
+        "255.255.255.224"
+      ],
+      "correctAnswer": [2],
+      "explanation": "A /26 network has 26 network bits and 6 host bits. The subnet mask is 255.255.255.192 (11111111.11111111.11111111.11000000 in binary).",
+      "difficulty": 2,
+      "objectiveTitle": "Network Fundamentals"
+    },
+    {
+      "questionText": "Which command enables OSPF on a Cisco router?",
+      "questionType": "multiple-choice",
+      "options": [
+        "router ospf [process-id]",
+        "ospf enable",
+        "ip ospf enable",
+        "enable ospf"
+      ],
+      "correctAnswer": [0],
+      "explanation": "The 'router ospf [process-id]' command enters OSPF configuration mode on a Cisco router. The process ID is locally significant and identifies the OSPF process.",
+      "difficulty": 2,
+      "objectiveTitle": "IP Connectivity"
+    },
+    {
+      "questionText": "What type of NAT allows multiple internal hosts to share a single public IP address?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Static NAT",
+        "Dynamic NAT",
+        "PAT/NAT Overload",
+        "NAT64"
+      ],
+      "correctAnswer": [2],
+      "explanation": "PAT (Port Address Translation), also called NAT Overload, allows multiple internal hosts to share a single public IP address by using different source port numbers.",
+      "difficulty": 2,
+      "objectiveTitle": "IP Services"
+    },
+    {
+      "questionText": "Which port security violation mode drops unauthorized frames but keeps the interface up?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Shutdown",
+        "Restrict",
+        "Protect",
+        "Warning"
+      ],
+      "correctAnswer": [2],
+      "explanation": "Protect mode drops packets from unauthorized MAC addresses but keeps the interface up and doesn't log violations. Restrict mode is similar but logs violations.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Fundamentals"
+    },
+    {
+      "questionText": "What is the maximum number of hosts in a /28 subnet?",
+      "questionType": "multiple-choice",
+      "options": [
+        "8",
+        "14",
+        "16",
+        "30"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A /28 subnet has 4 host bits (32-28=4), giving 2^4=16 total addresses. Subtracting the network and broadcast addresses leaves 14 usable host addresses.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Fundamentals"
+    },
+    {
+      "questionText": "Which command configures a static route on a Cisco router?",
+      "questionType": "multiple-choice",
+      "options": [
+        "ip route [destination] [mask] [next-hop]",
+        "route add [destination] [mask] [next-hop]",
+        "static route [destination] [mask] [next-hop]",
+        "add route [destination] [mask] [next-hop]"
+      ],
+      "correctAnswer": [0],
+      "explanation": "The 'ip route [destination] [mask] [next-hop]' command configures a static route on a Cisco router. The next-hop can be an IP address or exit interface.",
+      "difficulty": 2,
+      "objectiveTitle": "IP Connectivity"
+    },
+    {
+      "questionText": "What is the purpose of CDP (Cisco Discovery Protocol)?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To prevent routing loops",
+        "To discover directly connected Cisco devices",
+        "To encrypt management traffic",
+        "To load balance traffic"
+      ],
+      "correctAnswer": [1],
+      "explanation": "CDP (Cisco Discovery Protocol) is a Layer 2 protocol used to discover information about directly connected Cisco devices, including device type, IP address, and software version.",
+      "difficulty": 1,
+      "objectiveTitle": "Network Access"
+    },
+    {
+      "questionText": "Which IPv6 address type is equivalent to IPv4 private addresses?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Link-local",
+        "Unique local",
+        "Global unicast",
+        "Multicast"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Unique local addresses (FC00::/7) in IPv6 are equivalent to IPv4 private addresses. They are not routable on the global internet and are used for local communications.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Fundamentals"
+    },
+    {
+      "questionText": "What is the default priority value for STP on a Cisco switch?",
+      "questionType": "multiple-choice",
+      "options": [
+        "1024",
+        "4096",
+        "16384",
+        "32768"
+      ],
+      "correctAnswer": [3],
+      "explanation": "The default STP priority on Cisco switches is 32768. Lower priority values are preferred for root bridge election. Priority must be in increments of 4096.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Access"
+    },
+    {
+      "questionText": "Which command saves the running configuration to NVRAM on a Cisco device?",
+      "questionType": "multiple-choice",
+      "options": [
+        "write memory",
+        "copy running-config startup-config",
+        "save config",
+        "Both A and B"
+      ],
+      "correctAnswer": [3],
+      "explanation": "Both 'write memory' (older command) and 'copy running-config startup-config' save the current configuration to NVRAM, making changes persistent across reboots.",
+      "difficulty": 1,
+      "objectiveTitle": "Network Fundamentals"
+    },
+    {
+      "questionText": "What is the purpose of DHCP snooping?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To monitor DHCP server performance",
+        "To prevent rogue DHCP servers",
+        "To increase DHCP lease time",
+        "To encrypt DHCP traffic"
+      ],
+      "correctAnswer": [1],
+      "explanation": "DHCP snooping is a security feature that prevents rogue DHCP servers by building a binding table of legitimate DHCP transactions and filtering unauthorized DHCP messages.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Fundamentals"
+    },
+    {
+      "questionText": "Which field in an Ethernet frame identifies the upper-layer protocol?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Preamble",
+        "Source MAC",
+        "EtherType",
+        "FCS"
+      ],
+      "correctAnswer": [2],
+      "explanation": "The EtherType field in an Ethernet frame identifies the upper-layer protocol (e.g., 0x0800 for IPv4, 0x86DD for IPv6) encapsulated in the frame.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Fundamentals"
+    },
+    {
+      "questionText": "What is the administrative distance of a directly connected route?",
+      "questionType": "multiple-choice",
+      "options": [
+        "0",
+        "1",
+        "90",
+        "110"
+      ],
+      "correctAnswer": [0],
+      "explanation": "Directly connected routes have an administrative distance of 0, making them the most trusted route source. Static routes typically have an AD of 1.",
+      "difficulty": 2,
+      "objectiveTitle": "IP Connectivity"
+    },
+    {
+      "questionText": "Which protocol provides redundant default gateway functionality?",
+      "questionType": "multiple-choice",
+      "options": [
+        "STP",
+        "HSRP",
+        "CDP",
+        "VTP"
+      ],
+      "correctAnswer": [1],
+      "explanation": "HSRP (Hot Standby Router Protocol) provides redundant default gateway functionality by allowing multiple routers to share a virtual IP address, with automatic failover.",
+      "difficulty": 2,
+      "objectiveTitle": "IP Services"
+    },
+    {
+      "questionText": "What is the benefit of using infrastructure as code?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Reduced hardware costs",
+        "Consistent and repeatable deployments",
+        "Faster network speeds",
+        "Improved wireless coverage"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Infrastructure as code enables consistent and repeatable deployments by defining infrastructure configuration in code, reducing manual errors and enabling version control.",
+      "difficulty": 2,
+      "objectiveTitle": "Automation and Programmability"
+    },
+    {
+      "questionText": "Which command shows MAC address table entries on a Cisco switch?",
+      "questionType": "multiple-choice",
+      "options": [
+        "show mac-address",
+        "show mac address-table",
+        "show arp",
+        "show cam table"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The 'show mac address-table' command displays the MAC address table (CAM table) on a Cisco switch, showing learned MAC addresses and their associated ports.",
+      "difficulty": 1,
+      "objectiveTitle": "Network Access"
+    },
+    {
+      "questionText": "What is the purpose of a default route?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To route traffic to directly connected networks",
+        "To route traffic when no specific route exists",
+        "To prevent routing loops",
+        "To load balance traffic"
+      ],
+      "correctAnswer": [1],
+      "explanation": "A default route (0.0.0.0/0) is used to route packets when no specific route to the destination exists in the routing table. It's often called the 'gateway of last resort'.",
+      "difficulty": 2,
+      "objectiveTitle": "IP Connectivity"
+    },
+    {
+      "questionText": "Which layer of the OSI model does a switch primarily operate at?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Layer 1 (Physical)",
+        "Layer 2 (Data Link)",
+        "Layer 3 (Network)",
+        "Layer 4 (Transport)"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Switches primarily operate at Layer 2 (Data Link) of the OSI model, making forwarding decisions based on MAC addresses. Layer 3 switches also have routing capabilities.",
+      "difficulty": 1,
+      "objectiveTitle": "Network Fundamentals"
+    },
+    {
+      "questionText": "What is the range of valid VLAN IDs on most Cisco switches?",
+      "questionType": "multiple-choice",
+      "options": [
+        "0-4095",
+        "1-1005",
+        "1-4094",
+        "2-4096"
+      ],
+      "correctAnswer": [2],
+      "explanation": "Valid VLAN IDs range from 1 to 4094. VLAN 0 and 4095 are reserved. VLANs 1-1005 are normal range, while 1006-4094 are extended range VLANs.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Access"
+    },
+    {
+      "questionText": "Which command enables password encryption for all passwords in the configuration?",
+      "questionType": "multiple-choice",
+      "options": [
+        "password encryption",
+        "service password-encryption",
+        "enable secret",
+        "crypto key generate"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The 'service password-encryption' command enables weak encryption (Type 7) for all plaintext passwords in the configuration file, providing basic password obfuscation.",
+      "difficulty": 2,
+      "objectiveTitle": "Security Fundamentals"
+    },
+    {
+      "questionText": "What is the main advantage of OSPF over RIP?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Simpler configuration",
+        "Lower memory usage",
+        "Faster convergence",
+        "Uses fewer CPU resources"
+      ],
+      "correctAnswer": [2],
+      "explanation": "OSPF's main advantage over RIP is faster convergence. As a link-state protocol, OSPF maintains a complete topology database and converges more quickly than distance-vector protocols like RIP.",
+      "difficulty": 2,
+      "objectiveTitle": "IP Connectivity"
+    },
+    {
+      "questionText": "Which API architectural style is commonly used for network automation?",
+      "questionType": "multiple-choice",
+      "options": [
+        "SOAP",
+        "REST",
+        "RPC",
+        "GraphQL"
+      ],
+      "correctAnswer": [1],
+      "explanation": "REST (Representational State Transfer) is the most commonly used API architectural style for network automation due to its simplicity, use of standard HTTP methods, and JSON data format.",
+      "difficulty": 2,
+      "objectiveTitle": "Automation and Programmability"
+    },
+    {
+      "questionText": "What command configures an interface as an access port in VLAN 10?",
+      "questionType": "multiple-choice",
+      "options": [
+        "switchport mode access; switchport access vlan 10",
+        "switchport vlan 10",
+        "vlan 10 access",
+        "interface vlan 10"
+      ],
+      "correctAnswer": [0],
+      "explanation": "To configure an interface as an access port in VLAN 10, use 'switchport mode access' to set the port mode, then 'switchport access vlan 10' to assign it to VLAN 10.",
+      "difficulty": 2,
+      "objectiveTitle": "Network Access"
+    },
+    {
+      "questionText": "Which protocol provides time synchronization between network devices?",
+      "questionType": "multiple-choice",
+      "options": [
+        "SNMP",
+        "NTP",
+        "TFTP",
+        "Syslog"
+      ],
+      "correctAnswer": [1],
+      "explanation": "NTP (Network Time Protocol) provides accurate time synchronization between network devices, which is crucial for log correlation, authentication, and certificate validation.",
+      "difficulty": 1,
+      "objectiveTitle": "IP Services"
+    },
+    {
+      "questionText": "What is the purpose of the 'enable secret' command?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To set the console password",
+        "To set the privileged EXEC password with encryption",
+        "To enable SSH access",
+        "To create a new user account"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The 'enable secret' command sets the password required to enter privileged EXEC mode. Unlike 'enable password', it stores the password using strong MD5 encryption.",
+      "difficulty": 1,
+      "objectiveTitle": "Security Fundamentals"
+    }
+  ]
+}

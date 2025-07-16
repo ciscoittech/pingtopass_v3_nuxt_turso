@@ -1,5 +1,7 @@
 import { useDB } from '~/server/utils/db'
-import { bookmarks, questions, exams } from '~/server/database/schema'
+import { bookmarks } from '~/server/database/schema/bookmarks'
+import { questions } from '~/server/database/schema/questions'
+import { exams } from '~/server/database/schema/exams'
 import { eq, desc } from 'drizzle-orm'
 
 export default defineEventHandler(async (event) => {

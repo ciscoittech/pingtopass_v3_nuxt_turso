@@ -2,6 +2,45 @@
   <div>
     <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
 
+    <!-- Quick Start Section -->
+    <v-alert
+      v-if="examsInProgress.length > 0 || allExams.length > 0"
+      type="success"
+      variant="tonal"
+      prominent
+      class="mb-6"
+    >
+      <v-alert-title class="text-h6">Ready to Study?</v-alert-title>
+      <div class="d-flex align-center justify-space-between flex-wrap mt-3">
+        <div>
+          <p class="mb-0">Start studying with interactive questions and instant feedback.</p>
+          <p class="text-caption mb-0 mt-1">Track your progress and master each topic at your own pace.</p>
+        </div>
+        <v-btn
+          v-if="mostStudiedExam"
+          color="success"
+          variant="flat"
+          size="large"
+          class="mt-3 mt-sm-0"
+          @click="startStudy(mostStudiedExam.exam.id)"
+        >
+          <v-icon start>mdi-play-circle</v-icon>
+          Continue: {{ mostStudiedExam.exam.code }}
+        </v-btn>
+        <v-btn
+          v-else-if="allExams.length > 0"
+          color="success"
+          variant="flat"
+          size="large"
+          class="mt-3 mt-sm-0"
+          @click="startStudy(allExams[0].id)"
+        >
+          <v-icon start>mdi-play-circle</v-icon>
+          Quick Start: {{ allExams[0].code || allExams[0].examCode }}
+        </v-btn>
+      </div>
+    </v-alert>
+
     <!-- Study Stats Overview -->
     <v-row class="mb-6">
       <v-col cols="12" md="3">
@@ -322,7 +361,20 @@ const { data: progressData, refresh: refreshProgress } = await useFetch('/api/pr
   }
 })
 
+// Fetch all exams for quick start
+const { data: allExamsData } = await useFetch('/api/exams')
+const allExams = computed(() => {
+  const data = allExamsData.value?.data
+  if (Array.isArray(data)) {
+    return data
+  } else if (data && Array.isArray(data.exams)) {
+    return data.exams
+  }
+  return []
+})
+
 const examPerformance = computed(() => progressData.value?.data?.examPerformance || [])
+const examsInProgress = computed(() => examPerformance.value.filter((exam: any) => exam.statistics?.totalQuestions > 0))
 const overallStats = computed(() => progressData.value?.data?.overallStats || {
   totalExams: 0,
   totalStudyTime: 0,
@@ -412,11 +464,35 @@ const getTrendColor = (trend: string) => {
 }
 
 // Navigation functions
-const startStudy = (examId: string) => {
-  router.push(`/study/${examId}`)
+const startStudy = async (examId: string) => {
+  console.log('[Study Page] Starting study for exam:', examId)
+  if (!examId) {
+    console.error('[Study Page] No examId provided!')
+    return
+  }
+  
+  try {
+    await navigateTo(`/study/${examId}`)
+  } catch (error) {
+    console.error('[Study Page] Navigation error:', error)
+    // Fallback to router.push
+    router.push(`/study/${examId}`)
+  }
 }
 
-const resumeStudy = (examId: string) => {
-  router.push(`/study/${examId}`)
+const resumeStudy = async (examId: string) => {
+  console.log('[Study Page] Resuming study for exam:', examId)
+  if (!examId) {
+    console.error('[Study Page] No examId provided!')
+    return
+  }
+  
+  try {
+    await navigateTo(`/study/${examId}`)
+  } catch (error) {
+    console.error('[Study Page] Navigation error:', error)
+    // Fallback to router.push
+    router.push(`/study/${examId}`)
+  }
 }
 </script>

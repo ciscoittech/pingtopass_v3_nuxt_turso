@@ -1,45 +1,59 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
+import { sql } from 'drizzle-orm'
 import { users } from './users'
 import { exams } from './exams'
 
 export const testSessions = sqliteTable('test_sessions', {
   id: text('id').primaryKey(),
-  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  examId: text('exam_id').notNull().references(() => exams.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id),
+  examId: text('exam_id').notNull().references(() => exams.id),
+  status: text('status', { enum: ['active', 'paused', 'submitted', 'expired', 'abandoned'] }).default('active').notNull(),
   
   // Test configuration
-  timeLimit: integer('time_limit').notNull(), // in seconds
+  timeLimitSeconds: integer('time_limit_seconds').notNull(),
   totalQuestions: integer('total_questions').notNull(),
-  questionIds: text('question_ids').notNull(), // JSON array of question IDs
+  passingScore: integer('passing_score').notNull(), // Percentage (e.g., 70)
   
-  // Test state
-  status: text('status').notNull().default('active'), // 'active', 'submitted', 'expired'
-  currentQuestionIndex: integer('current_question_index').default(0),
-  answers: text('answers').notNull().default('{}'), // JSON object: { questionId: selectedAnswers[] }
-  reviewFlags: text('review_flags').default('{}'), // JSON object: { questionId: boolean }
+  // Progress tracking
+  currentQuestionIndex: integer('current_question_index').default(0).notNull(),
+  answeredCount: integer('answered_count').default(0).notNull(),
+  flaggedCount: integer('flagged_count').default(0).notNull(),
   
-  // Timing
+  // Question order and answers (JSON)
+  questionsOrder: text('questions_order').notNull(), // JSON array of question IDs
+  answers: text('answers').default('{}').notNull(), // JSON object of questionIndex -> selectedAnswers
+  flagged: text('flagged').default('[]').notNull(), // JSON array of flagged question indices
+  
+  // Time tracking
   startedAt: integer('started_at').notNull(),
+  lastActivityAt: integer('last_activity_at').notNull(),
   submittedAt: integer('submitted_at'),
-  timeSpent: integer('time_spent'), // in seconds
-  timeRemaining: integer('time_remaining'), // in seconds
+  timeRemainingSeconds: integer('time_remaining_seconds').notNull(),
   
-  // Results (calculated after submission)
-  totalScore: integer('total_score'),
-  maxPossibleScore: integer('max_possible_score'),
-  correctAnswers: integer('correct_answers'),
-  incorrectAnswers: integer('incorrect_answers'),
-  skippedAnswers: integer('skipped_answers'),
-  passPercentage: integer('pass_percentage'), // required to pass
-  hasPassed: integer('has_passed', { mode: 'boolean' }),
+  // Results (populated after submission)
+  score: real('score'), // Percentage score
+  correctCount: integer('correct_count'),
+  incorrectCount: integer('incorrect_count'),
+  unansweredCount: integer('unanswered_count'),
+  passed: integer('passed', { mode: 'boolean' }),
   
-  // Section breakdown (JSON)
-  sectionScores: text('section_scores'), // JSON: { sectionId: { correct, total, percentage } }
+  // Auto-save state
+  lastAutoSaveAt: integer('last_auto_save_at'),
+  autoSaveCount: integer('auto_save_count').default(0).notNull(),
   
   // Metadata
-  createdAt: integer('created_at').notNull(),
-  updatedAt: integer('updated_at').notNull(),
+  metadata: text('metadata').default('{}'), // JSON for additional data
+  createdAt: integer('created_at').default(sql`(unixepoch())`).notNull(),
+  updatedAt: integer('updated_at').default(sql`(unixepoch())`).notNull()
 })
 
 export type TestSession = typeof testSessions.$inferSelect
 export type NewTestSession = typeof testSessions.$inferInsert
+
+// Helper type for the answers JSON structure
+export interface TestAnswer {
+  questionIndex: number
+  selectedAnswers: number[]
+  timeSpent?: number
+  flagged: boolean
+}

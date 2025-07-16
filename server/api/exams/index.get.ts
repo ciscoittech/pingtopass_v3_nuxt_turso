@@ -1,6 +1,6 @@
 import { useDB } from '~/server/utils/db'
 import { exams, vendors } from '~/server/database/schema'
-import { eq, desc, and } from 'drizzle-orm'
+import { eq, desc, and, sql } from 'drizzle-orm'
 import { withCache, cacheKeys } from '~/server/utils/cache'
 import { checkRateLimit, getClientIP, schemas, validateRequest, getSecurityHeaders } from '~/server/utils/security'
 
@@ -55,17 +55,23 @@ export default defineEventHandler(async (event) => {
       }
       
       // Build and execute query
-      return await db
+      const rawResults = await db
         .select({
           id: exams.id,
-          examCode: exams.code,
-          examName: exams.name,
+          code: exams.code,
+          name: exams.name,
           vendorId: exams.vendorId,
           vendorName: vendors.name,
           passingScore: exams.passingScore,
-          examDuration: exams.duration,
-          numberOfQuestions: exams.questionCount,
+          duration: exams.duration,
+          questionCount: exams.questionCount,
           isActive: exams.isActive,
+          difficulty: sql<string>`'intermediate'`.as('difficulty'),
+          userProgress: sql<number>`0`.as('userProgress'),
+          isBookmarked: sql<boolean>`false`.as('isBookmarked'),
+          price: exams.price,
+          description: exams.description,
+          createdAt: exams.createdAt,
           updatedAt: exams.updatedAt,
         })
         .from(exams)
@@ -73,7 +79,18 @@ export default defineEventHandler(async (event) => {
         .where(conditions.length > 1 ? and(...conditions) : conditions[0])
         .orderBy(desc(exams.updatedAt))
         .all()
+        
+      // Transform to match frontend expectations
+      return rawResults.map(exam => ({
+        ...exam,
+        examCode: exam.code,
+        examName: exam.name,
+        examDuration: exam.duration,
+        numberOfQuestions: exam.questionCount || 0
+      }))
     }, 300) // Cache for 5 minutes
+    
+    console.log(`[API] /api/exams - Found ${results.length} exams`)
     
     return {
       success: true,

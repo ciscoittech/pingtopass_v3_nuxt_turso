@@ -136,6 +136,19 @@ export const monitoringJobs = sqliteTable('monitoring_jobs', {
   updatedAt: integer('updated_at').notNull().default(Math.floor(Date.now() / 1000))
 })
 
+export const monitoringAlerts = sqliteTable('monitoring_alerts', {
+  id: text('id').primaryKey(),
+  competitorId: text('competitor_id').notNull(),
+  alertType: text('alert_type').notNull(), // 'growth', 'decline', 'strategy_change', 'viral_content'
+  severity: text('severity').notNull(), // 'high', 'medium', 'low'
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  recommendation: text('recommendation'),
+  data: text('data'), // JSON with detailed change data
+  isRead: integer('is_read', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at').notNull().default(Math.floor(Date.now() / 1000))
+})
+
 // Type exports
 export type TwitterPost = typeof twitterPosts.$inferSelect
 export type NewTwitterPost = typeof twitterPosts.$inferInsert
@@ -155,3 +168,5 @@ export type StrategyRecommendation = typeof strategyRecommendations.$inferSelect
 export type NewStrategyRecommendation = typeof strategyRecommendations.$inferInsert
 export type MonitoringJob = typeof monitoringJobs.$inferSelect
 export type NewMonitoringJob = typeof monitoringJobs.$inferInsert
+export type MonitoringAlert = typeof monitoringAlerts.$inferSelect
+export type NewMonitoringAlert = typeof monitoringAlerts.$inferInsert

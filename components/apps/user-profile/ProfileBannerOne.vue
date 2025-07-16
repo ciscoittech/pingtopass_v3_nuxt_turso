@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, shallowRef } from 'vue';
-import { HeartIcon, IdIcon, Layout2Icon, PhotoIcon, PlusIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
+import { HeartIcon, IdIcon, Layout2Icon, PhotoIcon, PlusIcon, UserCircleIcon, UsersIcon, FileDescriptionIcon, UserCheckIcon } from 'vue-tabler-icons';
+import { BrandFacebookIcon, BrandTwitterIcon, BrandDribbbleIcon, BrandYoutubeIcon } from 'vue-tabler-icons';
 import profileBg from '/images/backgrounds/profilebg-2.jpg';
-import UserImage from '/images/profile/user6.jpg';
+
+const { profileData, loading } = useProfile();
 
 const tab = ref(null);
 const items = shallowRef([
@@ -12,6 +14,10 @@ const items = shallowRef([
     { tab: 'Connection', icon: IdIcon, href: '/apps/userprofile/one/connection' }
 ]);
 
+// Compute avatar URL with fallback
+const userAvatar = computed(() => {
+    return profileData.value?.user?.avatarUrl || '/images/profile/user6.jpg';
+});
 
 </script>
 
@@ -25,7 +31,7 @@ const items = shallowRef([
                         <div class="d-sm-flex align-center justify-sm-start justify-center">
                             <div class="text-sm-left text-center">
                                 <v-avatar size="100" class="userImage position-relative overflow-visible">
-                                    <img :src="UserImage" width="100" alt="Mathew"  class="rounded-circle"/>
+                                    <img :src="userAvatar" width="100" :alt="profileData?.user?.name || 'User'"  class="rounded-circle"/>
                                     <v-avatar size="26" class="bg-primary position-absolute plus">
                                         <PlusIcon size="16" stroke-width="2" />
                                     </v-avatar>
@@ -33,9 +39,16 @@ const items = shallowRef([
 
                             </div>
                             <div class="ml-sm-4 text-sm-left text-center">
-                                <h5 class="text-h3 font-weight-semibold mb-1 my-sm-0 my-2">Mike Nielsen <v-chip color="primary"
-                                        class="bg-lightprimary font-weight-semibold ml-2 mt-n1" variant="outlined"
-                                        size="x-small">Admin</v-chip></h5>
+                                <h5 class="text-h3 font-weight-semibold mb-1 my-sm-0 my-2">
+                                    {{ profileData?.user?.name || 'Loading...' }} 
+                                    <v-chip 
+                                        color="primary"
+                                        class="bg-lightprimary font-weight-semibold ml-2 mt-n1" 
+                                        variant="outlined"
+                                        size="x-small">
+                                        {{ profileData?.user?.role || 'User' }}
+                                    </v-chip>
+                                </h5>
                                 <span class="text-h6 font-weight-medium text-grey100">Dream big. Think different. Do
                                     great!</span>
                                 <div class="text-subtitle-1 font-weight-semibold text-grey200 d-flex align-center mt-1 justify-sm-start justify-center">

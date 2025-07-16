@@ -1,0 +1,309 @@
+{
+  "examCode": "XK0-005",
+  "examName": "CompTIA Linux+",
+  "vendorName": "CompTIA",
+  "objectives": [
+    {
+      "title": "System Management",
+      "description": "Configure and manage storage, kernel modules, network parameters, and virtualization",
+      "weight": 32
+    },
+    {
+      "title": "Security",
+      "description": "Apply permissions, configure firewalls, and implement security best practices",
+      "weight": 21
+    },
+    {
+      "title": "Scripting, Containers, and Automation",
+      "description": "Create simple shell scripts, manage containers, and understand infrastructure as code",
+      "weight": 19
+    },
+    {
+      "title": "Troubleshooting",
+      "description": "Analyze and troubleshoot storage, network, and general system issues",
+      "weight": 28
+    }
+  ],
+  "questions": [
+    {
+      "questionText": "Which command is used to display the current running processes in Linux?",
+      "questionType": "multiple-choice",
+      "options": [
+        "ls",
+        "ps",
+        "dir",
+        "show"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The 'ps' command (process status) is used to display information about currently running processes in Linux. Common options include 'ps aux' for detailed information about all processes.",
+      "difficulty": 1,
+      "objectiveTitle": "System Management"
+    },
+    {
+      "questionText": "What is the default location for system log files in most Linux distributions?",
+      "questionType": "multiple-choice",
+      "options": [
+        "/etc/log",
+        "/var/log",
+        "/usr/log",
+        "/home/log"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The /var/log directory is the standard location for system log files in Linux. It contains logs from various system services, applications, and the kernel.",
+      "difficulty": 1,
+      "objectiveTitle": "System Management"
+    },
+    {
+      "questionText": "Which command would you use to change file permissions in Linux?",
+      "questionType": "multiple-choice",
+      "options": [
+        "chown",
+        "chmod",
+        "chgrp",
+        "umask"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The 'chmod' (change mode) command is used to change file permissions in Linux. It can use either symbolic (rwx) or numeric (octal) notation to set permissions.",
+      "difficulty": 1,
+      "objectiveTitle": "Security"
+    },
+    {
+      "questionText": "What does the permission value '755' mean in Linux?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Read, write, execute for all users",
+        "Read, write, execute for owner; read, execute for group and others",
+        "Read, write for owner; read for group and others",
+        "Read only for all users"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Permission 755 means: owner has read (4), write (2), and execute (1) = 7; group has read (4) and execute (1) = 5; others have read (4) and execute (1) = 5.",
+      "difficulty": 2,
+      "objectiveTitle": "Security"
+    },
+    {
+      "questionText": "Which file contains user account information in Linux?",
+      "questionType": "multiple-choice",
+      "options": [
+        "/etc/users",
+        "/etc/passwd",
+        "/etc/shadow",
+        "/etc/accounts"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The /etc/passwd file contains user account information including username, user ID, group ID, home directory, and default shell. Actual passwords are stored in /etc/shadow.",
+      "difficulty": 2,
+      "objectiveTitle": "Security"
+    },
+    {
+      "questionText": "What is the purpose of the shebang (#!) at the beginning of a shell script?",
+      "questionType": "multiple-choice",
+      "options": [
+        "It's a comment",
+        "It specifies the interpreter to use",
+        "It makes the script executable",
+        "It defines variables"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The shebang (#!) at the beginning of a script specifies which interpreter should be used to execute the script, such as #!/bin/bash for bash scripts.",
+      "difficulty": 2,
+      "objectiveTitle": "Scripting, Containers, and Automation"
+    },
+    {
+      "questionText": "Which command is used to search for text patterns in files?",
+      "questionType": "multiple-choice",
+      "options": [
+        "find",
+        "grep",
+        "sed",
+        "awk"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The 'grep' command is used to search for text patterns in files. It can use regular expressions and is one of the most powerful text search tools in Linux.",
+      "difficulty": 1,
+      "objectiveTitle": "Troubleshooting"
+    },
+    {
+      "questionText": "What is the purpose of the /etc/fstab file?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To store user passwords",
+        "To define filesystem mount points",
+        "To configure network interfaces",
+        "To list running processes"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The /etc/fstab (filesystem table) file contains information about disk drives and partitions, defining how and where they should be mounted at system startup.",
+      "difficulty": 2,
+      "objectiveTitle": "System Management"
+    },
+    {
+      "questionText": "Which command displays disk usage for file systems?",
+      "questionType": "multiple-choice",
+      "options": [
+        "du",
+        "df",
+        "ls -l",
+        "fdisk"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The 'df' (disk free) command displays disk usage information for mounted file systems, showing total space, used space, available space, and mount points.",
+      "difficulty": 1,
+      "objectiveTitle": "System Management"
+    },
+    {
+      "questionText": "What is the default runlevel for a GUI in most modern Linux systems using systemd?",
+      "questionType": "multiple-choice",
+      "options": [
+        "runlevel 3",
+        "runlevel 5",
+        "graphical.target",
+        "multi-user.target"
+      ],
+      "correctAnswer": [2],
+      "explanation": "In systemd-based systems, 'graphical.target' is equivalent to the traditional runlevel 5, providing a multi-user environment with a graphical interface.",
+      "difficulty": 2,
+      "objectiveTitle": "System Management"
+    },
+    {
+      "questionText": "Which command is used to manage systemd services?",
+      "questionType": "multiple-choice",
+      "options": [
+        "service",
+        "systemctl",
+        "init",
+        "chkconfig"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The 'systemctl' command is the primary tool for managing systemd services, allowing you to start, stop, enable, disable, and check the status of services.",
+      "difficulty": 2,
+      "objectiveTitle": "System Management"
+    },
+    {
+      "questionText": "What does SELinux stand for?",
+      "questionType": "multiple-choice",
+      "options": [
+        "Secure Enhanced Linux",
+        "Security-Enhanced Linux",
+        "System Enhanced Linux",
+        "Secure Enterprise Linux"
+      ],
+      "correctAnswer": [1],
+      "explanation": "SELinux stands for Security-Enhanced Linux, a security architecture that provides mandatory access control (MAC) for Linux systems.",
+      "difficulty": 1,
+      "objectiveTitle": "Security"
+    },
+    {
+      "questionText": "Which command would you use to view the last 10 lines of a log file?",
+      "questionType": "multiple-choice",
+      "options": [
+        "head -10 logfile",
+        "tail -10 logfile",
+        "cat -10 logfile",
+        "less -10 logfile"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The 'tail -10 logfile' command displays the last 10 lines of a file. This is particularly useful for viewing recent entries in log files.",
+      "difficulty": 1,
+      "objectiveTitle": "Troubleshooting"
+    },
+    {
+      "questionText": "What is the purpose of the 'cron' daemon?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To manage system logs",
+        "To schedule and run tasks automatically",
+        "To monitor system performance",
+        "To manage user sessions"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The cron daemon is a time-based job scheduler that runs tasks (cron jobs) automatically at specified times, dates, or intervals.",
+      "difficulty": 2,
+      "objectiveTitle": "Scripting, Containers, and Automation"
+    },
+    {
+      "questionText": "Which package manager is used by Debian-based distributions?",
+      "questionType": "multiple-choice",
+      "options": [
+        "yum",
+        "rpm",
+        "apt",
+        "zypper"
+      ],
+      "correctAnswer": [2],
+      "explanation": "APT (Advanced Package Tool) is the package management system used by Debian and Debian-based distributions like Ubuntu. Common commands include apt-get and apt.",
+      "difficulty": 1,
+      "objectiveTitle": "System Management"
+    },
+    {
+      "questionText": "What command would you use to display network interface configuration?",
+      "questionType": "multiple-choice",
+      "options": [
+        "netstat",
+        "ifconfig or ip addr",
+        "route",
+        "ping"
+      ],
+      "correctAnswer": [1],
+      "explanation": "Both 'ifconfig' (deprecated but still common) and 'ip addr' (modern replacement) can display network interface configuration. The 'ip' command is preferred in modern distributions.",
+      "difficulty": 2,
+      "objectiveTitle": "Troubleshooting"
+    },
+    {
+      "questionText": "Which environment variable contains the directories where Linux searches for executable commands?",
+      "questionType": "multiple-choice",
+      "options": [
+        "$HOME",
+        "$PATH",
+        "$USER",
+        "$SHELL"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The $PATH environment variable contains a colon-separated list of directories where Linux searches for executable commands when you type a command name.",
+      "difficulty": 2,
+      "objectiveTitle": "System Management"
+    },
+    {
+      "questionText": "What is the purpose of the sudo command?",
+      "questionType": "multiple-choice",
+      "options": [
+        "To switch user directories",
+        "To execute commands with elevated privileges",
+        "To create new users",
+        "To change passwords"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The 'sudo' (superuser do) command allows authorized users to execute commands with elevated privileges, typically as the root user, without logging in as root.",
+      "difficulty": 1,
+      "objectiveTitle": "Security"
+    },
+    {
+      "questionText": "Which command is used to manage Docker containers?",
+      "questionType": "multiple-choice",
+      "options": [
+        "docker",
+        "container",
+        "dockerctl",
+        "dock"
+      ],
+      "correctAnswer": [0],
+      "explanation": "The 'docker' command is the primary CLI tool for managing Docker containers, images, networks, and volumes in containerized environments.",
+      "difficulty": 1,
+      "objectiveTitle": "Scripting, Containers, and Automation"
+    },
+    {
+      "questionText": "What signal does the kill -9 command send to a process?",
+      "questionType": "multiple-choice",
+      "options": [
+        "SIGTERM",
+        "SIGKILL",
+        "SIGHUP",
+        "SIGINT"
+      ],
+      "correctAnswer": [1],
+      "explanation": "The 'kill -9' command sends the SIGKILL signal, which forcefully terminates a process immediately without allowing it to perform cleanup operations.",
+      "difficulty": 2,
+      "objectiveTitle": "Troubleshooting"
+    }
+  ]
+}

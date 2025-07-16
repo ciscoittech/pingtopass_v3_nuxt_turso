@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { profileImgData } from '@/_mockApis/components/dashboards/dashboard2'
+import { DotsVerticalIcon, ClockIcon } from 'vue-tabler-icons';
 const items = ref([
     { title: "Action" },
     { title: "Another action" },
