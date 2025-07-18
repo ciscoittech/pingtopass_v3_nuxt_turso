@@ -2,43 +2,79 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
+import { useActiveSession } from '~/composables/useActiveSession'
 
 const route = useRoute()
+const { lastActivity, activeStudySessions, activeTestSessions } = useActiveSession()
 
-// Navigation items
-const navItems = [
-  {
-    title: 'Dashboard',
-    icon: 'solar:home-2-bold-duotone',
-    to: '/dashboard',
-    activeIcon: 'solar:home-2-bold'
-  },
-  {
-    title: 'Exams',
-    icon: 'solar:book-open-bold-duotone',
-    to: '/exams',
-    activeIcon: 'solar:book-open-bold'
-  },
-  {
-    title: 'Study',
-    icon: 'solar:play-circle-bold-duotone',
-    to: '/study',
-    activeIcon: 'solar:play-circle-bold',
-    action: 'quickStart'
-  },
-  {
-    title: 'Leaderboard',
-    icon: 'solar:trophy-bold-duotone',
-    to: '/leaderboard',
-    activeIcon: 'solar:trophy-bold'
-  },
-  {
-    title: 'Profile',
-    icon: 'solar:user-circle-bold-duotone',
-    to: '/profile',
-    activeIcon: 'solar:user-circle-bold'
+// Dynamic navigation items based on active sessions
+const navItems = computed(() => {
+  const items = [
+    {
+      title: 'Dashboard',
+      icon: 'solar:home-2-bold-duotone',
+      to: '/dashboard',
+      activeIcon: 'solar:home-2-bold'
+    },
+    {
+      title: 'Exams',
+      icon: 'solar:book-open-bold-duotone',
+      to: '/exams',
+      activeIcon: 'solar:book-open-bold'
+    }
+  ]
+  
+  // Dynamic middle button based on active sessions
+  if (lastActivity.value) {
+    // Continue last activity
+    items.push({
+      title: 'Continue',
+      icon: lastActivity.value.mode === 'study' ? 'solar:play-circle-bold-duotone' : 'solar:timer-start-bold-duotone',
+      to: `/${lastActivity.value.mode}/${lastActivity.value.examId}`,
+      activeIcon: lastActivity.value.mode === 'study' ? 'solar:play-circle-bold' : 'solar:timer-start-bold',
+      action: 'continue',
+      badge: lastActivity.value.examCode
+    })
+  } else if (activeStudySessions.value.length > 0) {
+    // Resume study
+    const recentStudy = activeStudySessions.value[0]
+    items.push({
+      title: 'Study',
+      icon: 'solar:book-2-bold-duotone',
+      to: `/study/${recentStudy.examId}`,
+      activeIcon: 'solar:book-2-bold',
+      action: 'study',
+      badge: recentStudy.examCode
+    })
+  } else {
+    // Default quick start
+    items.push({
+      title: 'Start',
+      icon: 'solar:play-circle-bold-duotone',
+      to: '/exams',
+      activeIcon: 'solar:play-circle-bold',
+      action: 'quickStart'
+    })
   }
-]
+  
+  // Complete with remaining items
+  items.push(
+    {
+      title: 'Leaderboard',
+      icon: 'solar:trophy-bold-duotone',
+      to: '/leaderboard',
+      activeIcon: 'solar:trophy-bold'
+    },
+    {
+      title: 'Profile',
+      icon: 'solar:user-circle-bold-duotone',
+      to: '/profile',
+      activeIcon: 'solar:user-circle-bold'
+    }
+  )
+  
+  return items
+})
 
 // Check if current route matches nav item
 const isActive = (item: any) => {
@@ -87,11 +123,22 @@ const handleNavigation = (item: any) => {
       class="nav-btn"
       :class="{ 'active-nav': isActive(item) }"
     >
-      <Icon 
-        :icon="isActive(item) ? item.activeIcon : item.icon" 
-        size="24"
-        :class="{ 'text-primary': isActive(item) }"
-      />
+      <div class="position-relative">
+        <Icon 
+          :icon="isActive(item) ? item.activeIcon : item.icon" 
+          size="24"
+          :class="{ 'text-primary': isActive(item) }"
+        />
+        <v-chip
+          v-if="item.badge"
+          size="x-small"
+          class="nav-badge"
+          color="primary"
+          variant="flat"
+        >
+          {{ item.badge }}
+        </v-chip>
+      </div>
       <span class="text-caption nav-label" :class="{ 'text-primary': isActive(item) }">
         {{ item.title }}
       </span>
@@ -129,6 +176,16 @@ const handleNavigation = (item: any) => {
 
 .active-nav {
   background: rgba(var(--v-theme-primary), 0.08) !important;
+}
+
+.nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -8px;
+  font-size: 9px !important;
+  height: 16px !important;
+  min-width: 0 !important;
+  padding: 0 4px !important;
 }
 
 /* Ensure page content doesn't get hidden behind nav */

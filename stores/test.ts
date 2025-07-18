@@ -257,6 +257,18 @@ export const useTestStore = defineStore('test', {
               examCode: config.examCode,
               examName: config.examName
             }))
+            
+            // Update active session tracking
+            const { updateSession } = useActiveSession()
+            updateSession({
+              examId: config.examId,
+              examCode: config.examCode,
+              examName: config.examName,
+              mode: 'test',
+              lastActivity: new Date(),
+              progress: 0,
+              questionsAnswered: 0
+            })
           }
           
           // Start timer

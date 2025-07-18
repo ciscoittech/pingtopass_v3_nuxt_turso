@@ -30,18 +30,6 @@ const sidebarItem: menu[] = [
     to: "/exams",
   },
   {
-    title: "Study Mode",
-    icon: "book-linear",
-    BgColor: "info",
-    to: "/study",
-  },
-  {
-    title: "Test Mode",
-    icon: "timer-linear",
-    BgColor: "warning",
-    to: "/test",
-  },
-  {
     title: "Progress",
     icon: "chart-line-duotone",
     BgColor: "primary",

@@ -6,7 +6,7 @@ import ContinueStudyCard from "@/components/dashboards/pingtopass/ContinueStudyC
 import StudyStreak from "@/components/dashboards/pingtopass/StudyStreak.vue";
 import QuestionsAnswered from "@/components/dashboards/pingtopass/QuestionsAnswered.vue";
 import StudyProgress from "@/components/dashboards/pingtopass/StudyProgress.vue";
-import QuickActionsSpike from "@/components/dashboards/pingtopass/QuickActionsSpike.vue";
+import SmartQuickActions from "@/components/dashboards/pingtopass/SmartQuickActions.vue";
 import StudyAnalytics from "@/components/dashboards/pingtopass/StudyAnalytics.vue";
 import RecentActivity from "@/components/dashboards/pingtopass/RecentActivity.vue";
 import TutorialOverlay from "@/components/tutorial/TutorialOverlay.vue";
@@ -138,7 +138,7 @@ const onTutorialComplete = () => {
       </v-col>
       
       <v-col cols="12" sm="6" class="pb-3">
-        <QuickActionsSpike :exams="exams" class="quick-actions-card h-100" />
+        <SmartQuickActions :exams="exams" class="quick-actions-card h-100" />
       </v-col>
       
       <!-- Row 3: Study Progress (full width) -->
