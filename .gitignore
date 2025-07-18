@@ -22,3 +22,19 @@ logs
 .env
 .env.*.env.test
 .env.production
+
+# Debug and test files
+debug-*.js
+test-*.js
+check-*.js
+navigate-*.js
+*-debug.vue
+*-test.vue
+*-simple.vue
+*-fixed.vue
+pages/test-*/
+pages/isolated-test/
+server/api/debug/
+scripts/test-*.ts
+scripts/test-*.js
+
