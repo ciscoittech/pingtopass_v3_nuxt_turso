@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useDisplay, useTheme } from 'vuetify'
 import { useCustomizerStore } from '@/stores/customizer'
+import MobileBottomNav from '@/components/layout/MobileBottomNav.vue'
 
 const { lgAndUp } = useDisplay()
 const theme = useTheme()
@@ -95,6 +96,9 @@ watch(() => customizer.actTheme, (val) => {
     
     <!-- Chat Widget -->
     <ChatWidget />
+    
+    <!-- Mobile Bottom Navigation -->
+    <MobileBottomNav />
   </v-app>
 </template>
 
@@ -117,6 +121,14 @@ watch(() => customizer.actTheme, (val) => {
 @media (max-width: 960px) {
   .page-wrapper {
     padding: 16px;
+    padding-bottom: 80px; // Account for bottom nav
+  }
+}
+
+// Additional spacing for bottom nav
+@media (max-width: 1280px) {
+  .v-main {
+    padding-bottom: 56px !important;
   }
 }
 </style>

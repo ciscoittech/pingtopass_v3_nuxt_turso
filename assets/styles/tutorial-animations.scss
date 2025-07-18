@@ -1,0 +1,81 @@
+// Tutorial-specific animations
+
+// Pulsing animation for highlighted elements during tutorial
+@keyframes tutorialPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(var(--v-theme-primary), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--v-theme-primary), 0);
+  }
+}
+
+.tutorial-pulse {
+  animation: tutorialPulse 2s infinite;
+  position: relative;
+  z-index: 2002 !important; // Above tutorial overlay
+}
+
+// Ensure chat FAB is visible during tutorial
+.chat-fab.tutorial-pulse {
+  z-index: 2002 !important;
+}
+
+// Glow effect for tutorial highlights
+@keyframes tutorialGlow {
+  0% {
+    box-shadow: 0 0 5px rgba(var(--v-theme-primary), 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(var(--v-theme-primary), 0.8), 
+                0 0 30px rgba(var(--v-theme-primary), 0.6);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(var(--v-theme-primary), 0.5);
+  }
+}
+
+.tutorial-glow {
+  animation: tutorialGlow 2s ease-in-out infinite;
+}
+
+// Chat FAB entrance animation
+@keyframes chatFabEntrance {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.chat-fab {
+  animation: chatFabEntrance 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  animation-delay: 0.5s;
+  animation-fill-mode: backwards;
+}
+
+// Bounce animation for attention
+@keyframes chatFabBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-8px);
+  }
+  75% {
+    transform: translateY(4px);
+  }
+}
+
+.chat-fab-bounce {
+  animation: chatFabBounce 1s ease-in-out;
+}

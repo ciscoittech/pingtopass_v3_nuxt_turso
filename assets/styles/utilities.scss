@@ -1,0 +1,49 @@
+// Global utility classes
+
+// Height utilities
+.h-100 {
+  height: 100% !important;
+}
+
+// Flexbox utilities
+.flex-grow-1 {
+  flex-grow: 1 !important;
+}
+
+// Spacing utilities for consistent gaps
+.gap-2 {
+  gap: 8px;
+}
+
+.gap-3 {
+  gap: 12px;
+}
+
+.gap-4 {
+  gap: 16px;
+}
+
+// Card hover effects
+.v-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+  }
+}
+
+// Responsive text
+@media (max-width: 600px) {
+  .text-h4 {
+    font-size: 1.5rem !important;
+  }
+  
+  .text-h5 {
+    font-size: 1.25rem !important;
+  }
+  
+  .text-h6 {
+    font-size: 1.1rem !important;
+  }
+}

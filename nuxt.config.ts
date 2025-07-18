@@ -39,7 +39,10 @@ export default defineNuxtConfig({
   css: [
     'vuetify/styles',
     '~/assets/scss/style.scss',
-    '~/assets/css/global.css'
+    '~/assets/css/global.css',
+    '~/assets/styles/mobile-overrides.scss',
+    '~/assets/styles/tutorial-animations.scss',
+    '~/assets/styles/achievement-animations.scss'
   ],
 
   // Vuetify build configuration

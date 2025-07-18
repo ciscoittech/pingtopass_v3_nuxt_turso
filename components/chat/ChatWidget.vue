@@ -1,6 +1,25 @@
 <template>
   <!-- Floating Action Button -->
   <div class="chat-widget-container">
+    <!-- Tooltip for first-time users -->
+    <v-tooltip
+      v-if="showTooltip && !isOpen"
+      :model-value="true"
+      location="left"
+      offset="16"
+      no-click-animation
+    >
+      <template v-slot:activator="{ props }">
+        <div v-bind="props"></div>
+      </template>
+      <div class="chat-tooltip">
+        <div class="d-flex align-center mb-1">
+          <v-icon size="16" class="mr-1">mdi-lightbulb</v-icon>
+          <span class="font-weight-bold">Need help?</span>
+        </div>
+        <span class="text-caption">Click here to chat with your AI assistant!</span>
+      </div>
+    </v-tooltip>
     <transition name="fade-scale">
       <v-btn
         v-if="!isOpen"
@@ -205,6 +224,10 @@ const route = useRoute()
 // Check if we're in admin context
 const isAdminMode = computed(() => route.path.startsWith('/admin'))
 
+// Tooltip state
+const showTooltip = ref(false)
+const hasInteracted = ref(false)
+
 // Reactive refs
 const messagesContainer = ref<HTMLElement>()
 const activeTab = ref(0)
@@ -244,6 +267,11 @@ const suggestions = computed(() => {
 const toggleChat = () => {
   chatStore.toggleChat()
   if (chatStore.isOpen) {
+    // Mark as interacted
+    hasInteracted.value = true
+    localStorage.setItem('chatFabInteracted', 'true')
+    showTooltip.value = false
+    
     // Load sessions if not loaded
     if (chatStore.sessions.length === 0) {
       chatStore.fetchSessions()
@@ -315,6 +343,48 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown)
+  
+  // Check if user has interacted with chat before
+  const hasInteractedBefore = localStorage.getItem('chatFabInteracted')
+  const tutorialCompleted = localStorage.getItem('tutorialCompleted')
+  
+  if (!hasInteractedBefore && tutorialCompleted) {
+    // Show tooltip after 3 seconds if user hasn't used chat
+    setTimeout(() => {
+      if (!hasInteracted.value && !isOpen.value) {
+        showTooltip.value = true
+        
+        // Add subtle pulse animation
+        const chatFab = document.querySelector('.chat-fab')
+        if (chatFab) {
+          chatFab.classList.add('chat-fab-pulse')
+        }
+        
+        // Hide tooltip after 10 seconds
+        setTimeout(() => {
+          showTooltip.value = false
+        }, 10000)
+      }
+    }, 3000)
+  }
+  
+  // Periodic pulse for visibility (every 30 seconds)
+  const pulseInterval = setInterval(() => {
+    if (!isOpen.value && !hasInteracted.value) {
+      const chatFab = document.querySelector('.chat-fab')
+      if (chatFab) {
+        chatFab.classList.add('chat-fab-pulse')
+        setTimeout(() => {
+          chatFab.classList.remove('chat-fab-pulse')
+        }, 3000)
+      }
+    }
+  }, 30000)
+  
+  // Clean up interval on unmount
+  onUnmounted(() => {
+    clearInterval(pulseInterval)
+  })
 })
 
 onUnmounted(() => {
@@ -333,6 +403,35 @@ onUnmounted(() => {
 /* Floating Action Button */
 .chat-fab {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chat-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Pulse animation for visibility */
+@keyframes chatFabPulse {
+  0% {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(var(--v-theme-primary), 0.4),
+                0 0 0 15px rgba(var(--v-theme-primary), 0.1);
+  }
+  100% {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.chat-fab-pulse {
+  animation: chatFabPulse 2s ease-in-out infinite;
+}
+
+/* Tooltip styling */
+.chat-tooltip {
+  max-width: 200px;
 }
 
 /* Chat Window */
@@ -552,6 +651,18 @@ onUnmounted(() => {
   .chat-widget-container {
     bottom: 16px;
     right: 16px;
+  }
+  
+  /* Adjust tooltip on mobile */
+  .v-tooltip {
+    z-index: 1001 !important;
+  }
+}
+
+/* Ensure FAB is always visible */
+@media (max-width: 1280px) {
+  .chat-widget-container {
+    bottom: 80px; /* Above mobile nav */
   }
 }
 </style>

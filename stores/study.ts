@@ -397,6 +397,15 @@ export const useStudyStore = defineStore('study', {
           // Initialize session time
           this.sessionTime = session.timeSpentSeconds || 0
           
+          // Save to localStorage for quick resume
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('lastStudiedExam', JSON.stringify({
+              examId: config.examId,
+              examCode: config.examCode,
+              examName: config.examName
+            }))
+          }
+          
           // Start session timer
           this.startSessionTimer()
           

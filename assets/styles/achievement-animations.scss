@@ -1,0 +1,172 @@
+// Achievement badge animations and effects
+
+// Floating animation for achievement icons
+@keyframes achievementFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+// Shine effect for completed achievements
+@keyframes achievementShine {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+// Pulse effect for near-completion achievements
+@keyframes achievementPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--v-theme-warning), 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(var(--v-theme-warning), 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--v-theme-warning), 0);
+  }
+}
+
+// Achievement unlock animation
+@keyframes achievementUnlock {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+// Badge flip animation
+@keyframes badgeFlip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+// Achievement card hover effects
+.achievement-hover {
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: left 0.5s;
+  }
+  
+  &:hover::before {
+    left: 100%;
+  }
+}
+
+// Rarity-based glow effects
+.achievement-glow {
+  &.common {
+    box-shadow: 0 0 10px rgba(var(--v-theme-grey), 0.3);
+  }
+  
+  &.rare {
+    box-shadow: 0 0 15px rgba(var(--v-theme-blue), 0.4);
+  }
+  
+  &.epic {
+    box-shadow: 0 0 20px rgba(var(--v-theme-purple), 0.5);
+  }
+  
+  &.legendary {
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+    animation: achievementShine 3s ease-in-out infinite;
+  }
+}
+
+// Progress bar animations
+.achievement-progress {
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+// Notification badge bounce
+@keyframes badgeBounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.achievement-badge-new {
+  animation: badgeBounce 0.5s ease-in-out;
+}
+
+// Confetti override for dark theme
+.dark-theme {
+  .confetti-canvas {
+    mix-blend-mode: screen;
+  }
+}
+
+// Mobile optimizations
+@media (max-width: 600px) {
+  .achievement-card {
+    .v-avatar {
+      width: 32px !important;
+      height: 32px !important;
+    }
+    
+    .achievement-icon {
+      font-size: 16px !important;
+    }
+  }
+}

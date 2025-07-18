@@ -250,6 +250,15 @@ export const useTestStore = defineStore('test', {
             remainingTime: this.remainingTime
           })
           
+          // Save to localStorage for quick resume
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('lastStudiedExam', JSON.stringify({
+              examId: config.examId,
+              examCode: config.examCode,
+              examName: config.examName
+            }))
+          }
+          
           // Start timer
           this.startTimer()
           

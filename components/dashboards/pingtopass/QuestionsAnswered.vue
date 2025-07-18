@@ -1,75 +1,84 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { computed } from 'vue';
+import { Icon } from '@iconify/vue';
 
 const props = defineProps<{
   totalQuestions: number;
   accuracy: number;
 }>()
 
+// Format large numbers
+const formatNumber = (num: number) => {
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(1)}k`;
+  }
+  return num.toString();
+};
+
 /* Chart */
 const chartOptions = computed(() => {
     return {
-        series: [props.accuracy, 100 - props.accuracy],
-        labels: ["Correct", "Incorrect"],
+        series: [props.accuracy],
         chart: {
-            height: 170,
-            type: "donut",
+            height: 80,
+            type: "radialBar",
             fontFamily: `inherit`,
-            foreColor: "#adb0bb",
         },
         plotOptions: {
-            pie: {
-                startAngle: 0,
-                endAngle: 360,
-                donut: {
-                    size: '85%',
+            radialBar: {
+                hollow: {
+                    size: '60%',
                 },
-            },
+                dataLabels: {
+                    name: {
+                        show: false
+                    },
+                    value: {
+                        fontSize: '16px',
+                        fontWeight: 600,
+                        color: 'rgba(var(--v-theme-success))',
+                        formatter: function (val: any) {
+                            return val + "%"
+                        }
+                    }
+                }
+            }
         },
+        colors: ['rgba(var(--v-theme-success))'],
         stroke: {
-            show: false,
-        },
-        dataLabels: {
-            enabled: false,
-        },
-        legend: {
-            show: false,
-        },
-        colors: ['rgba(var(--v-theme-success))', "#D9D9D9"],
-        tooltip: {
-            theme: "dark",
-            fillSeriesColor: false,
+            lineCap: 'round'
         },
     };
 });
 </script>
 
 <template>
-    <v-card elevation="10">
-        <v-card-text class="position-relative">
-            <div class="d-flex justify-space-between d-block align-center">
-                <div>
-                    <h5 class="text-h5 mb-1 font-weight-semibold">
-                        Questions
-                    </h5>
-                    <div class="text-subtitle-1 text-grey100 pb-1 font-weight-medium">All time</div>
+    <v-card elevation="10" class="h-100">
+        <v-card-text class="pa-3">
+            <div class="d-flex justify-space-between align-center mb-2">
+                <div class="d-flex align-center">
+                    <Icon icon="solar:question-circle-bold-duotone" size="20" class="text-primary mr-2" />
+                    <h6 class="text-h6 font-weight-semibold">{{ formatNumber(totalQuestions) }} Questions</h6>
                 </div>
-                <div class="text-right">
-                    <h4 class="text-h5 mb-1 font-weight-semibold">{{ totalQuestions }}</h4>
-                    <v-chip color="success" class="bg-lightsuccess" variant="outlined" size="x-small">
-                        {{ accuracy }}% accuracy
-                    </v-chip>
+                <v-chip color="success" variant="tonal" size="x-small">
+                    All time
+                </v-chip>
+            </div>
+            <div class="d-flex align-center">
+                <div class="flex-grow-1">
+                    <ClientOnly>
+                        <apexchart type="radialBar" height="80" :options="chartOptions"
+                        :series="chartOptions.series"></apexchart>
+                    </ClientOnly>
+                </div>
+                <div class="text-center ml-2">
+                    <p class="text-caption text-grey100 mb-1">Accuracy</p>
+                    <h5 class="text-h5 font-weight-bold text-success">{{ accuracy }}%</h5>
                 </div>
             </div>
-            <div class="my-7">
-                <ClientOnly>
-                    <apexchart type="donut" class="paymentchart" height="170" :options="chartOptions"
-                    :series="chartOptions.series"></apexchart>
-                </ClientOnly>
-            </div>
-            <p class="text-subtitle-1 text-grey100 font-weight-medium text-center pb-1">
-                {{ Math.round(totalQuestions * accuracy / 100) }} correct answers
+            <p class="text-caption text-grey100 mb-0 text-center">
+                {{ formatNumber(Math.round(totalQuestions * accuracy / 100)) }} correct answers
             </p>
         </v-card-text>
     </v-card>

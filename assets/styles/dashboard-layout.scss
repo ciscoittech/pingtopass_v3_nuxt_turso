@@ -1,0 +1,98 @@
+// Dashboard Grid Layout Styles
+.dashboard-grid {
+  margin: 0 -12px; // Compensate for column padding
+  
+  // Consistent spacing between cards
+  .v-col {
+    padding: 12px;
+  }
+  
+  // Equal height cards
+  .h-100 {
+    height: 100%;
+  }
+  
+  // Card specific adjustments
+  .welcome-card {
+    min-height: 200px;
+  }
+  
+  .continue-study-card {
+    min-height: 200px;
+  }
+  
+  // Stats cards - smaller height
+  .v-col-sm-3 .v-card {
+    min-height: 140px;
+  }
+  
+  // Quick actions card
+  .quick-actions-card {
+    min-height: 140px;
+  }
+  
+  // Study progress - full width
+  .study-progress {
+    min-height: 140px;
+  }
+  
+  // Gamification cards - medium height
+  .v-col-md-4 .v-card {
+    min-height: 300px;
+  }
+  
+  // Performance messages
+  .performance-messages {
+    .v-card {
+      min-height: 150px;
+    }
+  }
+  
+  // Analytics - larger height
+  .study-analytics {
+    .v-card {
+      min-height: 350px;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 960px) {
+  .dashboard-grid {
+    .v-col-md-4 .v-card {
+      min-height: 250px;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-grid {
+    margin: 0 -4px;
+    
+    .v-col {
+      padding: 4px;
+    }
+    
+    .welcome-card,
+    .continue-study-card {
+      min-height: 150px;
+    }
+    
+    .v-col-md-4 .v-card {
+      min-height: 200px;
+    }
+  }
+}
+
+// Ensure cards fill their containers
+.v-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  
+  .v-card-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+}
