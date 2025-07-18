@@ -1,4 +1,4 @@
-import { useDB } from './db'
+import { useDB, useDBClient } from './db'
 import { questions, objectives, exams, studySessions, testSessions } from '../database/schema'
 import { eq, and, inArray, sql, or, exists } from 'drizzle-orm'
 
@@ -9,7 +9,7 @@ export interface QuestionWithMetadata {
   questionText: string
   questionType: string
   options: string[]
-  correctAnswer?: number[] // Only included in study mode
+  correctAnswers?: number[] // Only included in study mode
   explanation?: string // Only included in study mode
   isActive: boolean
   objectiveTitle?: string
@@ -65,6 +65,7 @@ export const questionService = {
     }
     
     // Execute raw query
+    const client = useDBClient()
     const result = await client.execute({ sql, args })
     const questionResults = result.rows
     
@@ -85,7 +86,19 @@ export const questionService = {
 
       // Include answers and explanations only in study mode
       if (mode === 'study') {
-        baseQuestion.correctAnswer = row.correct_answer ? JSON.parse(row.correct_answer as string) : []
+        // Parse correct_answer and ensure it's an array for compatibility
+        try {
+          const correctAnswer = row.correct_answer ? JSON.parse(row.correct_answer as string) : null
+          if (correctAnswer !== null) {
+            baseQuestion.correctAnswers = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer]
+          } else {
+            console.warn('[QuestionService] No correct answer for question:', row.id)
+            baseQuestion.correctAnswers = []
+          }
+        } catch (e) {
+          console.error('[QuestionService] Failed to parse correct_answer:', row.correct_answer, e)
+          baseQuestion.correctAnswers = []
+        }
         baseQuestion.explanation = row.explanation as string || undefined
       }
 
@@ -141,6 +154,7 @@ export const questionService = {
   // Get question by ID
   async getById(questionId: string, includeAnswer: boolean = false): Promise<QuestionWithMetadata | null> {
     const db = useDB()
+    const client = useDBClient()
 
     const result = await client.execute({
       sql: `
@@ -180,7 +194,9 @@ export const questionService = {
     }
 
     if (includeAnswer) {
-      transformedQuestion.correctAnswer = row.correct_answer ? JSON.parse(row.correct_answer as string) : []
+      // Parse correct_answer and ensure it's an array for compatibility
+      const correctAnswer = row.correct_answer ? JSON.parse(row.correct_answer as string) : null
+      transformedQuestion.correctAnswers = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer]
       transformedQuestion.explanation = row.explanation as string || undefined
     }
 
@@ -189,11 +205,28 @@ export const questionService = {
 
   // Get questions by IDs
   async getByIds(questionIds: string[], includeAnswers: boolean = false): Promise<QuestionWithMetadata[]> {
+    console.log('[QuestionService.getByIds] Called with:', { questionIds, includeAnswers })
+    console.log('[QuestionService.getByIds] Type of questionIds:', typeof questionIds)
+    console.log('[QuestionService.getByIds] Is array?', Array.isArray(questionIds))
+    
+    // Validate input
+    if (!questionIds) {
+      console.error('[QuestionService.getByIds] questionIds is null/undefined')
+      return []
+    }
+    
+    if (!Array.isArray(questionIds)) {
+      console.error('[QuestionService.getByIds] questionIds is not an array:', questionIds)
+      throw new Error(`getByIds expects an array of IDs, got ${typeof questionIds}`)
+    }
+    
     if (questionIds.length === 0) {
+      console.log('[QuestionService.getByIds] Empty array provided')
       return []
     }
 
     const db = useDB()
+    const client = useDBClient()
     
     // Build placeholders for IN clause
     const placeholders = questionIds.map(() => '?').join(',')
@@ -222,19 +255,36 @@ export const questionService = {
     const questionMap = new Map<string, QuestionWithMetadata>()
 
     result.rows.forEach((row: any) => {
+      // Parse options safely
+      let parsedOptions = []
+      try {
+        if (row.options) {
+          parsedOptions = typeof row.options === 'string' ? JSON.parse(row.options) : row.options
+          if (!Array.isArray(parsedOptions)) {
+            console.error('[QuestionService.getByIds] Options is not an array after parsing:', parsedOptions)
+            parsedOptions = []
+          }
+        }
+      } catch (e) {
+        console.error('[QuestionService.getByIds] Failed to parse options:', row.options, e)
+        parsedOptions = []
+      }
+      
       const transformedQuestion: QuestionWithMetadata = {
         id: row.id as string,
         examId: row.exam_id as string,
         objectiveId: row.objective_id as string | null,
         questionText: row.question_text as string,
         questionType: row.question_type as string,
-        options: row.options ? JSON.parse(row.options as string) : [],
+        options: parsedOptions,
         isActive: Boolean(row.is_active),
         objectiveTitle: row.objective_title as string | undefined
       }
 
       if (includeAnswers) {
-        transformedQuestion.correctAnswer = row.correct_answer ? JSON.parse(row.correct_answer as string) : []
+        // Parse correct_answer and ensure it's an array for compatibility
+        const correctAnswer = row.correct_answer ? JSON.parse(row.correct_answer as string) : null
+        transformedQuestion.correctAnswers = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer]
         transformedQuestion.explanation = row.explanation as string || undefined
       }
 
@@ -249,12 +299,12 @@ export const questionService = {
 
   // Validate answer
   validateAnswer(question: QuestionWithMetadata, userAnswer: number[]): boolean {
-    if (!question.correctAnswer || question.correctAnswer.length === 0) {
+    if (!question.correctAnswers || question.correctAnswers.length === 0) {
       return false
     }
 
     // Sort both arrays for comparison
-    const correct = [...question.correctAnswer].sort()
+    const correct = [...question.correctAnswers].sort()
     const user = [...userAnswer].sort()
 
     // Check if arrays are equal
@@ -282,6 +332,7 @@ export const questionService = {
     } = {}
   ): Promise<QuestionWithMetadata[]> {
     const db = useDB()
+    const client = useDBClient()
     const { maxQuestions, includeAnswers = true } = options
 
     // Get unique question IDs from study sessions using raw SQL
@@ -324,6 +375,7 @@ export const questionService = {
     } = {}
   ): Promise<QuestionWithMetadata[]> {
     const db = useDB()
+    const client = useDBClient()
     const { maxQuestions, includeAnswers = true } = options
 
     // Get flagged question IDs from study sessions using raw SQL
@@ -366,6 +418,7 @@ export const questionService = {
     } = {}
   ): Promise<QuestionWithMetadata[]> {
     const db = useDB()
+    const client = useDBClient()
     const { maxQuestions, includeAnswers = true } = options
 
     // Get answers from study sessions using raw SQL

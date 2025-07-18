@@ -1,5 +1,11 @@
 <template>
   <div>
+    <!-- Debug Info -->
+    <v-alert type="warning" class="ma-4" v-if="true">
+      <div><strong>This is pages/study/index.vue (Study Dashboard)</strong></div>
+      <div>Route path: {{ $route.path }}</div>
+    </v-alert>
+    
     <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
 
     <!-- Quick Start Section -->
@@ -472,6 +478,7 @@ const startStudy = async (examId: string) => {
   }
   
   try {
+    // Navigate to study page with exam ID
     await navigateTo(`/study/${examId}`)
   } catch (error) {
     console.error('[Study Page] Navigation error:', error)
@@ -488,6 +495,7 @@ const resumeStudy = async (examId: string) => {
   }
   
   try {
+    // Navigate to study page with exam ID
     await navigateTo(`/study/${examId}`)
   } catch (error) {
     console.error('[Study Page] Navigation error:', error)

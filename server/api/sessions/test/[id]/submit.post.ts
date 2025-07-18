@@ -53,14 +53,24 @@ export default defineEventHandler(async (event) => {
     // Submit the test
     await testSessionService.submit(sessionId)
     
+    // Parse questionsOrder if it's a string
+    const questionIds = typeof session.questionsOrder === 'string' 
+      ? JSON.parse(session.questionsOrder) 
+      : session.questionsOrder
+      
     // Get all questions with answers for scoring
     const questions = await questionService.getByIds(
-      session.questionsOrder,
+      questionIds,
       true // Include correct answers for scoring
     )
     
     // Create question map for easy lookup
     const questionMap = new Map(questions.map(q => [q.id, q]))
+    
+    // Parse answers if it's a string
+    const answers = typeof session.answers === 'string'
+      ? JSON.parse(session.answers)
+      : session.answers
     
     // Calculate results
     let correctCount = 0
@@ -69,10 +79,10 @@ export default defineEventHandler(async (event) => {
     const detailedResults = []
     
     // Process each question
-    for (let i = 0; i < session.questionsOrder.length; i++) {
-      const questionId = session.questionsOrder[i]
+    for (let i = 0; i < questionIds.length; i++) {
+      const questionId = questionIds[i]
       const question = questionMap.get(questionId)
-      const userAnswer = session.answers[questionId]
+      const userAnswer = answers[questionId]
       
       if (!question) continue
       
@@ -80,7 +90,7 @@ export default defineEventHandler(async (event) => {
         questionId: question.id,
         questionText: question.questionText,
         options: question.options,
-        correctAnswer: question.correctAnswer,
+        correctAnswers: question.correctAnswers,
         explanation: question.explanation,
         objectiveTitle: question.objectiveTitle
       }

@@ -53,8 +53,12 @@ export default defineEventHandler(async (event) => {
         console.log(`[Test Session] Resuming existing session ${existingSession.id} for user ${user.id}`)
         
         // Get questions without answers for test mode
+        const questionIds = typeof existingSession.questionsOrder === 'string' 
+          ? JSON.parse(existingSession.questionsOrder) 
+          : existingSession.questionsOrder
+          
         const questions = await questionService.getByIds(
-          existingSession.questionsOrder,
+          questionIds,
           false // No answers in test mode
         )
         
@@ -63,6 +67,8 @@ export default defineEventHandler(async (event) => {
           data: {
             session: {
               ...existingSession,
+              answers: JSON.parse(existingSession.answers || '{}'),
+              flags: JSON.parse(existingSession.flagged || '[]'),
               timeRemainingSeconds: timeRemaining
             },
             questions,
@@ -95,18 +101,15 @@ export default defineEventHandler(async (event) => {
     }
     
     // Create new test session
+    const questionIds = questions.map(q => q.id)
+    console.log(`[Test Session] Creating session with ${questionIds.length} question IDs`)
+    
     const session = await testSessionService.create({
       userId: user.id,
       examId: params.examId,
+      questionIds: questionIds,
       timeLimitSeconds: timeLimitMinutes * 60,
-      totalQuestions: questions.length,
-      questionsOrder: questions.map(q => q.id),
-      passingScore: exam.passingScore || 70,
-      metadata: {
-        examName: exam.name,
-        examCode: exam.code,
-        vendorName: exam.vendor.name
-      }
+      passingScore: exam.passingScore || 70
     })
     
     console.log(`[Test Session] Created new session ${session.id} for user ${user.id} with ${questions.length} questions`)
@@ -116,6 +119,9 @@ export default defineEventHandler(async (event) => {
       data: {
         session: {
           ...session,
+          answers: JSON.parse(session.answers || '{}'),
+          flags: JSON.parse(session.flagged || '[]'),
+          questionsOrder: JSON.parse(session.questionsOrder || '[]'),
           timeRemainingSeconds: session.timeLimitSeconds
         },
         questions,

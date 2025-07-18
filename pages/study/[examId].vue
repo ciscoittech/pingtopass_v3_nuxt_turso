@@ -7,6 +7,9 @@ import StudyExplanationCard from '@/components/study/StudyExplanationCard.vue'
 import StudyNavigationBar from '@/components/study/StudyNavigationBar.vue'
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
 import ErrorNotification from '@/components/ErrorNotification.vue'
+import StudyLoadingState from '@/components/study/StudyLoadingState.vue'
+import AsyncErrorBoundary from '@/components/shared/AsyncErrorBoundary.vue'
+import StudyDebugInfo from '@/components/study/StudyDebugInfo.vue'
 import { useStudyStore } from '~/stores/study'
 import { useErrorHandler } from '~/composables/useErrorHandler'
 
@@ -45,22 +48,37 @@ const questionFlagged = computed(() => {
 })
 
 // Get exam info by ID
-const { data: examData, error: examError, pending: examPending } = await useFetch(`/api/exams/${examId}`)
-const exam = computed(() => examData.value?.data || null)
+const { data: examData, error: examError, pending: examPending, refresh: refreshExam } = await useFetch(`/api/exams/${examId}`, {
+  key: `exam-${examId}`,
+  transform: (res) => res?.data || null
+})
+const exam = computed(() => examData.value)
 
-// Watch for exam loading errors (don't throw immediately during SSR)
+// Watch for exam loading errors
 const examLoadError = ref<any>(null)
 watchEffect(() => {
   if (examError.value && !examPending.value) {
     console.error('[Study Page] Failed to load exam:', examError.value)
     examLoadError.value = examError.value
-  } else if (!exam.value && !examPending.value && examData.value) {
+  } else if (!exam.value && !examPending.value) {
     console.error('[Study Page] No exam data found for ID:', examId)
     examLoadError.value = new Error('Exam not found')
   } else {
     examLoadError.value = null
   }
 })
+
+// Watch for exam data changes
+watch(exam, (newExam) => {
+  if (newExam) {
+    console.log('[Study Page] Exam data loaded:', newExam)
+    // Update SEO meta
+    useSeoMeta({
+      title: `Study Mode - ${newExam.code} | PingToPass`,
+      description: `Practice ${newExam.name} certification exam questions with instant feedback and explanations.`
+    })
+  }
+}, { immediate: true })
 
 // Breadcrumb
 const page = ref({ title: 'Study Mode' })
@@ -76,7 +94,7 @@ const breadcrumbs = computed(() => [
     to: '/exams'
   },
   {
-    text: exam.value?.code || exam.value?.examCode || 'Study',
+    text: exam.value?.code || 'Study',
     disabled: false,
     to: `/exams/${examId}`
   },
@@ -89,21 +107,14 @@ const breadcrumbs = computed(() => [
 
 
 // Get total questions available
-const { data: questionsData, pending: questionsPending } = await useFetch(`/api/exams/${examId}/questions/count`)
-const totalQuestions = computed(() => questionsData.value?.data?.count || 0)
+const { data: questionsData, pending: questionsPending } = await useFetch(`/api/exams/${examId}/questions/count`, {
+  key: `questions-count-${examId}`,
+  transform: (res) => res?.data?.count || 0
+})
+const totalQuestions = computed(() => questionsData.value || 0)
 
 // Use the actual exam ID from the fetched data for session start
 const actualExamId = computed(() => exam.value?.id || examId)
-
-// SEO - use watchEffect to update when exam data loads
-watchEffect(() => {
-  if (exam.value) {
-    useSeoMeta({
-      title: `Study Mode - ${exam.value.examCode || exam.value.code} | PingToPass`,
-      description: `Practice ${exam.value.examName || exam.value.name} certification exam questions with instant feedback and explanations.`
-    })
-  }
-})
 
 // Start study session
 const startStudySession = async (config: any) => {
@@ -122,8 +133,8 @@ const startStudySession = async (config: any) => {
     
     const sessionConfig = {
       examId: actualExamId.value, // Use the actual exam ID from database
-      examCode: exam.value?.code || exam.value?.examCode || '',
-      examName: exam.value?.name || exam.value?.examName || '',
+      examCode: exam.value?.code || '',
+      examName: exam.value?.name || '',
       ...config
     }
     
@@ -139,6 +150,28 @@ const startStudySession = async (config: any) => {
       sessionStarted.value = true
       console.log('[Study Page] Current session:', studyStore.currentSession)
       console.log('[Study Page] Current question:', studyStore.currentQuestion)
+      
+      // Additional validation
+      if (!studyStore.currentQuestion) {
+        console.error('[Study Page] WARNING: No current question despite successful session start')
+        console.error('[Study Page] Session details:', {
+          sessionId: studyStore.currentSession?.id,
+          questionsLength: studyStore.currentSession?.questions?.length,
+          hasCurrentQuestion: studyStore.hasCurrentQuestion
+        })
+        
+        // Try to recover
+        if (studyStore.currentSession?.questions?.length > 0) {
+          console.log('[Study Page] Attempting to set first question manually')
+          studyStore.setCurrentQuestion(0)
+        } else {
+          handleError(
+            { code: 'NO_QUESTIONS', message: 'No questions available for this exam' },
+            'Loading study questions'
+          )
+          sessionStarted.value = false
+        }
+      }
     } else {
       console.error('[Study Page] Session start failed')
       console.error('[Study Page] Store error:', studyStore.error)
@@ -185,7 +218,7 @@ const handlePauseSession = () => {
 
 const handleEndSession = () => {
   if (confirm('Are you sure you want to end this study session?')) {
-    studyStore.endSession()
+    studyStore.endSession('complete', route.params.examId as string)
   }
 }
 
@@ -210,13 +243,13 @@ const currentProgress = computed(() => {
   if (!progress || !studyStore.currentSession) return null
   
   return {
-    examName: studyStore.currentSession.examName,
-    current: progress.current + 1, // Add 1 for display (1-based instead of 0-based)
-    total: progress.total,
-    correct: progress.correct,
-    incorrect: progress.incorrect,
-    timeSeconds: studyStore.sessionTime,
-    mode: studyStore.currentSession.mode
+    examName: studyStore.currentSession.examName || '',
+    current: Math.min(progress.current + 1, progress.total), // Add 1 for display but don't exceed total
+    total: progress.total || 0,
+    correct: progress.correct || 0,
+    incorrect: progress.incorrect || 0,
+    timeSeconds: studyStore.sessionTime || 0,
+    mode: studyStore.currentSession.mode || 'sequential'
   }
 })
 
@@ -240,9 +273,29 @@ const explanationData = computed(() => {
 
 // Check for existing session on mount
 onMounted(async () => {
+  console.log('[Study Page] Component mounted, checking state...')
+  console.log('[Study Page] examId from route:', examId)
+  console.log('[Study Page] examPending:', examPending.value)
+  console.log('[Study Page] exam:', exam.value)
+  console.log('[Study Page] examError:', examError.value)
+  console.log('[Study Page] examLoadError:', examLoadError.value)
+  console.log('[Study Page] sessionStarted:', sessionStarted.value)
+  console.log('[Study Page] studyStore.loading:', studyStore.loading)
+  console.log('[Study Page] studyStore.error:', studyStore.error)
+  console.log('[Study Page] totalQuestions:', totalQuestions.value)
+  
   // Check if there's an active session
   if (studyStore.currentSession && studyStore.currentSession.examId === examId) {
+    console.log('[Study Page] Found existing session')
     sessionStarted.value = true
+  } else {
+    console.log('[Study Page] No existing session found')
+  }
+  
+  // Force refresh if exam not loaded
+  if (!exam.value && !examPending.value && !examError.value) {
+    console.log('[Study Page] Exam not loaded, refreshing...')
+    await refreshExam()
   }
 })
 
@@ -272,9 +325,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <ErrorBoundary :error="pageError" :on-retry="() => navigateTo(route.fullPath)">
-    <div>
-      <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
+  <div>
+    <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs" />
+    
+    <!-- Main Content Container -->
+    <ErrorBoundary :error="pageError" :on-retry="() => navigateTo(route.fullPath)">
+      <div v-if="!examPending || exam">
       
       <!-- Error Notification -->
       <ErrorNotification 
@@ -284,18 +340,8 @@ onUnmounted(() => {
         :on-retry="retryLastAction"
       />
     
-    <!-- Exam Loading State -->
-    <div v-if="examPending && !exam" class="text-center py-12">
-      <v-progress-circular 
-        indeterminate 
-        color="primary" 
-        size="64"
-      />
-      <p class="mt-4 text-subtitle-1">Loading exam details...</p>
-    </div>
-
     <!-- Exam Load Error -->
-    <div v-else-if="examLoadError" class="text-center py-12">
+    <div v-if="examLoadError" class="text-center py-12">
       <v-icon size="64" color="error" class="mb-4">mdi-alert-circle</v-icon>
       <h3 class="text-h5 mb-2">Unable to Load Exam</h3>
       <p class="text-body-1 text-medium-emphasis mb-4">
@@ -324,9 +370,9 @@ onUnmounted(() => {
           </v-alert>
           
           <StudyModeConfig
-            :examId="examId"
-            :examCode="exam.code || exam.examCode"
-            :examName="exam.name || exam.examName"
+            :examId="actualExamId"
+            :examCode="exam.code"
+            :examName="exam.name"
             :totalQuestions="totalQuestions"
             :loading="studyStore.loading"
             @start="startStudySession"
@@ -336,13 +382,32 @@ onUnmounted(() => {
     </div>
 
     <!-- Loading State -->
-    <div v-else-if="studyStore.loading" class="text-center py-12">
-      <v-progress-circular 
-        indeterminate 
-        color="primary" 
-        size="64"
-      />
-      <p class="mt-4 text-subtitle-1">Loading questions...</p>
+    <div v-else-if="studyStore.loading || (sessionStarted && studyStore.currentSession && !studyStore.currentQuestion && !studyStore.error)">
+      <v-row justify="center" class="py-12">
+        <v-col cols="12" class="text-center">
+          <v-progress-circular
+            indeterminate
+            color="primary"
+            size="64"
+            class="mb-4"
+          />
+          <p class="text-h6">
+            {{ studyStore.loading ? 'Preparing your study session...' : 'Loading questions...' }}
+          </p>
+        </v-col>
+      </v-row>
+    </div>
+
+    <!-- No Questions Error -->
+    <div v-else-if="sessionStarted && studyStore.currentSession && (!studyStore.currentSession.questions || studyStore.currentSession.questions.length === 0)" class="text-center py-12">
+      <v-icon size="64" color="warning" class="mb-4">mdi-help-circle</v-icon>
+      <h3 class="text-h5 mb-2">No Questions Available</h3>
+      <p class="text-body-1 text-medium-emphasis mb-4">
+        This exam doesn't have any questions yet. Please try another exam or contact support.
+      </p>
+      <v-btn color="primary" variant="flat" to="/study">
+        Back to Study Dashboard
+      </v-btn>
     </div>
 
     <!-- Error State -->
@@ -357,6 +422,9 @@ onUnmounted(() => {
 
     <!-- Study Interface -->
     <div v-else-if="sessionStarted && !studyStore.loading && !studyStore.error">
+      <!-- Debug Info (Development Only) -->
+      <StudyDebugInfo />
+      
       <Transition name="fade-slide" mode="out-in">
         <div v-if="studyStore.currentQuestion && !studyStore.showFeedback" :key="`question-${studyStore.currentQuestionIndex}`" class="study-interface">
         <!-- Progress Bar -->
@@ -382,7 +450,7 @@ onUnmounted(() => {
           <v-col cols="12">
             <StudyNavigationBar
               :current-question-index="studyStore.currentQuestionIndex"
-              :questions-order="studyStore.currentSession.questionsOrder"
+              :questions-order="Array.isArray(studyStore.currentSession.questionsOrder) ? studyStore.currentSession.questionsOrder : []"
               :answers="studyStore.currentSession.answers"
               :bookmarks="studyStore.currentSession.bookmarks"
               :flags="studyStore.currentSession.flags"
@@ -450,8 +518,19 @@ onUnmounted(() => {
       </div>
     </div>
     
-    </div>
-  </ErrorBoundary>
+      </div>
+      
+      <!-- Initial Loading State -->
+      <div v-else class="text-center py-12">
+        <v-progress-circular 
+          indeterminate 
+          color="primary" 
+          size="64"
+        />
+        <p class="mt-4 text-subtitle-1">Loading study page...</p>
+      </div>
+    </ErrorBoundary>
+  </div>
 </template>
 
 <style scoped>

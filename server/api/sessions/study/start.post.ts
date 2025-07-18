@@ -53,17 +53,46 @@ export default defineEventHandler(async (event) => {
       console.log(`[Study Session] Resuming existing session ${existingSession.id} for user ${user.id}`)
       
       // Get questions in the original order
+      // Parse questionsOrder as it's stored as JSON string
+      let questionIds: string[]
+      try {
+        questionIds = JSON.parse(existingSession.questionsOrder)
+        if (!Array.isArray(questionIds)) {
+          throw new Error('questionsOrder is not an array')
+        }
+      } catch (e) {
+        console.error('[Study API] Failed to parse questionsOrder:', existingSession.questionsOrder, e)
+        throw createError({
+          statusCode: 500,
+          statusMessage: 'Invalid session data: could not parse questions order'
+        })
+      }
+      
       const questions = await questionService.getByIds(
-        existingSession.questionsOrder,
+        questionIds,
         true // Include answers for study mode
       )
       
-      return {
-        success: true,
-        data: {
-          session: existingSession,
-          questions,
-          isResuming: true
+      console.log(`[Study API] Resuming session with ${questions.length} questions (expected ${existingSession.totalQuestions})`)
+      
+      // Check if we have all the questions we need
+      if (questions.length !== existingSession.totalQuestions || questions.length === 0) {
+        console.warn(`[Study API] Question count mismatch: got ${questions.length}, expected ${existingSession.totalQuestions}`)
+        console.log('[Study API] Abandoning incomplete session and creating new one')
+        
+        // Abandon the incomplete session
+        await studySessionService.abandon(existingSession.id)
+        
+        // Continue to create a new session below
+      } else {
+        // Session is valid, return it
+        return {
+          success: true,
+          data: {
+            session: existingSession,
+            questions,
+            isResuming: true
+          }
         }
       }
     }
@@ -111,6 +140,9 @@ export default defineEventHandler(async (event) => {
         mode: params.mode
       })
       
+      console.log('[Study API] questionService:', questionService)
+      console.log('[Study API] questionService.getQuestionsForSession:', questionService?.getQuestionsForSession)
+      
       questions = await questionService.getQuestionsForSession(
         params.examId,
         'study',
@@ -123,7 +155,19 @@ export default defineEventHandler(async (event) => {
       )
     }
     
-    console.log('[Study API] Questions retrieved:', questions.length)
+    console.log('[Study API] Questions retrieved:', questions)
+    console.log('[Study API] Questions type:', typeof questions)
+    console.log('[Study API] Questions is array:', Array.isArray(questions))
+    console.log('[Study API] Questions length:', questions?.length)
+    
+    // Ensure questions is an array
+    if (!Array.isArray(questions)) {
+      console.error('[Study API] Questions is not an array:', questions)
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Invalid question format returned from service'
+      })
+    }
     
     if (questions.length === 0) {
       console.error('[Study API] No questions found for exam:', params.examId)
@@ -134,35 +178,127 @@ export default defineEventHandler(async (event) => {
     }
     
     // Create new session
-    const session = await studySessionService.create({
-      userId: user.id,
-      examId: params.examId,
-      mode: params.mode,
-      questionIds: questions.map(q => q.id),
-      maxQuestions: params.maxQuestions,
-      showExplanations: params.showExplanations,
-      showTimer: params.showTimer,
-      autoAdvance: params.autoAdvance
+    console.log('[Study API] Creating session with questions:', {
+      questionsCount: questions.length,
+      questionsType: typeof questions,
+      isArray: Array.isArray(questions),
+      firstQuestionId: questions[0]?.id
     })
     
+    // Double-check questions is an array before mapping
+    if (!Array.isArray(questions)) {
+      console.error('[Study API] Questions is not an array before create:', questions)
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Questions data is invalid'
+      })
+    }
+    
+    console.log('[Study API] Before mapping - questions:', questions)
+    console.log('[Study API] Before mapping - first question:', questions[0])
+    
+    // Additional safety check
+    if (!Array.isArray(questions)) {
+      console.error('[Study API] Questions is not an array before mapping:', questions)
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Questions data is not in expected format'
+      })
+    }
+    
+    let questionIds
+    try {
+      if (!questions || !Array.isArray(questions)) {
+        console.error('[Study API] Questions is not valid for mapping:', questions)
+        throw new Error('Questions data is not valid for mapping')
+      }
+      
+      questionIds = questions.map(q => {
+        if (!q || typeof q !== 'object' || !q.id) {
+          console.error('[Study API] Invalid question object:', q)
+          throw new Error('Invalid question object found')
+        }
+        return q.id
+      })
+      console.log('[Study API] Question IDs:', questionIds)
+      console.log('[Study API] Question IDs type:', typeof questionIds)
+      console.log('[Study API] Question IDs is array:', Array.isArray(questionIds))
+    } catch (mapError: any) {
+      console.error('[Study API] Error mapping question IDs:', mapError)
+      console.error('[Study API] Questions value that caused error:', questions)
+      console.error('[Study API] Error message:', mapError.message)
+      console.error('[Study API] Error stack:', mapError.stack)
+      throw createError({
+        statusCode: 500,
+        statusMessage: mapError.message || 'Failed to process questions data'
+      })
+    }
+    
+    let session
+    try {
+      session = await studySessionService.create({
+        userId: user.id,
+        examId: params.examId,
+        mode: params.mode,
+        questionIds: questionIds,
+        maxQuestions: params.maxQuestions,
+        showExplanations: params.showExplanations,
+        showTimer: params.showTimer,
+        autoAdvance: params.autoAdvance
+      })
+    } catch (sessionError: any) {
+      console.error('[Study API] Error creating session:', sessionError)
+      console.error('[Study API] Error message:', sessionError.message)
+      console.error('[Study API] Error stack:', sessionError.stack)
+      throw createError({
+        statusCode: 500,
+        statusMessage: sessionError.message || 'Failed to create study session'
+      })
+    }
+    
     console.log(`[Study Session] Created new session ${session.id} for user ${user.id} with ${questions.length} questions`)
-    console.log('[Study API] Returning response with:', {
-      sessionId: session.id,
-      questionsCount: questions.length,
-      firstQuestion: questions[0]?.id
+    
+    // Validate questions before returning
+    if (!Array.isArray(questions) || questions.length === 0) {
+      console.error('[Study API] Critical: Questions array is invalid before return:', {
+        isArray: Array.isArray(questions),
+        length: questions?.length,
+        type: typeof questions
+      })
+      throw createError({
+        statusCode: 500,
+        statusMessage: 'Failed to prepare questions for session'
+      })
+    }
+    
+    // Create response object
+    const responseData = {
+      session,
+      questions: [...questions], // Clone array to avoid reference issues
+      isResuming: false
+    }
+    
+    console.log('[Study API] Final response validation:', {
+      sessionId: responseData.session.id,
+      questionsInResponse: Array.isArray(responseData.questions),
+      questionsCount: responseData.questions.length,
+      firstQuestionId: responseData.questions[0]?.id,
+      lastQuestionId: responseData.questions[responseData.questions.length - 1]?.id
     })
     
     return {
       success: true,
-      data: {
-        session,
-        questions,
-        isResuming: false
-      }
+      data: responseData
     }
     
   } catch (error: any) {
-    console.error('Failed to start study session:', error)
+    console.error('[Study API] ===== ERROR IN START SESSION =====')
+    console.error('[Study API] Error object:', error)
+    console.error('[Study API] Error message:', error.message)
+    console.error('[Study API] Error stack:', error.stack)
+    console.error('[Study API] Error name:', error.name)
+    console.error('[Study API] Error constructor:', error.constructor?.name)
+    console.error('[Study API] ===== END ERROR =====')
     
     // Handle validation errors
     if (error instanceof z.ZodError) {

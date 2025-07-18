@@ -16,7 +16,7 @@
         <!-- Question Indicators -->
         <div class="question-indicators d-flex align-center gap-1">
           <v-chip
-            v-for="(questionId, index) in questionsOrder"
+            v-for="(questionId, index) in (questionsOrder || [])"
             :key="questionId"
             :color="getQuestionColor(questionId, index)"
             :variant="currentQuestionIndex === index ? 'flat' : 'tonal'"
@@ -108,14 +108,14 @@ const emit = defineEmits<{
 
 // Computed
 const canGoPrevious = computed(() => props.currentQuestionIndex > 0)
-const canGoNext = computed(() => props.currentQuestionIndex < props.questionsOrder.length - 1)
+const canGoNext = computed(() => props.currentQuestionIndex < (props.questionsOrder?.length || 0) - 1)
 
-const answeredQuestions = computed(() => Object.keys(props.answers))
-const correctCount = computed(() => Object.values(props.answers).filter(a => a.isCorrect).length)
-const incorrectCount = computed(() => Object.values(props.answers).filter(a => !a.isCorrect).length)
-const unansweredCount = computed(() => props.questionsOrder.length - answeredQuestions.value.length)
-const bookmarkedCount = computed(() => props.bookmarks.length)
-const flaggedCount = computed(() => props.flags.length)
+const answeredQuestions = computed(() => Object.keys(props.answers || {}))
+const correctCount = computed(() => Object.values(props.answers || {}).filter(a => a.isCorrect).length)
+const incorrectCount = computed(() => Object.values(props.answers || {}).filter(a => !a.isCorrect).length)
+const unansweredCount = computed(() => (props.questionsOrder?.length || 0) - answeredQuestions.value.length)
+const bookmarkedCount = computed(() => props.bookmarks?.length || 0)
+const flaggedCount = computed(() => props.flags?.length || 0)
 
 // Methods
 const goPrevious = () => {
@@ -143,11 +143,11 @@ const isCorrect = (questionId: string) => {
 }
 
 const isBookmarked = (questionId: string) => {
-  return props.bookmarks.includes(questionId)
+  return props.bookmarks?.includes(questionId) || false
 }
 
 const isFlagged = (questionId: string) => {
-  return props.flags.includes(questionId)
+  return props.flags?.includes(questionId) || false
 }
 
 const getQuestionColor = (questionId: string, index: number) => {

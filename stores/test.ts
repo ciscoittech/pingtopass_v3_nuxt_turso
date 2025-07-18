@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { useErrorHandler } from '~/composables/useErrorHandler'
 
 interface Question {
   id: string
@@ -35,6 +34,7 @@ interface TestSession {
   passingScore: number
   autoSaveCount: number
   lastAutoSaveAt: number
+  submitted?: boolean
 }
 
 interface TestState {
@@ -47,6 +47,8 @@ interface TestState {
   isTimerRunning: boolean
   isSaving: boolean
   lastSaveTime: number
+  showSummary: boolean
+  elapsedTime: number
 }
 
 export const useTestStore = defineStore('test', {
@@ -59,7 +61,9 @@ export const useTestStore = defineStore('test', {
     remainingTime: 0,
     isTimerRunning: false,
     isSaving: false,
-    lastSaveTime: 0
+    lastSaveTime: 0,
+    showSummary: false,
+    elapsedTime: 0
   }),
 
   getters: {
@@ -118,6 +122,37 @@ export const useTestStore = defineStore('test', {
     // Check if time is running out (< 5 minutes)
     isTimeRunningOut: (state) => {
       return state.remainingTime > 0 && state.remainingTime < 300
+    },
+
+    // Get current question's selected answers
+    currentAnswers: (state) => {
+      return state.selectedAnswers
+    },
+
+    // Check if current question is flagged
+    isCurrentFlagged: (state) => {
+      if (!state.currentQuestion || !state.currentSession) return false
+      return state.currentSession.flags.some(f => f.questionId === state.currentQuestion!.id)
+    },
+
+    // Get total questions count
+    totalQuestions: (state) => {
+      return state.currentSession?.totalQuestions || 0
+    },
+
+    // Get current question index
+    currentQuestionIndex: (state) => {
+      return state.currentSession?.currentQuestionIndex || 0
+    },
+
+    // Get answers object
+    answers: (state) => {
+      return state.currentSession?.answers || {}
+    },
+
+    // Get flagged questions
+    flagged: (state) => {
+      return state.currentSession?.flags || []
     }
   },
 
@@ -139,14 +174,18 @@ export const useTestStore = defineStore('test', {
           method: 'POST',
           body: {
             examId: config.examId,
-            timeLimitSeconds: config.timeLimitMinutes * 60,
-            questionCount: config.questionCount,
-            passingScore: config.passingScore
+            timeLimitMinutes: config.timeLimitMinutes,
+            maxQuestions: config.questionCount
           }
         })
         
         if (response.success && response.data) {
           const { session, questions, isResuming } = response.data
+          
+          console.log('[Test Store] Session response:', session)
+          console.log('[Test Store] Questions count:', questions?.length)
+          console.log('[Test Store] Session answers type:', typeof session.answers)
+          console.log('[Test Store] Session answers:', session.answers)
           
           // Transform to store format
           this.currentSession = {
@@ -156,7 +195,7 @@ export const useTestStore = defineStore('test', {
             examName: config.examName,
             status: session.status,
             totalQuestions: session.totalQuestions,
-            currentQuestionIndex: session.currentQuestionIndex,
+            currentQuestionIndex: session.currentQuestionIndex || 0,
             questionsOrder: session.questionsOrder,
             questions: questions || [],
             answers: session.answers || {},
@@ -171,8 +210,21 @@ export const useTestStore = defineStore('test', {
           }
           
           // Set current question
+          console.log('[Test Store] Setting current question:', {
+            questionsLength: questions?.length,
+            currentQuestionIndex: session.currentQuestionIndex,
+            hasQuestions: questions && questions.length > 0
+          })
+          
           if (questions && questions.length > 0) {
-            this.currentQuestion = questions[session.currentQuestionIndex]
+            const questionIndex = session.currentQuestionIndex || 0
+            this.currentQuestion = questions[questionIndex]
+            
+            console.log('[Test Store] Current question set:', {
+              questionIndex,
+              currentQuestion: this.currentQuestion,
+              questionId: this.currentQuestion?.id
+            })
             
             // Load saved answer if resuming
             if (isResuming && this.currentQuestion) {
@@ -181,11 +233,22 @@ export const useTestStore = defineStore('test', {
                 this.selectedAnswers = savedAnswer.selectedAnswers
               }
             }
+          } else {
+            console.error('[Test Store] No questions available to set as current')
           }
           
           // Calculate remaining time
           const now = Math.floor(Date.now() / 1000)
-          this.remainingTime = Math.max(0, session.expiresAt - now)
+          const sessionEndTime = session.startedAt + session.timeLimitSeconds
+          this.remainingTime = Math.max(0, sessionEndTime - now)
+          
+          console.log('[Test Store] Timer calculation:', {
+            now,
+            startedAt: session.startedAt,
+            timeLimitSeconds: session.timeLimitSeconds,
+            sessionEndTime,
+            remainingTime: this.remainingTime
+          })
           
           // Start timer
           this.startTimer()
@@ -193,8 +256,8 @@ export const useTestStore = defineStore('test', {
           return true
         }
       } catch (error: any) {
-        const { handleError } = useErrorHandler()
-        this.error = handleError(error, 'Starting test session').message
+        console.error('[Test Store] Error starting session:', error)
+        this.error = error.message || 'Failed to start test session'
       } finally {
         this.loading = false
       }
@@ -259,8 +322,7 @@ export const useTestStore = defineStore('test', {
         
         this.lastSaveTime = Date.now()
       } catch (error: any) {
-        const { handleError } = useErrorHandler()
-        handleError(error, 'Saving answer')
+        console.error('[Test Store] Error saving answer:', error)
       } finally {
         this.isSaving = false
       }
@@ -410,17 +472,17 @@ export const useTestStore = defineStore('test', {
             ...results
           }))
           
-          // Navigate to results
-          await navigateTo(`/test/${this.currentSession.examId}/results`)
-          
-          // Reset session
+          // Reset session first to prevent saveProgress calls
           this.resetSession()
+          
+          // Navigate to results page
+          await navigateTo('/test/results')
           
           return true
         }
       } catch (error: any) {
-        const { handleError } = useErrorHandler()
-        this.error = handleError(error, 'Submitting test').message
+        console.error('[Test Store] Error submitting test:', error)
+        this.error = error.message || 'Failed to submit test'
       } finally {
         this.loading = false
       }
@@ -502,6 +564,78 @@ export const useTestStore = defineStore('test', {
         console.error('Auto-save failed:', error)
       } finally {
         this.isSaving = false
+      }
+    },
+
+    // Start a test with exam configuration
+    async startTest(config: {
+      examId: string
+      examCode: string
+      examName: string
+      duration: number
+      questionCount?: number
+    }) {
+      console.log('[Test Store] Starting test with config:', config)
+      
+      // Convert duration from seconds to minutes for the API
+      const timeLimitMinutes = Math.floor(config.duration / 60)
+      
+      console.log('[Test Store] Calling startSession with:', {
+        examId: config.examId,
+        examCode: config.examCode,
+        examName: config.examName,
+        timeLimitMinutes,
+        questionCount: config.questionCount || 50,
+        passingScore: 70
+      })
+      
+      const result = await this.startSession({
+        examId: config.examId,
+        examCode: config.examCode,
+        examName: config.examName,
+        timeLimitMinutes,
+        questionCount: config.questionCount || 50,
+        passingScore: 70 // Default passing score
+      })
+      
+      console.log('[Test Store] StartSession result:', result)
+      return result
+    },
+
+    // Show test summary
+    showTestSummary() {
+      this.showSummary = true
+    },
+
+    // Continue reviewing questions
+    continueReview() {
+      this.showSummary = false
+    },
+
+    // Navigate to a specific question
+    async goToQuestion(index: number) {
+      await this.navigateToQuestion(index)
+      this.showSummary = false
+    },
+
+    // Save current progress
+    async saveProgress() {
+      if (!this.currentSession) return
+      
+      try {
+        await $fetch(`/api/sessions/test/${this.currentSession.id}`, {
+          method: 'PUT',
+          body: {
+            currentQuestionIndex: this.currentSession.currentQuestionIndex,
+            answers: this.currentSession.answers,
+            flags: this.currentSession.flags,
+            lastActivityAt: Math.floor(Date.now() / 1000)
+          }
+        })
+        
+        console.log('[Test Store] Progress saved successfully')
+      } catch (error) {
+        console.error('[Test Store] Failed to save progress:', error)
       }
     }
   }

@@ -10,7 +10,7 @@
         :lg="gridCols.lg"
       >
         <v-skeleton-loader
-          type="card"
+          :type="'card'"
           :height="cardHeight"
           :boilerplate="false"
           elevation="2"
@@ -23,7 +23,7 @@
       <v-skeleton-loader
         v-for="i in count"
         :key="i"
-        type="list-item-avatar-two-line"
+        :type="'list-item-avatar-two-line'"
         :boilerplate="false"
         class="mb-3"
       />
@@ -32,21 +32,21 @@
     <!-- Table Skeleton -->
     <v-skeleton-loader
       v-else-if="type === 'table'"
-      type="table"
+      :type="'table'"
       :boilerplate="false"
     />
     
     <!-- Article Skeleton -->
     <v-skeleton-loader
       v-else-if="type === 'article'"
-      type="article"
+      :type="'article'"
       :boilerplate="false"
     />
     
-    <!-- Custom Skeleton -->
+    <!-- Custom Skeleton - Default to card if unknown type -->
     <v-skeleton-loader
       v-else
-      :type="type"
+      :type="'card'"
       :boilerplate="false"
     />
   </div>

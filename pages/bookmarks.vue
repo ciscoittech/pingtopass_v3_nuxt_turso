@@ -334,7 +334,7 @@ const editingNotes = ref('')
 // Fetch bookmarks
 const limit = 12
 const offset = ref(0)
-const { data: bookmarksData, refresh: refreshBookmarks } = await useFetch('/api/study/bookmarks', {
+const { data: bookmarksData, refresh: refreshBookmarks } = await useFetch('/api/sessions/study/bookmarks', {
   query: {
     limit,
     offset,
@@ -406,7 +406,7 @@ const loadMore = async () => {
   loading.value = true
   offset.value += limit
   
-  const { data } = await $fetch('/api/study/bookmarks', {
+  const { data } = await $fetch('/api/sessions/study/bookmarks', {
     query: {
       limit,
       offset: offset.value,

@@ -22,10 +22,10 @@
           variant="flat"
           size="large"
           class="mt-3 mt-sm-0"
-          @click="startTest(exams[0].id)"
+          @click="startQuickTest()"
         >
           <v-icon start>mdi-play-circle</v-icon>
-          Quick Start: {{ exams[0].code || exams[0].examCode }}
+          Quick Start{{ quickStartExamName ? ': ' + quickStartExamName : '' }}
         </v-btn>
       </div>
     </v-alert>
@@ -230,6 +230,7 @@ definePageMeta({
   layout: 'default'
 })
 
+const route = useRoute()
 const router = useRouter()
 
 // Breadcrumb
@@ -249,6 +250,26 @@ const breadcrumbs = ref([
 
 // Search query
 const searchQuery = ref('')
+
+// Computed property for quick start exam name
+const quickStartExamName = computed(() => {
+  const fromExamId = route.query.from as string
+  const lastViewedExamId = typeof window !== 'undefined' ? localStorage.getItem('lastViewedExam') : null
+  const lastTestExamId = typeof window !== 'undefined' ? localStorage.getItem('lastTestExamId') : null
+  
+  // Use same priority order as startQuickTest
+  const targetExamId = fromExamId || lastTestExamId || lastViewedExamId
+  
+  if (targetExamId && exams.value) {
+    const targetExam = exams.value.find(e => e.id === targetExamId)
+    if (targetExam) {
+      return targetExam.code || targetExam.examCode
+    }
+  }
+  
+  // Fallback to first exam
+  return exams.value?.[0]?.code || exams.value?.[0]?.examCode || ''
+})
 
 // Fetch exams
 const { data: examData } = await useFetch('/api/exams')
@@ -416,15 +437,74 @@ const getScoreColor = (score: number) => {
   return 'error'
 }
 
+// Context-aware quick start
+const startQuickTest = async () => {
+  console.log('[Test Page] ===== QUICK START CLICKED =====')
+  
+  // Check if user came from a specific exam
+  const fromExamId = route.query.from as string
+  const lastViewedExamId = localStorage.getItem('lastViewedExam')
+  const lastTestExamId = localStorage.getItem('lastTestExamId')
+  
+  console.log('[Test Page] Context check:', {
+    fromQuery: fromExamId,
+    lastViewed: lastViewedExamId,
+    lastTested: lastTestExamId,
+    firstExamId: exams.value?.[0]?.id
+  })
+  
+  // Priority order for exam selection:
+  // 1. Exam ID from query param (if user came from exam detail)
+  // 2. Last test exam (if user was testing before)
+  // 3. Last viewed exam (if user was browsing exams)
+  // 4. First exam in the list (fallback)
+  let examId = fromExamId || lastTestExamId || lastViewedExamId || exams.value?.[0]?.id
+  
+  // Verify the exam ID is valid (exists in current exam list)
+  if (examId && exams.value) {
+    const examExists = exams.value.some(e => e.id === examId)
+    if (!examExists) {
+      console.warn('[Test Page] Selected exam ID not found in current list, using first exam')
+      examId = exams.value[0]?.id
+    }
+  }
+  
+  console.log('[Test Page] Quick Start selected exam:', examId)
+  
+  if (examId) {
+    await startTest(examId)
+  } else {
+    console.error('[Test Page] No exam available for Quick Start')
+  }
+}
+
 // Navigation
 const startTest = async (examId: string) => {
+  console.log('[Test Page] ===== START TEST NAVIGATION =====')
   console.log('[Test Page] Starting test for exam:', examId)
+  console.log('[Test Page] Current route:', route.fullPath)
+  console.log('[Test Page] Route query:', route.query)
+  console.log('[Test Page] Available exams:', exams.value?.map(e => ({ id: e.id, code: e.code })))
+  
   if (!examId) {
     console.error('[Test Page] No examId provided!')
     return
   }
   
+  // Check if we're already on the test page for this exam
+  if (route.path === `/test/${examId}`) {
+    console.log('[Test Page] Already on test page for this exam, skipping navigation')
+    return
+  }
+  
+  // Store the exam being tested for context
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('lastTestExamId', examId)
+    console.log('[Test Page] Stored exam ID in localStorage:', examId)
+  }
+  
   try {
+    console.log('[Test Page] Navigating to:', `/test/${examId}`)
     await navigateTo(`/test/${examId}`)
   } catch (error) {
     console.error('[Test Page] Navigation error:', error)

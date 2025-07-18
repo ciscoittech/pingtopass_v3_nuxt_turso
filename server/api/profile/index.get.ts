@@ -62,8 +62,8 @@ export default defineEventHandler(async (event) => {
           email: userData.email,
           avatarUrl: userData.avatarUrl || '/images/profile/user6.jpg',
           role: userData.superAdmin ? 'Admin' : 'User',
-          joinDate: userData.created_at,
-          lastActive: userData.last_active,
+          joinDate: userData.createdAt,
+          lastActive: userData.lastActive,
           proAccount: userData.proAccount,
         },
         stats: {

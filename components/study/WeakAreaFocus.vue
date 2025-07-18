@@ -18,7 +18,7 @@ const loadAnalysis = async () => {
   try {
     loading.value = true
     
-    const response = await $fetch('/api/study/weak-areas', {
+    const response = await $fetch('/api/sessions/study/weak-areas', {
       query: { examId: props.examId }
     })
     

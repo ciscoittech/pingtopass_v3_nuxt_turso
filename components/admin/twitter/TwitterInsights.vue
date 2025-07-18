@@ -138,7 +138,7 @@
         <v-skeleton-loader
           v-for="i in 3"
           :key="i"
-          type="card"
+          :type="'card'"
           class="mb-4"
         />
       </v-col>

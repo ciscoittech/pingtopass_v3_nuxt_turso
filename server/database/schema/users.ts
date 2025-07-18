@@ -15,9 +15,9 @@ export const users = sqliteTable('users', {
   bannedUntil: integer('bannedUntil'),
   onboarded: integer('onboarded', { mode: 'boolean' }).default(false),
   proAccount: integer('proAccount', { mode: 'boolean' }).default(false),
-  created_at: integer('created_at'),
-  updated_at: integer('updated_at'),
-  last_active: integer('last_active'),
+  createdAt: integer('created_at'),
+  updatedAt: integer('updated_at'),
+  lastActive: integer('last_active'),
 })
 
 export type User = typeof users.$inferSelect

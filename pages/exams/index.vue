@@ -160,7 +160,7 @@ const viewExamDetails = (exam: Exam) => {
           lg="4"
         >
           <v-skeleton-loader
-            type="card"
+            :type="'card'"
             height="320"
           />
         </v-col>

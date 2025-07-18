@@ -52,15 +52,30 @@ export default defineOAuthGoogleEventHandler({
     scope: ['email', 'profile']
   },
   async onSuccess(event, { user }) {
+    console.log('🔐 OAuth Success - Google user data:', {
+      email: user.email,
+      name: user.name,
+      sub: user.sub,
+      picture: user.picture
+    })
+    
     // Find or create user in our database
     const dbUser = await findOrCreateUser({
       email: user.email,
       name: user.name,
       googleId: user.sub
     })
+    
+    console.log('🔐 Database user found/created:', {
+      id: dbUser.id,
+      email: dbUser.email,
+      fullName: dbUser.fullName,
+      isAdmin: dbUser.isAdmin,
+      isActive: dbUser.isActive
+    })
 
     // Set user session
-    await setUserSession(event, {
+    const sessionData = {
       user: {
         id: dbUser.id,
         email: dbUser.email,
@@ -68,13 +83,22 @@ export default defineOAuthGoogleEventHandler({
         isAdmin: dbUser.isAdmin,
         isActive: dbUser.isActive
       }
-    })
+    }
+    
+    console.log('🔐 Setting session with data:', sessionData)
+    
+    await setUserSession(event, sessionData)
+    
+    // Verify session was set
+    const verifySession = await getUserSession(event)
+    console.log('🔐 Session verification after set:', verifySession)
 
     // Redirect to dashboard
+    console.log('🔐 Redirecting to dashboard')
     return sendRedirect(event, '/dashboard')
   },
   onError(event, error) {
-    console.error('OAuth error:', error)
+    console.error('🔐 OAuth error:', error)
     return sendRedirect(event, '/auth/login?error=oauth_failed')
   }
 })

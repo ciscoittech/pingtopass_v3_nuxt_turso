@@ -114,7 +114,7 @@
       <v-skeleton-loader
         v-for="i in 5"
         :key="i"
-        type="table-row"
+        :type="'table-row'"
         class="mb-2"
       />
     </template>

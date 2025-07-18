@@ -46,6 +46,10 @@ export default defineNuxtPlugin((nuxtApp) => {
         style: "text-transform: capitalize; letter-spacing:0",
         rounded: "md",
       },
+      VSkeletonLoader: {
+        type: "text",
+        boilerplate: false,
+      },
     },
   });
 

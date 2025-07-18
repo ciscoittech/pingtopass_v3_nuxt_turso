@@ -81,14 +81,14 @@
       <!-- Answer Options -->
       <div class="answer-options">
         <StudyAnswerOption
-          v-for="(option, index) in question.options"
+          v-for="(option, index) in (question.options || [])"
           :key="`option-${index}`"
-          :option="option"
+          :option="String(option)"
           :index="index"
           :selected="isSelected(index)"
           :isMultipleChoice="question.questionType === 'multiple-choice'"
           :showFeedback="showFeedback"
-          :isCorrect="question.correctAnswers.includes(index)"
+          :isCorrect="(question.correctAnswers || []).includes(index)"
           @select="selectAnswer(index)"
         />
       </div>

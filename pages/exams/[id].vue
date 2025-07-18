@@ -76,12 +76,20 @@ const examFeatures = computed(() => [
 
 // Navigation functions
 const startStudyMode = () => {
+  console.log('[Exam Detail] Starting study mode for examId:', examId)
+  console.log('[Exam Detail] Current exam data:', exam.value)
   // Use the exam ID, not the code
   navigateTo(`/study/${examId}`)
 }
 
 const startTestMode = () => {
-  // Use the exam ID, not the code
+  // Store context for navigation
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('lastViewedExam', examId)
+    console.log('[Exam Detail] Stored exam ID for test navigation:', examId)
+  }
+  
+  // Navigate to test page with exam ID
   navigateTo(`/test/${examId}`)
 }
 

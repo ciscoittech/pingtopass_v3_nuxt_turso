@@ -148,7 +148,7 @@
     <!-- Loading State -->
     <v-row v-if="loading">
       <v-col cols="12">
-        <v-skeleton-loader type="card" />
+        <v-skeleton-loader :type="'card'" />
       </v-col>
     </v-row>
 

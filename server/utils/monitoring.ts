@@ -9,6 +9,9 @@
  * - User activity and business metrics
  */
 
+import { useDB } from './db'
+import { users } from '../database/schema/users'
+
 export interface MetricData {
   name: string
   value: number
@@ -388,8 +391,8 @@ export class MonitoringService {
     
     try {
       // Simple database query to check connectivity
-      const db = useDatabase()
-      await db.select().from(users).limit(1)
+      const db = useDB()
+      await db.select().from(users).limit(1).get()
       
       const responseTime = Date.now() - start
       

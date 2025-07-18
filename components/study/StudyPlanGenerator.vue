@@ -28,7 +28,7 @@ const generatePlan = async () => {
   try {
     loading.value = true
     
-    const response = await $fetch('/api/study/plan', {
+    const response = await $fetch('/api/sessions/study/plan', {
       method: 'POST',
       body: {
         examId: props.examId,

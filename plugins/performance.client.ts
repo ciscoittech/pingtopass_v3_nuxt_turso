@@ -17,6 +17,12 @@ export default defineNuxtPlugin(() => {
       
       if (routeDuration > 100) {
         console.warn(`[Performance] Route ${to.path} took ${routeDuration.toFixed(2)}ms`)
+        
+        // Log extremely slow routes with more detail
+        if (routeDuration > 1000) {
+          console.error(`[Performance] EXTREMELY SLOW ROUTE: ${to.path} took ${routeDuration.toFixed(2)}ms!`)
+          console.error('[Performance] This indicates a serious performance issue')
+        }
       }
     })
     

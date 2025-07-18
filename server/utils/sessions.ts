@@ -1,5 +1,5 @@
 import { useDB } from './db'
-import { studySessions, testSessions, questions } from '../database/schema'
+import { studySessions, testSessions, questions, exams } from '../database/schema'
 import { eq, and, inArray, desc, sql } from 'drizzle-orm'
 import { generateId } from './id'
 import type { StudyAnswer } from '../database/schema/studySessions'
@@ -57,19 +57,83 @@ interface CreateTestSessionParams {
 export const studySessionService = {
   // Create a new study session
   async create(params: CreateStudySessionParams) {
+    console.log('[StudySessionService] create called with params:', JSON.stringify(params, null, 2))
+    console.log('[StudySessionService] params type:', typeof params)
+    console.log('[StudySessionService] params keys:', Object.keys(params))
+    console.log('[StudySessionService] questionIds type:', typeof params.questionIds)
+    console.log('[StudySessionService] questionIds is array:', Array.isArray(params.questionIds))
+    console.log('[StudySessionService] questionIds:', params.questionIds)
+    
     const db = useDB()
     const sessionId = generateId('study')
     const now = Math.floor(Date.now() / 1000)
     
+    // Ensure questionIds is an array
+    if (!params.questionIds) {
+      console.error('[StudySessionService] questionIds is undefined or null')
+      throw new Error('questionIds is required')
+    }
+    
+    if (!Array.isArray(params.questionIds)) {
+      console.error('[StudySessionService] questionIds is not an array:', params.questionIds)
+      console.error('[StudySessionService] questionIds type:', typeof params.questionIds)
+      console.error('[StudySessionService] questionIds constructor:', params.questionIds?.constructor?.name)
+      
+      // Check if it's a string that should be parsed
+      if (typeof params.questionIds === 'string') {
+        try {
+          const parsed = JSON.parse(params.questionIds)
+          if (Array.isArray(parsed)) {
+            console.log('[StudySessionService] Parsed questionIds from string:', parsed)
+            params.questionIds = parsed
+          } else {
+            throw new Error('Parsed questionIds is not an array')
+          }
+        } catch (e) {
+          throw new Error(`questionIds is a string but not valid JSON: ${e}`)
+        }
+      } else {
+        throw new Error(`questionIds must be an array, got ${typeof params.questionIds}`)
+      }
+    }
+    
     // Apply question limit if specified
     let selectedQuestions = params.questionIds
-    if (params.maxQuestions && params.maxQuestions < params.questionIds.length) {
-      selectedQuestions = params.questionIds.slice(0, params.maxQuestions)
+    try {
+      if (params.maxQuestions && params.maxQuestions < params.questionIds.length) {
+        selectedQuestions = params.questionIds.slice(0, params.maxQuestions)
+      }
+    } catch (e: any) {
+      console.error('[StudySessionService] Error applying question limit:', e)
+      console.error('[StudySessionService] params.questionIds:', params.questionIds)
+      console.error('[StudySessionService] params.maxQuestions:', params.maxQuestions)
+      throw new Error(`Failed to apply question limit: ${e.message}`)
     }
     
     // Randomize if mode is random
     if (params.mode === STUDY_MODE.RANDOM) {
-      selectedQuestions = [...selectedQuestions].sort(() => Math.random() - 0.5)
+      try {
+        selectedQuestions = [...selectedQuestions].sort(() => Math.random() - 0.5)
+      } catch (e: any) {
+        console.error('[StudySessionService] Error randomizing questions:', e)
+        console.error('[StudySessionService] selectedQuestions at error:', selectedQuestions)
+        throw new Error(`Failed to randomize questions: ${e.message}`)
+      }
+    }
+    
+    // Final validation before insert
+    if (!Array.isArray(selectedQuestions)) {
+      console.error('[StudySessionService] selectedQuestions is not an array before insert:', selectedQuestions)
+      throw new Error('selectedQuestions must be an array before database insert')
+    }
+    
+    let questionsOrderJson
+    try {
+      questionsOrderJson = JSON.stringify(selectedQuestions)
+    } catch (e: any) {
+      console.error('[StudySessionService] Failed to stringify selectedQuestions:', e)
+      console.error('[StudySessionService] selectedQuestions value:', selectedQuestions)
+      throw new Error(`Failed to serialize questions: ${e.message}`)
     }
     
     const session = await db.insert(studySessions).values({
@@ -83,7 +147,7 @@ export const studySessionService = {
       correctAnswers: 0,
       incorrectAnswers: 0,
       skippedAnswers: 0,
-      questionsOrder: JSON.stringify(selectedQuestions),
+      questionsOrder: questionsOrderJson,
       answers: '{}',
       bookmarks: '[]',
       flags: '[]',
@@ -220,6 +284,7 @@ export const studySessionService = {
 
   // Get questions for session
   async getQuestions(sessionId: string) {
+    console.log('[StudySession.getQuestions] Called with sessionId:', sessionId)
     const db = useDB()
     const session = await this.getById(sessionId)
     
@@ -227,19 +292,48 @@ export const studySessionService = {
       throw new Error('Session not found')
     }
     
-    const questionIds = JSON.parse(session.questionsOrder) as string[]
-    if (questionIds.length === 0) {
+    let questionIds: string[] = []
+    try {
+      const parsed = JSON.parse(session.questionsOrder)
+      console.log('[StudySession.getQuestions] Parsed questionsOrder:', parsed)
+      console.log('[StudySession.getQuestions] Is array?', Array.isArray(parsed))
+      
+      if (Array.isArray(parsed)) {
+        questionIds = parsed
+      } else {
+        console.error('[StudySession.getQuestions] questionsOrder is not an array:', parsed)
+        return []
+      }
+    } catch (e) {
+      console.error('[StudySession.getQuestions] Failed to parse questionsOrder:', session.questionsOrder, e)
       return []
     }
     
+    if (questionIds.length === 0) {
+      console.log('[StudySession.getQuestions] No question IDs found')
+      return []
+    }
+    
+    console.log('[StudySession.getQuestions] Question IDs to fetch:', questionIds)
     const questionsData = await db
       .select()
       .from(questions)
       .where(inArray(questions.id, questionIds))
     
+    console.log('[StudySession.getQuestions] Questions fetched from DB:', questionsData.length)
+    
     // Return in the order specified by the session
     const questionMap = new Map(questionsData.map(q => [q.id, q]))
-    return questionIds.map(id => questionMap.get(id)).filter(Boolean)
+    
+    // Add validation before map
+    if (!Array.isArray(questionIds)) {
+      console.error('[StudySession.getQuestions] questionIds is not an array before final map:', questionIds)
+      throw new Error('questionIds is not an array')
+    }
+    
+    const result = questionIds.map(id => questionMap.get(id)).filter(Boolean)
+    console.log('[StudySession.getQuestions] Returning questions:', result.length)
+    return result
   },
 
   // Get all sessions for a user
@@ -394,7 +488,19 @@ export const testSessionService = {
     }
     
     // Get questions for scoring
-    const questionIds = JSON.parse(session.questionsOrder) as string[]
+    let questionIds: string[] = []
+    try {
+      const parsed = JSON.parse(session.questionsOrder)
+      if (Array.isArray(parsed)) {
+        questionIds = parsed
+      } else {
+        console.error('[TestSession] questionsOrder is not an array:', parsed)
+        throw new Error('Invalid session data')
+      }
+    } catch (e) {
+      console.error('[TestSession] Failed to parse questionsOrder:', session.questionsOrder, e)
+      throw new Error('Invalid session data')
+    }
     const userAnswers = JSON.parse(session.answers) as Record<number, number[]>
     
     const questionsData = await db
@@ -480,6 +586,7 @@ export const testSessionService = {
 
   // Get questions for session (without answers for security)
   async getQuestions(sessionId: string) {
+    console.log('[TestSession.getQuestions] Called with sessionId:', sessionId)
     const db = useDB()
     const session = await this.getById(sessionId)
     
@@ -487,8 +594,25 @@ export const testSessionService = {
       throw new Error('Session not found')
     }
     
-    const questionIds = JSON.parse(session.questionsOrder) as string[]
+    let questionIds: string[] = []
+    try {
+      const parsed = JSON.parse(session.questionsOrder)
+      console.log('[TestSession.getQuestions] Parsed questionsOrder:', parsed)
+      console.log('[TestSession.getQuestions] Is array?', Array.isArray(parsed))
+      
+      if (Array.isArray(parsed)) {
+        questionIds = parsed
+      } else {
+        console.error('[TestSession.getQuestions] questionsOrder is not an array:', parsed)
+        return []
+      }
+    } catch (e) {
+      console.error('[TestSession.getQuestions] Failed to parse questionsOrder:', session.questionsOrder, e)
+      return []
+    }
+    
     if (questionIds.length === 0) {
+      console.log('[TestSession.getQuestions] No question IDs found')
       return []
     }
     
@@ -505,9 +629,20 @@ export const testSessionService = {
       .from(questions)
       .where(inArray(questions.id, questionIds))
     
+    console.log('[TestSession.getQuestions] Questions fetched from DB:', questionsData.length)
+    
     // Return in the order specified by the session
     const questionMap = new Map(questionsData.map(q => [q.id, q]))
-    return questionIds.map(id => questionMap.get(id)).filter(Boolean)
+    
+    // Add validation before map
+    if (!Array.isArray(questionIds)) {
+      console.error('[TestSession.getQuestions] questionIds is not an array before final map:', questionIds)
+      throw new Error('questionIds is not an array')
+    }
+    
+    const result = questionIds.map(id => questionMap.get(id)).filter(Boolean)
+    console.log('[TestSession.getQuestions] Returning questions:', result.length)
+    return result
   },
 
   // Save individual answer
@@ -620,13 +755,13 @@ export const testSessionService = {
     
     const total = totalResult?.count || 0
     
-    // Get sessions with pagination
+    // Get sessions with pagination - join with exams to get exam details
     let query = db
       .select({
         id: testSessions.id,
         examId: testSessions.examId,
-        examCode: testSessions.examCode,
-        examName: testSessions.examName,
+        examCode: exams.code,
+        examName: exams.name,
         status: testSessions.status,
         score: testSessions.score,
         correctCount: testSessions.correctCount,
@@ -634,12 +769,13 @@ export const testSessionService = {
         unansweredCount: testSessions.unansweredCount,
         totalQuestions: testSessions.totalQuestions,
         passingScore: testSessions.passingScore,
-        timeSpentSeconds: testSessions.timeSpentSeconds,
+        timeSpentSeconds: sql<number>`${testSessions.submittedAt} - ${testSessions.startedAt}`,
         startedAt: testSessions.startedAt,
         submittedAt: testSessions.submittedAt,
         createdAt: testSessions.createdAt
       })
       .from(testSessions)
+      .leftJoin(exams, eq(testSessions.examId, exams.id))
       .where(and(...conditions))
       .orderBy(desc(testSessions.startedAt))
       .limit(limit)
