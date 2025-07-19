@@ -5,7 +5,7 @@
     <!-- Header with Stats -->
     <v-row class="mb-6">
       <v-col cols="12">
-        <v-card elevation="10" class="leaderboard-header">
+        <v-card elevation="10">
           <v-card-text class="pa-6">
             <div class="d-flex align-center justify-space-between flex-wrap">
               <div>
@@ -25,7 +25,7 @@
                 size="large"
                 class="font-weight-bold"
               >
-                <Icon icon="solar:user-bold" class="mr-2" />
+                <Icon icon="solar:user-bold-duotone" class="mr-2" />
                 Your Rank: #{{ getCurrentUserRank() }}
               </v-chip>
             </div>
@@ -48,12 +48,13 @@
                   item-title="title"
                   item-value="value"
                   variant="outlined"
-                  density="compact"
+                  density="comfortable"
+                  hide-details
                 >
                   <template #item="{ props, item }">
                     <v-list-item v-bind="props">
                       <template #prepend>
-                        <Icon :icon="item.raw.icon" size="20" />
+                        <Icon :icon="item.raw.icon" size="20" class="text-medium-emphasis" />
                       </template>
                       <v-list-item-title>{{ item.raw.title }}</v-list-item-title>
                       <v-list-item-subtitle>{{ item.raw.description }}</v-list-item-subtitle>
@@ -71,10 +72,11 @@
                   label="Time Period"
                   :items="timeframes"
                   variant="outlined"
-                  density="compact"
+                  density="comfortable"
+                  hide-details
                 >
                   <template #prepend-inner>
-                    <Icon icon="solar:calendar-linear" size="20" />
+                    <Icon icon="solar:calendar-mark-bold-duotone" size="20" />
                   </template>
                 </v-select>
               </v-col>
@@ -89,8 +91,8 @@
       <v-col cols="12">
         <v-card elevation="10" class="podium-section">
           <v-card-text class="pa-6">
-            <h2 class="text-h5 font-weight-bold text-center mb-6 text-white">
-              <Icon icon="solar:crown-star-bold" class="mr-2" />
+            <h2 class="text-h5 font-weight-bold text-center mb-6">
+              <Icon icon="solar:crown-star-bold-duotone" class="mr-2 text-warning" />
               Top Performers
             </h2>
             <v-row>
@@ -102,9 +104,9 @@
                 :class="{ 'order-1': index === 1, 'order-0': index === 0, 'order-2': index === 2 }"
               >
                 <v-card
+                  :variant="entry.rank === 1 ? 'flat' : 'tonal'"
                   :color="getPodiumColor(entry.rank)"
-                  variant="elevated"
-                  elevation="8"
+                  elevation="10"
                   class="text-center podium-card"
                   :class="{ 'current-user': isCurrentUser(entry.userId) }"
                 >
@@ -138,24 +140,24 @@
                     </div>
                     
                     <!-- User Name -->
-                    <h3 class="text-h6 font-weight-bold text-white mb-1">
+                    <h3 class="text-h6 font-weight-bold mb-1">
                       {{ entry.userName || 'Anonymous' }}
                     </h3>
                     
                     <!-- Score -->
-                    <div class="text-h4 font-weight-bold text-white mb-2">
+                    <div class="text-h4 font-weight-bold mb-2">
                       {{ formatScore(entry.score, selectedCategory) }}
                     </div>
                     
                     <!-- Additional Info -->
-                    <div v-if="entry.metadata" class="text-caption text-white-70">
+                    <div v-if="entry.metadata" class="text-caption text-medium-emphasis">
                       {{ getMetadataDisplay(entry.metadata, selectedCategory) }}
                     </div>
                     
                     <!-- Current User Badge -->
                     <div v-if="isCurrentUser(entry.userId)" class="mt-3">
                       <v-chip color="white" text-color="primary" size="small">
-                        <Icon icon="solar:user-bold" class="mr-1" size="16" />
+                        <Icon icon="solar:user-bold-duotone" class="mr-1" size="16" />
                         You
                       </v-chip>
                     </div>
@@ -179,7 +181,7 @@
               @click="refreshLeaderboard"
               :loading="leaderboardLoading"
             >
-              <Icon icon="solar:refresh-linear" />
+              <Icon icon="solar:refresh-circle-bold-duotone" />
             </v-btn>
           </template>
 
@@ -201,8 +203,9 @@
                 <template #prepend>
                   <div class="rank-display mr-4">
                     <v-chip
-                      :color="isCurrentUser(entry.userId) ? 'primary' : 'grey-lighten-1'"
-                      variant="elevated"
+                      :color="isCurrentUser(entry.userId) ? 'primary' : 'default'"
+                      :variant="isCurrentUser(entry.userId) ? 'flat' : 'tonal'"
+                      size="small"
                     >
                       #{{ entry.rank }}
                     </v-chip>
@@ -254,14 +257,14 @@
                 @click="loadMore"
               >
                 Show More
-                <Icon icon="solar:arrow-down-linear" class="ml-1" />
+                <Icon icon="solar:arrow-down-bold-duotone" class="ml-1" />
               </v-btn>
             </div>
           </div>
 
           <!-- Empty State -->
           <div v-else class="text-center py-12">
-            <Icon icon="solar:trophy-broken" size="64" class="mb-4 text-grey-lighten-1" />
+            <Icon icon="solar:trophy-broken-line-duotone" size="64" class="mb-4 text-grey-lighten-1" />
             <h5 class="text-h5 mb-2">No Rankings Available</h5>
             <p class="text-body-1 text-grey100 mb-4">
               Be the first to claim the top spot!
@@ -272,7 +275,7 @@
               to="/study"
             >
               Start Studying
-              <Icon icon="solar:arrow-right-linear" class="ml-1" />
+              <Icon icon="solar:arrow-right-bold-duotone" class="ml-1" />
             </v-btn>
           </div>
         </UiParentCard>
@@ -434,10 +437,10 @@ const getRankChipColor = (rank: number) => {
 
 const getRankIcon = (rank: number) => {
   switch (rank) {
-    case 1: return 'solar:trophy-bold'
-    case 2: return 'solar:medal-star-bold'
-    case 3: return 'solar:medal-star-bold'
-    default: return 'solar:hashtag-circle-linear'
+    case 1: return 'solar:trophy-bold-duotone'
+    case 2: return 'solar:medal-star-bold-duotone'
+    case 3: return 'solar:medal-star-bold-duotone'
+    default: return 'solar:hashtag-circle-bold-duotone'
   }
 }
 
@@ -494,42 +497,38 @@ const loadMore = () => {
 </script>
 
 <style scoped>
-.leaderboard-header {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.1) 0%, rgba(var(--v-theme-secondary), 0.1) 100%);
-}
-
 .podium-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgba(var(--v-theme-surface-variant), 0.5);
+  border: 1px solid rgba(var(--v-theme-borderColor), 0.1);
 }
 
 .podium-card {
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+  border: 1px solid rgba(var(--v-theme-borderColor), 0.1);
 }
 
 .podium-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .podium-card.current-user {
-  border: 3px solid rgba(255, 255, 255, 0.8) !important;
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.4) !important;
+  border: 2px solid rgb(var(--v-theme-primary)) !important;
+  box-shadow: 0 0 24px rgba(var(--v-theme-primary), 0.2) !important;
 }
 
 .ranking-item {
   transition: all 0.2s ease;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(var(--v-theme-borderColor), 0.1);
 }
 
 .ranking-item:hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(var(--v-theme-surface-variant), 0.3);
 }
 
 .current-user-item {
-  background: linear-gradient(90deg, rgba(var(--v-theme-primary), 0.1) 0%, transparent 100%) !important;
-  border-left: 4px solid rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.05) !important;
+  border-left: 3px solid rgb(var(--v-theme-primary));
 }
 
 .rank-display {
@@ -540,6 +539,31 @@ const loadMore = () => {
 }
 
 .text-white-70 {
-  color: rgba(255, 255, 255, 0.7);
+  opacity: 0.7;
+}
+
+/* Rank badge styles */
+.v-chip--size-small {
+  font-weight: 600;
+}
+
+/* Mobile optimizations */
+@media (max-width: 960px) {
+  .podium-card {
+    margin-bottom: 12px;
+  }
+  
+  .rank-display {
+    min-width: 60px;
+  }
+  
+  .ranking-item {
+    padding: 8px !important;
+  }
+  
+  .v-avatar {
+    width: 40px !important;
+    height: 40px !important;
+  }
 }
 </style>

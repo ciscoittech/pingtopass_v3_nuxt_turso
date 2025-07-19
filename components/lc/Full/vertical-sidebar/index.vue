@@ -1,39 +1,10 @@
 <script setup lang="ts">
-import { ref, shallowRef, computed } from 'vue';
+import { ref, shallowRef } from 'vue';
 import { useCustomizerStore } from '@/stores/customizer';
 import { sidebarItem } from './pingtopassSidebarItems';
-import { useActiveSession } from '~/composables/useActiveSession';
 
 const customizer = useCustomizerStore();
-const { getDynamicSidebarItems } = useActiveSession();
-
-// Debug log
-console.log('Sidebar items loaded:', sidebarItem);
-
-// Combine static and dynamic sidebar items
-const sidebarMenu = computed(() => {
-  console.log('Computing sidebar menu...');
-  const items = [...sidebarItem];
-  console.log('Static items:', items.length);
-  
-  const dynamicItems = getDynamicSidebarItems();
-  console.log('Dynamic items:', dynamicItems.length);
-  
-  if (dynamicItems.length > 0) {
-    // Find the index after "Exams" to insert dynamic items
-    const examsIndex = items.findIndex(item => item.title === 'Exams');
-    if (examsIndex >= 0) {
-      // Insert a header for active sessions
-      items.splice(examsIndex + 1, 0, 
-        { header: "Active Sessions" },
-        ...dynamicItems
-      );
-    }
-  }
-  
-  console.log('Final menu items:', items.length);
-  return items;
-});
+const sidebarMenu = shallowRef(sidebarItem);
 </script>
 
 <template>

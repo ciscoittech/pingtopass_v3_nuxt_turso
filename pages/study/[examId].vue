@@ -10,6 +10,7 @@ import ErrorNotification from '@/components/ErrorNotification.vue'
 import StudyLoadingState from '@/components/study/StudyLoadingState.vue'
 import AsyncErrorBoundary from '@/components/shared/AsyncErrorBoundary.vue'
 import StudyDebugInfo from '@/components/study/StudyDebugInfo.vue'
+import { Icon } from '@iconify/vue'
 import { useStudyStore } from '~/stores/study'
 import { useErrorHandler } from '~/composables/useErrorHandler'
 
@@ -22,12 +23,13 @@ const route = useRoute()
 const router = useRouter()
 const examId = route.params.examId as string
 
-console.log('[Study Page] Loading with examId:', examId)
-console.log('[Study Page] Full route params:', route.params)
-console.log('[Study Page] Full route path:', route.path)
+// console.log('[Study Page] Loading with examId:', examId)
+// console.log('[Study Page] Full route params:', route.params)
+// console.log('[Study Page] Full route path:', route.path)
 
-// Store
+// Store and session management
 const studyStore = useStudyStore()
+const { updateSession } = useActiveSession()
 
 // Error handling
 const { handleError, currentError, clearError } = useErrorHandler()
@@ -71,7 +73,7 @@ watchEffect(() => {
 // Watch for exam data changes
 watch(exam, (newExam) => {
   if (newExam) {
-    console.log('[Study Page] Exam data loaded:', newExam)
+    // console.log('[Study Page] Exam data loaded:', newExam)
     // Update SEO meta
     useSeoMeta({
       title: `Study Mode - ${newExam.code} | PingToPass`,
@@ -118,17 +120,17 @@ const actualExamId = computed(() => exam.value?.id || examId)
 
 // Start study session
 const startStudySession = async (config: any) => {
-  console.log('[Study Page] startStudySession called with config:', config)
-  console.log('[Study Page] Exam data:', {
-    examId: examId,
-    actualExamId: actualExamId.value,
-    examData: exam.value
-  })
+  // console.log('[Study Page] startStudySession called with config:', config)
+  // console.log('[Study Page] Exam data:', {
+  //   examId: examId,
+  //   actualExamId: actualExamId.value,
+  //   examData: exam.value
+  // })
   
   clearError()
   
   try {
-    console.log('[Study Page] Calling studyStore.startSession...')
+    // console.log('[Study Page] Calling studyStore.startSession...')
     const startTime = performance.now()
     
     const sessionConfig = {
@@ -138,18 +140,31 @@ const startStudySession = async (config: any) => {
       ...config
     }
     
-    console.log('[Study Page] Session config:', sessionConfig)
+    // console.log('[Study Page] Session config:', sessionConfig)
     
     const success = await studyStore.startSession(sessionConfig)
     
     const endTime = performance.now()
-    console.log(`[Study Page] studyStore.startSession took ${endTime - startTime}ms, success: ${success}`)
+    // console.log(`[Study Page] studyStore.startSession took ${endTime - startTime}ms, success: ${success}`)
     
     if (success) {
-      console.log('[Study Page] Session started successfully, setting sessionStarted to true')
+      // console.log('[Study Page] Session started successfully, setting sessionStarted to true')
       sessionStarted.value = true
-      console.log('[Study Page] Current session:', studyStore.currentSession)
-      console.log('[Study Page] Current question:', studyStore.currentQuestion)
+      // console.log('[Study Page] Current session:', studyStore.currentSession)
+      // console.log('[Study Page] Current question:', studyStore.currentQuestion)
+      
+      // Update active session tracker
+      if (studyStore.currentSession) {
+        updateSession({
+          examId: actualExamId.value,
+          examCode: exam.value?.code || '',
+          examName: exam.value?.name || '',
+          mode: 'study',
+          lastActivity: new Date(),
+          progress: 0,
+          questionsAnswered: 0
+        })
+      }
       
       // Additional validation
       if (!studyStore.currentQuestion) {
@@ -162,7 +177,7 @@ const startStudySession = async (config: any) => {
         
         // Try to recover
         if (studyStore.currentSession?.questions?.length > 0) {
-          console.log('[Study Page] Attempting to set first question manually')
+          // console.log('[Study Page] Attempting to set first question manually')
           studyStore.setCurrentQuestion(0)
         } else {
           handleError(
@@ -213,7 +228,7 @@ const handleFlag = async () => {
 
 const handlePauseSession = () => {
   // TODO: Implement pause functionality
-  console.log('Pause session')
+  // console.log('Pause session')
 }
 
 const handleEndSession = () => {
@@ -234,7 +249,7 @@ const handleNavigate = async (index: number) => {
 
 const handleReportIssue = () => {
   // TODO: Implement report issue functionality
-  console.log('Report issue with question')
+  // console.log('Report issue with question')
 }
 
 // Computed
@@ -273,28 +288,28 @@ const explanationData = computed(() => {
 
 // Check for existing session on mount
 onMounted(async () => {
-  console.log('[Study Page] Component mounted, checking state...')
-  console.log('[Study Page] examId from route:', examId)
-  console.log('[Study Page] examPending:', examPending.value)
-  console.log('[Study Page] exam:', exam.value)
-  console.log('[Study Page] examError:', examError.value)
-  console.log('[Study Page] examLoadError:', examLoadError.value)
-  console.log('[Study Page] sessionStarted:', sessionStarted.value)
-  console.log('[Study Page] studyStore.loading:', studyStore.loading)
-  console.log('[Study Page] studyStore.error:', studyStore.error)
-  console.log('[Study Page] totalQuestions:', totalQuestions.value)
+  // console.log('[Study Page] Component mounted, checking state...')
+  // console.log('[Study Page] examId from route:', examId)
+  // console.log('[Study Page] examPending:', examPending.value)
+  // console.log('[Study Page] exam:', exam.value)
+  // console.log('[Study Page] examError:', examError.value)
+  // console.log('[Study Page] examLoadError:', examLoadError.value)
+  // console.log('[Study Page] sessionStarted:', sessionStarted.value)
+  // console.log('[Study Page] studyStore.loading:', studyStore.loading)
+  // console.log('[Study Page] studyStore.error:', studyStore.error)
+  // console.log('[Study Page] totalQuestions:', totalQuestions.value)
   
   // Check if there's an active session
   if (studyStore.currentSession && studyStore.currentSession.examId === examId) {
-    console.log('[Study Page] Found existing session')
+    // console.log('[Study Page] Found existing session')
     sessionStarted.value = true
   } else {
-    console.log('[Study Page] No existing session found')
+    // console.log('[Study Page] No existing session found')
   }
   
   // Force refresh if exam not loaded
   if (!exam.value && !examPending.value && !examError.value) {
-    console.log('[Study Page] Exam not loaded, refreshing...')
+    // console.log('[Study Page] Exam not loaded, refreshing...')
     await refreshExam()
   }
 })
@@ -342,7 +357,7 @@ onUnmounted(() => {
     
     <!-- Exam Load Error -->
     <div v-if="examLoadError" class="text-center py-12">
-      <v-icon size="64" color="error" class="mb-4">mdi-alert-circle</v-icon>
+      <Icon icon="solar:danger-circle-bold-duotone" size="64" color="error" class="mb-4" />
       <h3 class="text-h5 mb-2">Unable to Load Exam</h3>
       <p class="text-body-1 text-medium-emphasis mb-4">
         {{ examLoadError.message || 'The requested exam could not be found.' }}
@@ -400,7 +415,7 @@ onUnmounted(() => {
 
     <!-- No Questions Error -->
     <div v-else-if="sessionStarted && studyStore.currentSession && (!studyStore.currentSession.questions || studyStore.currentSession.questions.length === 0)" class="text-center py-12">
-      <v-icon size="64" color="warning" class="mb-4">mdi-help-circle</v-icon>
+      <Icon icon="solar:question-circle-bold-duotone" size="64" color="warning" class="mb-4" />
       <h3 class="text-h5 mb-2">No Questions Available</h3>
       <p class="text-body-1 text-medium-emphasis mb-4">
         This exam doesn't have any questions yet. Please try another exam or contact support.
@@ -412,7 +427,7 @@ onUnmounted(() => {
 
     <!-- Error State -->
     <div v-else-if="studyStore.error" class="text-center py-12">
-      <v-icon size="64" color="error" class="mb-4">mdi-alert-circle</v-icon>
+      <Icon icon="solar:danger-circle-bold-duotone" size="64" color="error" class="mb-4" />
       <h3 class="text-h5 mb-2">Error Loading Study Session</h3>
       <p class="text-body-1 text-medium-emphasis mb-4">{{ studyStore.error }}</p>
       <v-btn color="primary" variant="flat" @click="startStudySession">
@@ -507,7 +522,7 @@ onUnmounted(() => {
 
       <!-- No Questions State -->
       <div v-if="!studyStore.currentQuestion && !studyStore.showFeedback" class="text-center py-12">
-      <v-icon size="64" color="warning" class="mb-4">mdi-alert</v-icon>
+      <Icon icon="solar:danger-triangle-bold-duotone" size="64" color="warning" class="mb-4" />
       <h3 class="text-h5 mb-2">No Questions Available</h3>
       <p class="text-body-1 text-medium-emphasis mb-4">
         There are no questions available for this exam. Please contact support if this is unexpected.

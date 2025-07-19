@@ -97,7 +97,7 @@ watch(timeframe, () => {
 
 <template>
   <v-card 
-    :elevation="2"
+    elevation="10"
     :class="{ 'pa-3': dense }"
     class="leaderboard-preview-card"
   >
@@ -233,13 +233,13 @@ watch(timeframe, () => {
             <div class="text-right">
               <div class="d-flex align-center justify-end">
                 <Icon 
-                  icon="solar:cup-bold" 
+                  icon="solar:cup-star-bold-duotone" 
                   size="14" 
                   class="mr-1 text-grey"
                 />
                 <span class="text-caption">{{ user.testsCompleted }}</span>
                 <Icon 
-                  icon="solar:flame-bold" 
+                  icon="solar:fire-bold-duotone" 
                   size="14" 
                   class="mx-1 text-orange"
                 />
@@ -262,7 +262,7 @@ watch(timeframe, () => {
           to="/leaderboard"
         >
           View Full Leaderboard
-          <Icon icon="solar:arrow-right-linear" class="ml-1" />
+          <Icon icon="solar:arrow-right-bold-duotone" class="ml-1" />
         </v-btn>
       </div>
     </v-card-text>

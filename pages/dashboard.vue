@@ -59,6 +59,26 @@ const todayStudyTime = computed(() => {
   return todayData?.studyTime || 0;
 });
 
+// Get weekly metrics
+const weeklyQuestions = computed(() => {
+  if (!analytics.value?.periodTotals) return 0;
+  return analytics.value.periodTotals.totalQuestions || 0;
+});
+
+const weeklyStudyTime = computed(() => {
+  if (!analytics.value?.periodTotals) return 0;
+  return analytics.value.periodTotals.totalStudyTime || 0;
+});
+
+// Calculate accuracy trend
+const accuracyTrend = computed(() => {
+  if (!analytics.value?.trends) return 'stable';
+  const trend = analytics.value.trends.accuracy;
+  if (trend === 'increasing') return 'up';
+  if (trend === 'decreasing') return 'down';
+  return 'stable';
+});
+
 // Format time helper
 const formatTime = (seconds: number) => {
   const hours = Math.floor(seconds / 3600)
@@ -113,6 +133,10 @@ const onTutorialComplete = () => {
           :completed-exams="progress?.overall?.examsCompleted || 0"
           :study-streak="progress?.streaks?.currentDaily || 0"
           :study-hours="todayStudyTime"
+          :weekly-questions="weeklyQuestions"
+          :accuracy-trend="accuracyTrend"
+          :weekly-study-time="weeklyStudyTime"
+          :weekly-goal="progress?.goals?.weekly || 300"
         />
       </v-col>
       

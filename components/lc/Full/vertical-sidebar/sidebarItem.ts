@@ -34,12 +34,6 @@ const sidebarItem: menu[] = [
     to: "/exams",
   },
   {
-    title: "My Progress",
-    icon: "chart-line-duotone",
-    BgColor: "info",
-    to: "/progress",
-  },
-  {
     title: "Achievements",
     icon: "medal-star-circle-line-duotone",
     BgColor: "warning",

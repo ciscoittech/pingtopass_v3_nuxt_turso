@@ -5,19 +5,30 @@
     <!-- Header with Stats -->
     <v-row class="mb-6">
       <v-col cols="12">
-        <v-card elevation="10" class="achievement-header">
+        <v-card elevation="10">
           <v-card-text class="pa-6">
             <v-row align="center">
               <v-col cols="12" md="8">
-                <div class="d-flex align-center mb-3">
-                  <v-avatar size="80" class="mr-4">
+                <div class="d-flex align-center mb-3 flex-wrap">
+                  <v-avatar :size="$vuetify.display.mobile ? 60 : 80" class="mr-3 mr-md-4">
                     <v-img :src="userAvatar" alt="User Avatar" />
                   </v-avatar>
-                  <div>
-                    <h1 class="text-h4 font-weight-bold mb-1">{{ userName }}'s Achievements</h1>
-                    <p class="text-subtitle-1 text-grey100">
-                      Level {{ userLevel }} • {{ totalPoints }} Points • {{ unlockedCount }}/{{ totalAchievements }} Unlocked
-                    </p>
+                  <div class="flex-grow-1">
+                    <h1 class="text-h5 text-md-h4 font-weight-bold mb-1">{{ userName }}'s Achievements</h1>
+                    <div class="d-flex flex-wrap align-center gap-2">
+                      <v-chip size="small" variant="tonal" color="primary">
+                        <Icon icon="solar:ranking-bold-duotone" size="16" class="mr-1" />
+                        Level {{ userLevel }}
+                      </v-chip>
+                      <v-chip size="small" variant="tonal" color="success">
+                        <Icon icon="solar:star-bold-duotone" size="16" class="mr-1" />
+                        {{ totalPoints }} Points
+                      </v-chip>
+                      <v-chip size="small" variant="tonal" color="warning">
+                        <Icon icon="solar:shield-check-bold-duotone" size="16" class="mr-1" />
+                        {{ unlockedCount }}/{{ totalAchievements }}
+                      </v-chip>
+                    </div>
                   </div>
                 </div>
                 
@@ -43,36 +54,44 @@
                 </div>
               </v-col>
               
-              <v-col cols="12" md="4" class="text-center">
+              <v-col cols="12" md="4" class="text-center mt-4 mt-md-0">
                 <div class="achievement-stats">
-                  <v-row>
-                    <v-col cols="6">
-                      <div class="stat-box">
-                        <Icon icon="solar:medal-star-bold-duotone" size="40" class="mb-2" color="warning" />
-                        <h3 class="text-h5 font-weight-bold">{{ goldBadges }}</h3>
-                        <p class="text-body-2 text-medium-emphasis">Gold</p>
-                      </div>
+                  <v-row dense>
+                    <v-col cols="6" sm="3" md="6">
+                      <v-card variant="tonal" color="warning" class="stat-box text-center">
+                        <v-card-text class="pa-3">
+                          <Icon icon="solar:medal-star-bold-duotone" size="32" class="mb-1" />
+                          <h3 class="text-h5 font-weight-bold">{{ goldBadges }}</h3>
+                          <p class="text-caption mb-0">Gold</p>
+                        </v-card-text>
+                      </v-card>
                     </v-col>
-                    <v-col cols="6">
-                      <div class="stat-box">
-                        <Icon icon="solar:medal-star-bold-duotone" size="40" class="mb-2" color="grey" />
-                        <h3 class="text-h5 font-weight-bold">{{ silverBadges }}</h3>
-                        <p class="text-body-2 text-medium-emphasis">Silver</p>
-                      </div>
+                    <v-col cols="6" sm="3" md="6">
+                      <v-card variant="tonal" color="grey" class="stat-box text-center">
+                        <v-card-text class="pa-3">
+                          <Icon icon="solar:medal-star-bold-duotone" size="32" class="mb-1" />
+                          <h3 class="text-h5 font-weight-bold">{{ silverBadges }}</h3>
+                          <p class="text-caption mb-0">Silver</p>
+                        </v-card-text>
+                      </v-card>
                     </v-col>
-                    <v-col cols="6">
-                      <div class="stat-box">
-                        <Icon icon="solar:medal-star-bold-duotone" size="40" class="mb-2" color="brown" />
-                        <h3 class="text-h5 font-weight-bold">{{ bronzeBadges }}</h3>
-                        <p class="text-body-2 text-medium-emphasis">Bronze</p>
-                      </div>
+                    <v-col cols="6" sm="3" md="6">
+                      <v-card variant="tonal" color="brown" class="stat-box text-center">
+                        <v-card-text class="pa-3">
+                          <Icon icon="solar:medal-star-bold-duotone" size="32" class="mb-1" />
+                          <h3 class="text-h5 font-weight-bold">{{ bronzeBadges }}</h3>
+                          <p class="text-caption mb-0">Bronze</p>
+                        </v-card-text>
+                      </v-card>
                     </v-col>
-                    <v-col cols="6">
-                      <div class="stat-box">
-                        <Icon icon="solar:fire-bold-duotone" size="40" class="mb-2" color="error" />
-                        <h3 class="text-h5 font-weight-bold">{{ currentStreak }}</h3>
-                        <p class="text-body-2 text-medium-emphasis">Day Streak</p>
-                      </div>
+                    <v-col cols="6" sm="3" md="6">
+                      <v-card variant="tonal" color="error" class="stat-box text-center">
+                        <v-card-text class="pa-3">
+                          <Icon icon="solar:fire-bold-duotone" size="32" class="mb-1" />
+                          <h3 class="text-h5 font-weight-bold">{{ currentStreak }}</h3>
+                          <p class="text-caption mb-0">Day Streak</p>
+                        </v-card-text>
+                      </v-card>
                     </v-col>
                   </v-row>
                 </div>
@@ -86,33 +105,43 @@
     <!-- Filter Tabs -->
     <v-row class="mb-4">
       <v-col cols="12">
-        <v-tabs
-          v-model="selectedCategory"
-          bg-color="transparent"
-          color="primary"
-          grow
-        >
-          <v-tab value="all">
-            All
-            <v-chip size="x-small" class="ml-2" variant="tonal">{{ totalAchievements }}</v-chip>
-          </v-tab>
-          <v-tab value="learning">
-            Learning
-            <v-chip size="x-small" class="ml-2" variant="tonal">{{ learningCount }}</v-chip>
-          </v-tab>
-          <v-tab value="performance">
-            Performance
-            <v-chip size="x-small" class="ml-2" variant="tonal">{{ performanceCount }}</v-chip>
-          </v-tab>
-          <v-tab value="special">
-            Special
-            <v-chip size="x-small" class="ml-2" variant="tonal">{{ specialCount }}</v-chip>
-          </v-tab>
-          <v-tab value="social">
-            Social
-            <v-chip size="x-small" class="ml-2" variant="tonal">{{ socialCount }}</v-chip>
-          </v-tab>
-        </v-tabs>
+        <v-card elevation="10">
+          <v-card-text class="pa-2">
+            <v-tabs
+              v-model="selectedCategory"
+              bg-color="transparent"
+              color="primary"
+              align-tabs="center"
+              density="comfortable"
+            >
+              <v-tab value="all">
+                <Icon icon="solar:widget-6-bold-duotone" size="20" class="mr-2" />
+                All
+                <v-badge :content="totalAchievements" color="primary" class="ml-2" />
+              </v-tab>
+              <v-tab value="learning">
+                <Icon icon="solar:book-2-bold-duotone" size="20" class="mr-2" />
+                Learning
+                <v-badge :content="learningCount" color="success" class="ml-2" />
+              </v-tab>
+              <v-tab value="performance">
+                <Icon icon="solar:chart-2-bold-duotone" size="20" class="mr-2" />
+                Performance
+                <v-badge :content="performanceCount" color="warning" class="ml-2" />
+              </v-tab>
+              <v-tab value="special">
+                <Icon icon="solar:star-shine-bold-duotone" size="20" class="mr-2" />
+                Special
+                <v-badge :content="specialCount" color="error" class="ml-2" />
+              </v-tab>
+              <v-tab value="social">
+                <Icon icon="solar:users-group-rounded-bold-duotone" size="20" class="mr-2" />
+                Social
+                <v-badge :content="socialCount" color="info" class="ml-2" />
+              </v-tab>
+            </v-tabs>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
 
@@ -197,32 +226,35 @@
             </div>
 
             <!-- Unlocked info -->
-            <div v-if="achievement.unlocked" class="text-center">
+            <div v-if="achievement.unlocked" class="text-center mt-3">
               <v-chip
                 :color="achievement.color"
                 size="small"
-                variant="tonal"
+                variant="flat"
+                class="font-weight-medium"
               >
-                <Icon icon="solar:cup-star-bold" class="mr-1" size="16" />
+                <Icon icon="solar:cup-star-bold-duotone" class="mr-1" size="16" />
                 +{{ achievement.points }} XP
               </v-chip>
-              <p class="text-caption text-medium-emphasis mt-2">
-                Unlocked {{ formatDate(achievement.unlockedAt) }}
+              <p class="text-caption text-medium-emphasis mt-2 mb-0">
+                <Icon icon="solar:calendar-check-bold-duotone" size="14" class="mr-1" />
+                {{ formatDate(achievement.unlockedAt) }}
               </p>
             </div>
 
             <!-- Locked info -->
-            <div v-else class="text-center">
+            <div v-else class="text-center mt-3">
               <v-chip
                 color="grey"
                 size="small"
                 variant="tonal"
+                class="font-weight-medium"
               >
-                <Icon icon="solar:lock-keyhole-bold" class="mr-1" size="16" />
+                <Icon icon="solar:lock-keyhole-bold-duotone" class="mr-1" size="16" />
                 Locked
               </v-chip>
-              <p class="text-caption text-medium-emphasis mt-2">
-                Complete requirement to unlock
+              <p class="text-caption text-medium-emphasis mt-2 mb-0">
+                Complete to unlock
               </p>
             </div>
           </v-card-text>
@@ -232,7 +264,7 @@
 
     <!-- Empty State -->
     <div v-if="filteredAchievements.length === 0" class="text-center py-12">
-      <Icon icon="solar:medal-star-broken" size="64" class="mb-4 text-grey-lighten-1" />
+      <Icon icon="solar:medal-star-broken-line-duotone" size="64" class="mb-4 text-grey-lighten-1" />
       <h5 class="text-h5 mb-2">No Achievements in This Category</h5>
       <p class="text-body-1 text-grey100">
         Try a different category or keep studying to unlock achievements!
@@ -509,7 +541,7 @@ const getTierColor = (tier: string) => {
 }
 
 const getTierIcon = (tier: string) => {
-  return 'solar:star-bold'
+  return 'solar:star-bold-duotone'
 }
 
 const formatDate = (date: Date) => {
@@ -534,47 +566,33 @@ const formatRelativeTime = (date: Date) => {
 </script>
 
 <style scoped>
-.achievement-header {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.1) 0%, rgba(var(--v-theme-secondary), 0.1) 100%);
-}
-
 .level-progress {
   max-width: 500px;
 }
 
 .stat-box {
-  padding: 16px;
-  border-radius: 8px;
-  transition: transform 0.2s ease-in-out;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .stat-box:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .achievement-card {
   transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+  border: 1px solid rgba(var(--v-theme-borderColor), 0.1);
 }
 
 .achievement-card.locked {
-  opacity: 0.7;
-}
-
-.achievement-card.locked::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.1);
-  z-index: 1;
+  opacity: 0.8;
+  background: rgba(var(--v-theme-surface-variant), 0.3);
 }
 
 .achievement-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .achievement-icon {
@@ -584,6 +602,61 @@ const formatRelativeTime = (date: Date) => {
 
 .greyscale {
   filter: grayscale(100%);
-  opacity: 0.5;
+  opacity: 0.6;
+}
+
+/* Badge pulse animation */
+.v-badge :deep(.v-badge__badge) {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Achievement unlock animation */
+.achievement-unlock {
+  animation: unlock 0.6s ease-out;
+}
+
+@keyframes unlock {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Progress bar animation */
+.v-progress-linear :deep(.v-progress-linear__determinate) {
+  transition: width 0.6s ease-out;
+}
+
+/* Mobile optimizations */
+@media (max-width: 960px) {
+  .stat-box {
+    padding: 8px;
+  }
+  
+  .achievement-card {
+    margin-bottom: 8px;
+  }
+  
+  .v-tab {
+    min-width: auto;
+    padding: 0 12px;
+  }
+  
+  .v-tab .v-icon {
+    display: none;
+  }
 }
 </style>

@@ -30,12 +30,6 @@ const sidebarItem: menu[] = [
     to: "/exams",
   },
   {
-    title: "Progress",
-    icon: "chart-line-duotone",
-    BgColor: "primary",
-    to: "/progress",
-  },
-  {
     title: "Achievements",
     icon: "medal-star-linear",
     BgColor: "success",

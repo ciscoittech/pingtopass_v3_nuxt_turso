@@ -88,7 +88,7 @@
       </div>
 
       <!-- Exam Stats -->
-      <div class="d-flex justify-space-between align-center">
+      <div class="d-flex justify-space-between align-center mb-3">
         <div class="d-flex align-center gap-3">
           <div class="d-flex align-center">
             <Icon icon="solar:document-text-line-duotone" size="18" class="mr-1 text-grey100" />
@@ -105,7 +105,42 @@
           </v-chip>
         </div>
       </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons d-flex gap-2">
+        <v-btn
+          color="primary"
+          variant="flat"
+          size="small"
+          block
+          @click.stop="startStudyMode"
+          class="flex-grow-1"
+        >
+          <Icon icon="solar:book-2-bold" size="18" class="mr-1" />
+          Study
+        </v-btn>
+        <v-btn
+          color="warning"
+          variant="tonal"
+          size="small"
+          block
+          @click.stop="startTestMode"
+          class="flex-grow-1"
+        >
+          <Icon icon="solar:timer-start-bold" size="18" class="mr-1" />
+          Test
+        </v-btn>
+      </div>
     </v-card-text>
+
+    <!-- In-Progress Indicator -->
+    <div v-if="hasActiveSession" class="active-indicator">
+      <v-icon 
+        :icon="activeSessionMode === 'study' ? 'mdi-book-open-variant' : 'mdi-timer-sand'"
+        :color="activeSessionMode === 'study' ? 'primary' : 'warning'"
+        size="x-small"
+      />
+    </div>
   </v-card>
 </template>
 
@@ -123,6 +158,23 @@ const emit = defineEmits<{
 
 const hover = ref(false)
 const router = useRouter()
+const { activeStudySessions, activeTestSessions } = useActiveSession()
+
+// Check if this exam has an active session
+const hasActiveSession = computed(() => {
+  return activeStudySessions.value.some(s => s.examId === props.exam.id) ||
+         activeTestSessions.value.some(s => s.examId === props.exam.id)
+})
+
+const activeSessionMode = computed(() => {
+  if (activeStudySessions.value.some(s => s.examId === props.exam.id)) {
+    return 'study'
+  }
+  if (activeTestSessions.value.some(s => s.examId === props.exam.id)) {
+    return 'test'
+  }
+  return null
+})
 
 // Navigation
 const navigateToExam = () => {
@@ -131,6 +183,22 @@ const navigateToExam = () => {
 
 const startStudy = () => {
   router.push(`/study/${props.exam.id}`)
+}
+
+const startStudyMode = () => {
+  // Store preference
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(`exam_mode_${props.exam.id}`, 'study')
+  }
+  router.push(`/study/${props.exam.id}`)
+}
+
+const startTestMode = () => {
+  // Store preference
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(`exam_mode_${props.exam.id}`, 'test')
+  }
+  router.push(`/test/${props.exam.id}`)
 }
 
 const toggleBookmark = () => {
@@ -315,5 +383,53 @@ const toggleBookmark = () => {
 // Progress bar enhancement
 :deep(.v-progress-linear) {
   background-color: rgba(var(--v-theme-primary), 0.08);
+}
+
+// Active session indicator
+.active-indicator {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  
+  .v-icon {
+    font-size: 14px;
+  }
+}
+
+// Enhanced action buttons
+.action-buttons {
+  .v-btn {
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+// Hover enhancements
+.exam-grid-card:hover {
+  .action-buttons {
+    .v-btn {
+      &:first-child {
+        transform: translateY(-1px);
+      }
+      
+      &:last-child {
+        transform: translateY(-1px);
+      }
+    }
+  }
 }
 </style>

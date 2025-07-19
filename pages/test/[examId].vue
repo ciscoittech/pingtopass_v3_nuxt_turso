@@ -2,6 +2,8 @@
 console.log('[Test Page] ===== IMPORTS STARTING =====')
 
 import { useTestStore } from '~/stores/test'
+import { Icon } from '@iconify/vue'
+import TestModeConfig from '~/components/test/TestModeConfig.vue'
 import TestTimer from '~/components/test/TestTimer.vue'
 import TestProgress from '~/components/test/TestProgress.vue'
 import TestQuestionCard from '~/components/test/TestQuestionCard.vue'
@@ -32,8 +34,9 @@ onErrorCaptured((error, instance, info) => {
   return false // Let error propagate
 })
 
-// Store
+// Store and session management
 const testStore = useTestStore()
+const { updateSession } = useActiveSession()
 
 // Local state
 const showConfigDialog = ref(true)
@@ -152,21 +155,24 @@ const testProgressFlagged = computed(() => {
 })
 
 // Methods
-const startTest = async () => {
+const startTest = async (config: any) => {
   console.log('[Test Config] Start Test clicked with config:', {
     examId: exam.value?.id || examId,
     examCode: exam.value?.code || '',
     examName: exam.value?.name || '',
-    duration: selectedDuration.value,
-    maxQuestions: maxQuestions.value
+    duration: config.duration,
+    maxQuestions: config.maxQuestions,
+    simulateRealExam: config.simulateRealExam,
+    showTimer: config.showTimer,
+    allowReview: config.allowReview
   })
   
   const success = await testStore.startTest({
     examId: exam.value?.id || examId,
     examCode: exam.value?.code || '',
     examName: exam.value?.name || '',
-    duration: selectedDuration.value,
-    questionCount: maxQuestions.value
+    duration: config.duration,
+    questionCount: config.maxQuestions
   })
   
   console.log('[Test Config] Test start result:', success)
@@ -174,6 +180,19 @@ const startTest = async () => {
   if (success) {
     showConfigDialog.value = false
     testStarted.value = true
+    
+    // Update active session tracker
+    if (testStore.currentSession) {
+      updateSession({
+        examId: exam.value?.id || examId,
+        examCode: exam.value?.code || '',
+        examName: exam.value?.name || '',
+        mode: 'test',
+        lastActivity: new Date(),
+        progress: 0,
+        questionsAnswered: 0
+      })
+    }
   } else {
     console.error('[Test Config] Failed to start test')
   }
@@ -281,91 +300,32 @@ onUnmounted(() => {
 
     <!-- Main Content -->
     <template v-else-if="exam">
-      <!-- Test Configuration Dialog -->
-      <v-dialog v-model="showConfigDialog" persistent max-width="600">
-        <v-card>
-          <v-card-text class="pa-6">
-            <div class="text-center mb-6">
-              <v-avatar color="primary" variant="tonal" size="80" class="mb-4">
-                <v-icon size="40">mdi-clipboard-text-clock</v-icon>
-              </v-avatar>
-              <h2 class="text-h4 font-weight-bold mb-2">Test Mode</h2>
-              <p class="text-subtitle-1 text-medium-emphasis">
-                {{ exam?.code }} - {{ exam?.name }}
-              </p>
-            </div>
-
-            <v-divider class="mb-6" />
-
-            <h3 class="text-subtitle-1 font-weight-semibold mb-3">Test Settings</h3>
-            
-            <v-select
-              v-model="selectedDuration"
-              :items="durationOptions"
-              label="Time Limit"
-              variant="outlined"
-              density="comfortable"
-              class="mb-4"
-            />
-            
-            <v-text-field
-              v-model.number="maxQuestions"
-              type="number"
-              label="Number of Questions"
-              :hint="`Maximum ${totalAvailableQuestions} questions available`"
-              persistent-hint
-              variant="outlined"
-              density="comfortable"
-              :min="1"
-              :max="totalAvailableQuestions"
-            />
-
-            <v-alert
-              type="info"
-              variant="tonal"
-              density="compact"
-              class="mt-4"
-            >
-              <p class="text-caption mb-0">
-                The test will simulate real exam conditions. You cannot pause once started.
-              </p>
-            </v-alert>
-          </v-card-text>
-          
-          <v-divider />
-          
-          <v-card-actions class="pa-4">
-            <v-btn
-              variant="text"
-              @click="$router.back()"
-            >
-              Cancel
-            </v-btn>
-            <v-spacer />
-            <v-btn
-              color="primary"
-              variant="flat"
-              size="large"
+      <!-- Test Configuration -->
+      <div v-if="showConfigDialog && !testStarted">
+        <v-row justify="center">
+          <v-col cols="12" md="8" lg="6">
+            <TestModeConfig
+              :examId="exam.id"
+              :examCode="exam.code"
+              :examName="exam.name"
+              :totalQuestions="totalAvailableQuestions"
               :loading="testStore.loading"
-              @click="startTest"
-            >
-              <v-icon start>mdi-play</v-icon>
-              Start Test
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+              @start="startTest"
+            />
+          </v-col>
+        </v-row>
+      </div>
 
       <!-- Test Interface -->
       <div v-if="testStarted && testStore.currentSession" class="test-interface">
         <!-- Test Header -->
-        <v-card elevation="0" class="mb-4">
+        <v-card elevation="10" class="mb-4">
           <v-card-text class="pa-4">
             <v-row align="center">
               <v-col cols="auto">
                 <div class="d-flex align-center">
-                  <v-icon color="primary" class="mr-2">mdi-clipboard-text</v-icon>
-                  <span class="text-h6">{{ exam?.code }} - Test Mode</span>
+                  <Icon icon="solar:clipboard-check-bold-duotone" size="24" class="mr-2 text-warning" />
+                  <span class="text-h6 font-weight-semibold">{{ exam?.code }} - Test Mode</span>
                 </div>
               </v-col>
               
@@ -387,8 +347,11 @@ onUnmounted(() => {
                   color="success"
                   variant="flat"
                   @click="showSummary = true"
+                  elevation="2"
+                  rounded="pill"
+                  class="text-none"
                 >
-                  <v-icon start>mdi-check-all</v-icon>
+                  <Icon icon="solar:check-circle-bold-duotone" size="20" class="mr-2" />
                   Review & Submit
                 </v-btn>
               </v-col>
@@ -459,7 +422,7 @@ onUnmounted(() => {
               size="small"
               @click="mobileProgressDrawer = false"
             >
-              <v-icon>mdi-close</v-icon>
+              <Icon icon="solar:close-circle-bold-duotone" size="20" />
             </v-btn>
           </div>
           
@@ -477,13 +440,14 @@ onUnmounted(() => {
       <!-- Mobile FAB for Navigation -->
       <v-btn
         v-if="testStarted && !showSummary"
-        color="primary"
+        color="warning"
         icon
         size="large"
         class="mobile-nav-fab d-lg-none"
+        elevation="6"
         @click="mobileProgressDrawer = true"
       >
-        <v-icon>mdi-grid</v-icon>
+        <Icon icon="solar:grid-bold-duotone" size="24" />
       </v-btn>
 
       <!-- Time Warning Snackbar -->
@@ -493,7 +457,7 @@ onUnmounted(() => {
         :timeout="5000"
         location="top"
       >
-        <v-icon class="mr-2">mdi-alert</v-icon>
+        <Icon icon="solar:clock-circle-bold-duotone" size="20" class="mr-2" />
         {{ timeWarningMinutes }} minutes remaining!
       </v-snackbar>
 

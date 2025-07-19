@@ -12,6 +12,7 @@ definePageMeta({
 const route = useRoute()
 const examId = route.params.id as string
 const examStore = useExamStore()
+const { activeStudySessions, activeTestSessions, lastActivity } = useActiveSession()
 
 // Fetch exam details
 const { data: examData, error } = await useFetch(`/api/exams/${examId}`)
@@ -66,6 +67,42 @@ const studyModes = ref([
 
 const selectedMode = ref('study')
 
+// Check for active sessions for this exam
+const hasActiveStudySession = computed(() => 
+  activeStudySessions.value.some(s => s.examId === examId)
+)
+
+const hasActiveTestSession = computed(() => 
+  activeTestSessions.value.some(s => s.examId === examId)
+)
+
+const activeSession = computed(() => {
+  const studySession = activeStudySessions.value.find(s => s.examId === examId)
+  const testSession = activeTestSessions.value.find(s => s.examId === examId)
+  return studySession || testSession || null
+})
+
+const hasAnyActiveSession = computed(() => 
+  hasActiveStudySession.value || hasActiveTestSession.value
+)
+
+// Get user's last preferred mode for this exam
+const preferredMode = computed(() => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(`exam_mode_${examId}`) || 'study'
+  }
+  return 'study'
+})
+
+// Set initial mode based on preference or active session
+onMounted(() => {
+  if (activeSession.value) {
+    selectedMode.value = activeSession.value.mode
+  } else {
+    selectedMode.value = preferredMode.value
+  }
+})
+
 // Exam features for display
 const examFeatures = computed(() => [
   { icon: 'solar:document-text-line-duotone', label: 'Questions', value: exam.value?.numberOfQuestions || 0 },
@@ -76,22 +113,36 @@ const examFeatures = computed(() => [
 
 // Navigation functions
 const startStudyMode = () => {
-  console.log('[Exam Detail] Starting study mode for examId:', examId)
-  console.log('[Exam Detail] Current exam data:', exam.value)
-  // Use the exam ID, not the code
+  // Store preference
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(`exam_mode_${examId}`, 'study')
+  }
   navigateTo(`/study/${examId}`)
 }
 
 const startTestMode = () => {
-  // Store context for navigation
+  // Store preference and context
   if (typeof window !== 'undefined') {
+    localStorage.setItem(`exam_mode_${examId}`, 'test')
     localStorage.setItem('lastViewedExam', examId)
-    console.log('[Exam Detail] Stored exam ID for test navigation:', examId)
   }
-  
-  // Navigate to test page with exam ID
   navigateTo(`/test/${examId}`)
 }
+
+// Action button text and behavior
+const actionButtonText = computed(() => {
+  if (activeSession.value) {
+    return activeSession.value.mode === 'study' ? 'Continue Studying' : 'Continue Test'
+  }
+  return selectedMode.value === 'test' ? 'Start Practice Test' : 'Start Studying'
+})
+
+const actionButtonIcon = computed(() => {
+  if (activeSession.value) {
+    return activeSession.value.mode === 'study' ? 'solar:play-circle-bold' : 'solar:timer-start-bold'
+  }
+  return selectedMode.value === 'test' ? 'solar:play-circle-bold' : 'solar:book-bold'
+})
 
 // Helper functions
 const formatStudyTime = (seconds: number) => {
@@ -128,29 +179,57 @@ const getScoreColor = (score: number) => {
       <!-- Left Column - Exam Overview -->
       <v-col cols="12" lg="6">
         <!-- Exam Header Info -->
-        <v-card elevation="0" class="mb-6">
+        <v-card elevation="10" class="mb-6">
           <v-card-text class="pa-6">
             <!-- Vendor Icon and Badge -->
-            <div class="d-flex align-center mb-4">
-              <SharedVendorIcon 
-                :vendor="exam.vendorName"
-                :size="48"
-                :icon-size="28"
-                elevation
-                class="mr-3"
-              />
-              <v-chip 
-                size="small" 
-                variant="tonal" 
-                color="primary"
-              >
-                {{ exam.vendorName }}
-              </v-chip>
+            <div class="d-flex align-center justify-space-between mb-4">
+              <div class="d-flex align-center">
+                <SharedVendorIcon 
+                  :vendor="exam.vendorName"
+                  :size="56"
+                  :icon-size="32"
+                  elevation
+                  class="mr-4"
+                />
+                <div>
+                  <v-chip 
+                    size="small" 
+                    variant="tonal" 
+                    color="primary"
+                    class="mb-2"
+                  >
+                    {{ exam.vendorName }}
+                  </v-chip>
+                  <div class="text-caption text-grey100">
+                    {{ exam.difficulty || 'Intermediate' }} Level
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Active Session Indicator -->
+              <div v-if="hasAnyActiveSession" class="text-center">
+                <v-chip
+                  :color="activeSession?.mode === 'study' ? 'primary' : 'warning'"
+                  size="small"
+                  variant="flat"
+                  class="mb-1"
+                >
+                  <Icon 
+                    :icon="activeSession?.mode === 'study' ? 'solar:book-bold' : 'solar:timer-start-bold'" 
+                    size="14" 
+                    class="mr-1"
+                  />
+                  {{ activeSession?.mode === 'study' ? 'Studying' : 'Testing' }}
+                </v-chip>
+                <div class="text-caption text-grey100">
+                  {{ activeSession?.progress || 0 }}% complete
+                </div>
+              </div>
             </div>
 
             <!-- Exam Title -->
-            <h1 class="text-h4 font-weight-bold mb-2">{{ exam.examCode }}</h1>
-            <h2 class="text-h6 text-grey100 mb-4">{{ exam.examName }}</h2>
+            <h1 class="text-h3 font-weight-bold mb-2 text-primary">{{ exam.examCode }}</h1>
+            <h2 class="text-h6 text-grey100 mb-4 font-weight-medium">{{ exam.examName }}</h2>
 
             <!-- Description -->
             <p class="text-body-1 text-grey100 mb-6">
@@ -225,9 +304,12 @@ const getScoreColor = (score: number) => {
         </v-card>
 
         <!-- Exam Objectives -->
-        <v-card elevation="0">
+        <v-card elevation="10">
           <v-card-text class="pa-6">
-            <h3 class="text-h6 mb-4">Exam Objectives</h3>
+            <h3 class="text-h6 mb-4 d-flex align-center">
+              <Icon icon="solar:target-bold-duotone" size="24" class="mr-2 text-primary" />
+              Exam Objectives
+            </h3>
             
             <v-expansion-panels variant="accordion" elevation="0">
               <v-expansion-panel
@@ -265,12 +347,37 @@ const getScoreColor = (score: number) => {
       <!-- Right Column - Actions & Options -->
       <v-col cols="12" lg="6">
         <!-- Study Options Card -->
-        <v-card elevation="0" class="mb-6 sticky-card">
+        <v-card elevation="10" class="mb-6 sticky-card">
           <v-card-text class="pa-6">
-            <h3 class="text-h6 mb-4">Choose Study Mode</h3>
+            <!-- Active Session Alert -->
+            <v-alert
+              v-if="hasAnyActiveSession"
+              type="info"
+              variant="tonal"
+              class="mb-4"
+              border="start"
+            >
+              <template #prepend>
+                <Icon 
+                  :icon="activeSession?.mode === 'study' ? 'solar:book-bold-duotone' : 'solar:timer-start-bold-duotone'" 
+                  size="20" 
+                />
+              </template>
+              <div class="text-body-2">
+                <strong>{{ activeSession?.mode === 'study' ? 'Study session' : 'Test session' }} in progress</strong>
+                <div class="text-caption mt-1">
+                  {{ activeSession?.progress || 0 }}% complete • {{ activeSession?.questionsAnswered || 0 }} questions answered
+                </div>
+              </div>
+            </v-alert>
+
+            <h3 class="text-h6 mb-4">
+              {{ hasAnyActiveSession ? 'Continue or Start New' : 'Choose Study Mode' }}
+            </h3>
             
-            <!-- Mode Selector -->
+            <!-- Mode Selector (only show if no active session) -->
             <v-select
+              v-if="!hasAnyActiveSession"
               v-model="selectedMode"
               :items="studyModes"
               item-title="text"
@@ -294,22 +401,51 @@ const getScoreColor = (score: number) => {
               </template>
             </v-select>
 
-            <!-- Action Buttons -->
+            <!-- Primary Action Button -->
             <v-btn
               color="primary"
               size="x-large"
               block
               rounded="pill"
-              class="mb-3"
-              @click="selectedMode === 'test' ? startTestMode() : startStudyMode()"
+              class="mb-3 text-none"
+              elevation="2"
+              @click="activeSession ? (activeSession.mode === 'study' ? startStudyMode() : startTestMode()) : (selectedMode === 'test' ? startTestMode() : startStudyMode())"
             >
               <Icon 
-                :icon="selectedMode === 'test' ? 'solar:play-circle-bold' : 'solar:book-bold'" 
+                :icon="actionButtonIcon" 
                 class="mr-2" 
                 size="20" 
               />
-              {{ selectedMode === 'test' ? 'Start Practice Test' : 'Start Studying' }}
+              {{ actionButtonText }}
             </v-btn>
+
+            <!-- Secondary Action Buttons (if no active session) -->
+            <div v-if="!hasAnyActiveSession" class="d-flex gap-2 mb-3">
+              <v-btn
+                variant="outlined"
+                color="primary"
+                size="large"
+                block
+                rounded="pill"
+                class="text-none"
+                @click="startStudyMode()"
+              >
+                <Icon icon="solar:book-bold" class="mr-2" size="18" />
+                Study Mode
+              </v-btn>
+              <v-btn
+                variant="outlined"
+                color="warning"
+                size="large"
+                block
+                rounded="pill"
+                class="text-none"
+                @click="startTestMode()"
+              >
+                <Icon icon="solar:timer-start-bold" class="mr-2" size="18" />
+                Test Mode
+              </v-btn>
+            </div>
 
             <v-btn
               variant="tonal"
@@ -355,9 +491,12 @@ const getScoreColor = (score: number) => {
         </v-card>
 
         <!-- Additional Resources -->
-        <v-card elevation="0">
+        <v-card elevation="10">
           <v-card-text class="pa-6">
-            <h3 class="text-h6 mb-4">Learning Resources</h3>
+            <h3 class="text-h6 mb-4 d-flex align-center">
+              <Icon icon="solar:library-bold-duotone" size="24" class="mr-2 text-primary" />
+              Learning Resources
+            </h3>
             
             <v-list density="comfortable" class="pa-0">
               <v-list-item
@@ -473,5 +612,31 @@ const getScoreColor = (score: number) => {
 
 .v-expansion-panel-text {
   padding: 0 0 16px 0;
+}
+
+/* Enhanced card styling */
+.v-card {
+  border: 1px solid rgba(var(--v-theme-borderColor), 0.1);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Action button enhancements */
+.v-btn {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* Session indicator styling */
+.v-chip {
+  font-weight: 600;
+  letter-spacing: 0.025em;
 }
 </style>

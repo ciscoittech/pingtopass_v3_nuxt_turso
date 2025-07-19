@@ -1,7 +1,7 @@
 <template>
   <v-card v-if="showDebug" class="mb-4" color="grey-darken-3">
     <v-card-title class="text-h6">
-      <v-icon class="mr-2">mdi-bug</v-icon>
+      <Icon icon="solar:bug-bold-duotone" size="20" class="mr-2" />
       Debug Information
     </v-card-title>
     <v-card-text>
@@ -28,11 +28,11 @@
 </template>
 
 <script setup lang="ts">
+import { Icon } from '@iconify/vue'
 import { useStudyStore } from '~/stores/study'
 
 // Show debug info only in development
-const config = useRuntimeConfig()
-const showDebug = ref(config.public.nodeEnv === 'development' || import.meta.env.DEV)
+const showDebug = ref(process.env.NODE_ENV === 'development')
 
 const studyStore = useStudyStore()
 

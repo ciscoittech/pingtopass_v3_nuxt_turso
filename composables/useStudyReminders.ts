@@ -73,7 +73,7 @@ export const useStudyReminders = () => {
         priority: 'medium',
         action: {
           text: 'Review Mistakes',
-          route: '/progress'
+          route: '/dashboard'
         }
       })
     }

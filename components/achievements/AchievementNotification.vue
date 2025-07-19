@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Icon } from '@iconify/vue'
 interface Achievement {
   id: string
   title: string
@@ -55,9 +56,7 @@ watch(() => props.show, (newShow) => {
     class="achievement-notification"
   >
     <v-card
-      :color="getRarityColor(achievement.rarity)"
-      variant="elevated"
-      elevation="8"
+      elevation="10"
       class="achievement-card"
       :style="getRarityGlow(achievement.rarity)"
     >
@@ -68,60 +67,57 @@ watch(() => props.show, (newShow) => {
             <v-avatar
               :color="getRarityColor(achievement.rarity)"
               size="60"
-              class="elevation-4"
+              variant="tonal"
             >
-              <v-icon
-                :color="achievement.rarity === 'legendary' ? 'white' : undefined"
+              <Icon
+                :icon="achievement.icon"
                 size="32"
-              >
-                {{ achievement.icon }}
-              </v-icon>
+              />
             </v-avatar>
           </div>
 
           <!-- Achievement Details -->
           <div class="flex-grow-1">
             <div class="d-flex align-center justify-space-between mb-1">
-              <h3 class="text-h6 font-weight-bold text-white">
-                🎉 Achievement Unlocked!
+              <h3 class="text-h6 font-weight-bold">
+                <Icon icon="solar:cup-star-bold-duotone" size="20" class="mr-1 text-warning" />
+                Achievement Unlocked!
               </h3>
               <v-btn
                 icon
                 variant="text"
                 size="small"
-                color="white"
                 @click="emit('close')"
               >
-                <v-icon>mdi-close</v-icon>
+                <Icon icon="solar:close-circle-bold-duotone" size="20" />
               </v-btn>
             </div>
             
-            <h4 class="text-subtitle-1 font-weight-bold text-white mb-1">
+            <h4 class="text-subtitle-1 font-weight-bold mb-1">
               {{ achievement.title }}
             </h4>
             
-            <p class="text-body-2 text-grey-lighten-1 mb-2">
+            <p class="text-body-2 text-medium-emphasis mb-2">
               {{ achievement.description }}
             </p>
             
             <div class="d-flex align-center">
               <v-chip
-                :color="achievement.rarity === 'common' ? 'grey-lighten-1' : 'white'"
-                :text-color="achievement.rarity === 'common' ? 'black' : getRarityColor(achievement.rarity)"
+                :color="getRarityColor(achievement.rarity)"
                 size="small"
-                variant="elevated"
-                class="mr-2"
+                variant="tonal"
+                class="mr-2 font-weight-medium"
               >
                 {{ achievement.rarity.toUpperCase() }}
               </v-chip>
               
               <v-chip
-                color="yellow"
-                text-color="black"
+                color="warning"
                 size="small"
-                variant="elevated"
+                variant="flat"
+                class="font-weight-medium"
               >
-                <v-icon start size="16">mdi-star</v-icon>
+                <Icon icon="solar:star-bold-duotone" size="16" class="mr-1" />
                 +{{ achievement.points }} pts
               </v-chip>
             </div>
@@ -141,6 +137,7 @@ watch(() => props.show, (newShow) => {
   min-width: 400px;
   max-width: 500px;
   animation: achievementPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(var(--v-theme-borderColor), 0.1);
 }
 
 .achievement-icon {

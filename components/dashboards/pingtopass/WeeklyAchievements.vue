@@ -118,13 +118,13 @@ const getRarityColor = (rarity: string) => {
 // Get category icon
 const getCategoryIcon = (category: string) => {
   const icons = {
-    streak: 'solar:flame-bold',
-    accuracy: 'solar:target-bold',
-    volume: 'solar:chart-bold',
-    milestone: 'solar:flag-bold',
-    special: 'solar:star-shine-bold'
+    streak: 'solar:fire-bold-duotone',
+    accuracy: 'solar:target-bold-duotone',
+    volume: 'solar:chart-2-bold-duotone',
+    milestone: 'solar:flag-bold-duotone',
+    special: 'solar:star-shine-bold-duotone'
   }
-  return icons[category as keyof typeof icons] || 'solar:medal-star-bold'
+  return icons[category as keyof typeof icons] || 'solar:medal-star-bold-duotone'
 }
 
 // Format time ago
@@ -147,7 +147,7 @@ onMounted(() => {
 
 <template>
   <v-card 
-    :elevation="2"
+    elevation="10"
     :class="{ 'pa-3': dense }"
     class="weekly-achievements-card"
   >
@@ -163,7 +163,7 @@ onMounted(() => {
         variant="tonal"
         size="small"
       >
-        <Icon icon="solar:star-bold" size="16" class="mr-1" />
+        <Icon icon="solar:star-bold-duotone" size="16" class="mr-1" />
         {{ weeklyPoints }} pts this week
       </v-chip>
     </v-card-title>
@@ -218,7 +218,7 @@ onMounted(() => {
           <!-- Active Achievements -->
           <v-window-item value="active">
             <div v-if="activeAchievements.length === 0" class="text-center py-4 text-grey">
-              <Icon icon="solar:clipboard-list-linear" size="48" class="mb-2" />
+              <Icon icon="solar:clipboard-list-bold-duotone" size="48" class="mb-2" />
               <p class="text-caption">No active achievements</p>
             </div>
             <v-list v-else density="compact" class="pa-0">
@@ -276,7 +276,7 @@ onMounted(() => {
           <!-- Near Completion -->
           <v-window-item value="near">
             <div v-if="nearCompletion.length === 0" class="text-center py-4 text-grey">
-              <Icon icon="solar:hourglass-linear" size="48" class="mb-2" />
+              <Icon icon="solar:hourglass-line-bold-duotone" size="48" class="mb-2" />
               <p class="text-caption">No achievements near completion</p>
             </div>
             <v-list v-else density="compact" class="pa-0">
@@ -328,7 +328,7 @@ onMounted(() => {
           <!-- Completed -->
           <v-window-item value="completed">
             <div v-if="recentlyCompleted.length === 0" class="text-center py-4 text-grey">
-              <Icon icon="solar:cup-linear" size="48" class="mb-2" />
+              <Icon icon="solar:cup-star-bold-duotone" size="48" class="mb-2" />
               <p class="text-caption">No completed achievements yet</p>
             </div>
             <v-list v-else density="compact" class="pa-0">
@@ -344,7 +344,7 @@ onMounted(() => {
                     size="40"
                     variant="flat"
                   >
-                    <Icon icon="solar:verified-check-bold" size="20" color="white" />
+                    <Icon icon="solar:verified-check-bold-duotone" size="20" />
                   </v-avatar>
                 </template>
                 
@@ -385,7 +385,7 @@ onMounted(() => {
             to="/achievements"
           >
             View All Achievements
-            <Icon icon="solar:arrow-right-linear" class="ml-1" />
+            <Icon icon="solar:arrow-right-bold-duotone" class="ml-1" />
           </v-btn>
         </div>
       </template>

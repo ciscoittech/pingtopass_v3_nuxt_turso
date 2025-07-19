@@ -11,6 +11,8 @@ interface LastStudySession {
   accuracy: number
   progress: number
   mode: 'study' | 'test'
+  todayQuestions?: number
+  accuracyTrend?: number[]
 }
 
 // Fetch last study session data
@@ -75,6 +77,8 @@ const displayData = computed(() => {
       progress: lastSession.value.progress,
       questionsAnswered: lastSession.value.questionsAnswered,
       accuracy: lastSession.value.accuracy,
+      todayQuestions: lastSession.value.todayQuestions || 0,
+      accuracyTrend: lastSession.value.accuracyTrend || [],
       showStats: true
     }
   } else if (localLastExam.value) {
@@ -84,10 +88,33 @@ const displayData = computed(() => {
       progress: 0,
       questionsAnswered: 0,
       accuracy: 0,
+      todayQuestions: 0,
+      accuracyTrend: [],
       showStats: false
     }
   }
   return null
+})
+
+// Generate sparkline path
+const sparklinePath = computed(() => {
+  if (!displayData.value?.accuracyTrend || displayData.value.accuracyTrend.length < 2) {
+    return ''
+  }
+  
+  const trend = displayData.value.accuracyTrend
+  const width = 60
+  const height = 20
+  const points = trend.length
+  const stepX = width / (points - 1)
+  
+  const path = trend.map((value, index) => {
+    const x = index * stepX
+    const y = height - (value / 100) * height
+    return `${index === 0 ? 'M' : 'L'} ${x} ${y}`
+  }).join(' ')
+  
+  return path
 })
 </script>
 
@@ -130,13 +157,31 @@ const displayData = computed(() => {
         <!-- Quick Stats (if available) -->
         <div v-if="displayData.showStats" class="d-flex justify-space-around mb-3">
           <div class="text-center">
-            <p class="text-h6 font-weight-bold mb-0">{{ displayData.questionsAnswered }}</p>
-            <p class="text-caption text-grey100">Questions</p>
+            <p class="text-h6 font-weight-bold mb-0">{{ displayData.todayQuestions }}</p>
+            <p class="text-caption text-grey100">Today</p>
           </div>
           <v-divider vertical />
           <div class="text-center">
             <p class="text-h6 font-weight-bold mb-0 text-success">{{ displayData.accuracy }}%</p>
             <p class="text-caption text-grey100">Accuracy</p>
+          </div>
+          <v-divider vertical />
+          <div class="text-center">
+            <!-- Mini Sparkline -->
+            <div v-if="sparklinePath" class="d-flex align-center justify-center" style="height: 24px;">
+              <svg width="60" height="20" class="accuracy-sparkline">
+                <path 
+                  :d="sparklinePath" 
+                  fill="none" 
+                  stroke="rgb(var(--v-theme-success))" 
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <p v-else class="text-h6 font-weight-bold mb-0">—</p>
+            <p class="text-caption text-grey100">7d Trend</p>
           </div>
         </div>
         
@@ -176,5 +221,9 @@ const displayData = computed(() => {
 .v-divider--vertical {
   min-height: 40px;
   max-height: 40px;
+}
+
+.accuracy-sparkline {
+  opacity: 0.8;
 }
 </style>
